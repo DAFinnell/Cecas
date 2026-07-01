@@ -19,6 +19,7 @@ import edu.franklin.cecas.repository.CategoryRepository;
 import edu.franklin.cecas.repository.CourseRepository;
 import edu.franklin.cecas.repository.ExtraCreditRequestRepository;
 import edu.franklin.cecas.repository.UserRepository;
+import edu.franklin.cecas.exception.InvalidExtraCreditRequestException;
 import jakarta.transaction.Transactional;
 
 @Service
@@ -44,10 +45,10 @@ public class ExtraCreditRequestService {
     public ExtraCreditResponseDTO createRequest(String studentEmail, ExtraCreditRequestCreateDTO dto) {
         // Fetch and validate that the relation IDs actually exist in the database
         Course course = courseRepository.findById(dto.getCourseId())
-                .orElseThrow(() -> new RuntimeException("Course not found with ID: " + dto.getCourseId()));
+                .orElseThrow(() -> new InvalidExtraCreditRequestException("Course not found with ID: " + dto.getCourseId()));
 
         Category category = categoryRepository.findById(dto.getCategoryId())
-                .orElseThrow(() -> new RuntimeException("Category not found with ID: " + dto.getCategoryId()));
+                .orElseThrow(() -> new InvalidExtraCreditRequestException("Category not found with ID: " + dto.getCategoryId()));
 
         User student = userRepository.findByEmailIgnoreCase(studentEmail)
                 .orElseThrow(() -> new RuntimeException("Student not found with Email: " + studentEmail));

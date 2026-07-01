@@ -16,6 +16,7 @@ import edu.franklin.cecas.exception.InvalidPasswordException;
 import edu.franklin.cecas.exception.PasswordChangeNotRequiredException;
 import edu.franklin.cecas.exception.PasswordMismatchException;
 import edu.franklin.cecas.exception.RegistrationNotAllowedException;
+import edu.franklin.cecas.exception.InvalidExtraCreditRequestException;
 import edu.franklin.cecas.exception.UnauthorizedRoleException;
 
 @RestControllerAdvice
@@ -72,6 +73,14 @@ public class GlobalExceptionHandler {
         return problem;
     }
 
+    @ExceptionHandler(InvalidExtraCreditRequestException.class)
+    public ProblemDetail handleInvalidExtraCreditRequest(InvalidExtraCreditRequestException ex) {
+        ProblemDetail problem = ProblemDetail.forStatus(HttpStatus.BAD_REQUEST);
+        problem.setTitle("Invalid extra credit request");
+        problem.setDetail(ex.getMessage());
+        problem.setProperty("errorCode", "EXTRA_CREDIT_REQUEST_INVALID");
+        return problem;
+    }   
     @ExceptionHandler(InvalidPasswordException.class)
     public ProblemDetail handleInvalidPassword(Exception ex) {
         ProblemDetail problem = ProblemDetail.forStatus(HttpStatus.BAD_REQUEST);
