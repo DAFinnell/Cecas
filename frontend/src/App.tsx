@@ -8,6 +8,7 @@ import HowItWorksPage from './pages/HowItWorksPage'
 import LoginPage from './pages/LoginPage'
 import NewExtraCreditRequestPage from './pages/NewExtraCreditRequestPage'
 import NotFoundPage from './pages/NotFoundPage'
+import PrivacyPolicyPage from './pages/PrivacyPolicyPage'
 import RegisterPage from './pages/RegisterPage'
 import StudentPage from './pages/StudentPage'
 import CsrfInitializer from './components/CsrfInitializer'
@@ -21,6 +22,7 @@ export default function App() {
           <Route index element={<HomePage />} />
           <Route path="login" element={<LoginPage />} />
           <Route path="register" element={<RegisterPage />} />
+          <Route path="privacy-policy" element={<PrivacyPolicyPage />} />
           <Route path="how-it-works" element={<HowItWorksPage />} />
 
           <Route element={<RequireRole allowedRoles={['STUDENT']} />}>
