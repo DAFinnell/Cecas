@@ -7,6 +7,7 @@ import org.springframework.stereotype.Service;
 import edu.franklin.cecas.domain.User;
 import edu.franklin.cecas.domain.UserRole;
 import edu.franklin.cecas.dto.ChangePasswordRequest;
+import edu.franklin.cecas.dto.StudentPointsDTO;
 import edu.franklin.cecas.dto.UserDTO;
 import edu.franklin.cecas.dto.UserProfileResponse;
 import edu.franklin.cecas.exception.InvalidPasswordException;
@@ -21,14 +22,12 @@ import jakarta.transaction.Transactional;
 public class UserService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
-    // private final PointCapService pointCapService;
-    // private final ExtraCreditRequestService extraCreditRequestService;
+    private final PointAllocationService pointAllocationService;
 
-    UserService(UserRepository userRepository, PasswordEncoder passwordEncoder) {
+    UserService(UserRepository userRepository, PasswordEncoder passwordEncoder, PointAllocationService pointAllocationService) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
-        // this.pointCapService = pointCapService;
-        // this.extraCreditRequestService = extraCreditRequestService;
+        this.pointAllocationService = pointAllocationService;
     }
     
     public UserDTO getStudentByStudentId(Integer studentId) {
@@ -36,6 +35,7 @@ public class UserService {
                 .map(UserDTO::new)
                 .orElseThrow(() -> new RuntimeException("User not found"));
     }
+
     /**
      * Get user profile information for the currently authenticated user.
      * @param email
@@ -49,6 +49,17 @@ public class UserService {
                         user.getRole().name()
                 ))
                 .orElseThrow(() -> new RuntimeException("User not found"));
+    }
+
+    public StudentPointsDTO getStudentPoints(String email) {
+        User user = userRepository.findByEmailIgnoreCase(email)
+                .orElseThrow(() -> new UsernameNotFoundException("User not found with email: " + email));
+
+        if (user.getRole() != UserRole.STUDENT) {
+            throw new UnauthorizedRoleException("Only students have an extra credit point summary");
+        }
+
+        return pointAllocationService.getStudentPoints(user.getId());
     }
 
     /**
@@ -85,21 +96,21 @@ public class UserService {
         if (user.getRole() != UserRole.CHAIR) {
             throw new UnauthorizedRoleException("Only program chairs can force change their password");
         }
-        // Check if mustChangePassword flag is true
+
         if (!Boolean.TRUE.equals(user.getMustChangePassword())) {
             throw new PasswordChangeNotRequiredException ("Password change is not required");
         }
-        // verify current password matches the stored password for the user
+
         if (!passwordEncoder.matches(request.getCurrentPassword(), user.getPassword())) {
             throw new InvalidPasswordException("Current password is incorrect");
         }
-        // verify new password and confirm password match
+
         if (!request.getNewPassword().equals(request.getConfirmPassword())) {
             throw new PasswordMismatchException("New password and confirm password do not match");
         }
 
         user.setPassword(passwordEncoder.encode(request.getNewPassword()));
-        user.setMustChangePassword(false); // Clear the mustChangePassword flag after successful password change
+        user.setMustChangePassword(false);
 
         userRepository.save(user);
     }

@@ -11,12 +11,13 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 import edu.franklin.cecas.exception.EmailAlreadyExistsException;
+import edu.franklin.cecas.exception.InvalidExtraCreditRequestException;
 import edu.franklin.cecas.exception.InvalidCredentialsException;
 import edu.franklin.cecas.exception.InvalidPasswordException;
 import edu.franklin.cecas.exception.PasswordChangeNotRequiredException;
 import edu.franklin.cecas.exception.PasswordMismatchException;
+import edu.franklin.cecas.exception.PointCapExceededException;
 import edu.franklin.cecas.exception.RegistrationNotAllowedException;
-import edu.franklin.cecas.exception.InvalidExtraCreditRequestException;
 import edu.franklin.cecas.exception.UnauthorizedRoleException;
 
 @RestControllerAdvice
@@ -80,7 +81,8 @@ public class GlobalExceptionHandler {
         problem.setDetail(ex.getMessage());
         problem.setProperty("errorCode", "EXTRA_CREDIT_REQUEST_INVALID");
         return problem;
-    }   
+    }
+
     @ExceptionHandler(InvalidPasswordException.class)
     public ProblemDetail handleInvalidPassword(Exception ex) {
         ProblemDetail problem = ProblemDetail.forStatus(HttpStatus.BAD_REQUEST);
@@ -114,6 +116,15 @@ public class GlobalExceptionHandler {
         problem.setTitle("Unauthorized Role");
         problem.setDetail(ex.getMessage());
         problem.setProperty("errorCode", "UNAUTHORIZED_ROLE");
+        return problem;
+    }
+
+    @ExceptionHandler(PointCapExceededException.class)
+    public ProblemDetail handlePointCapExceeded(PointCapExceededException ex) {
+        ProblemDetail problem = ProblemDetail.forStatus(HttpStatus.BAD_REQUEST);
+        problem.setTitle("Point cap exceeded");
+        problem.setDetail(ex.getMessage());
+        problem.setProperty("errorCode", "POINT_CAP_EXCEEDED");
         return problem;
     }
 

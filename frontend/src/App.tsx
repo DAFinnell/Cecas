@@ -6,6 +6,7 @@ import DebugPage from './pages/DebugPage'
 import HomePage from './pages/HomePage'
 import HowItWorksPage from './pages/HowItWorksPage'
 import LoginPage from './pages/LoginPage'
+import NewExtraCreditRequestPage from './pages/NewExtraCreditRequestPage'
 import NotFoundPage from './pages/NotFoundPage'
 import RegisterPage from './pages/RegisterPage'
 import StudentPage from './pages/StudentPage'
@@ -24,6 +25,7 @@ export default function App() {
 
           <Route element={<RequireRole allowedRoles={['STUDENT']} />}>
             <Route path="student" element={<StudentPage />} />
+            <Route path="student/requests/new" element={<NewExtraCreditRequestPage />} />
           </Route>
 
           <Route element={<RequireRole allowedRoles={['CHAIR']} />}>

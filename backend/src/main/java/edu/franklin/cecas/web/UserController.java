@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import edu.franklin.cecas.dto.ChangePasswordRequest;
+import edu.franklin.cecas.dto.StudentPointsDTO;
 import edu.franklin.cecas.dto.UserDTO;
 import edu.franklin.cecas.dto.UserProfileResponse;
 import edu.franklin.cecas.service.UserService;
@@ -49,6 +50,15 @@ public class UserController {
     @GetMapping("/me")
     public UserProfileResponse getUserProfile(@AuthenticationPrincipal UserDetails userDetails) {
          return userService.getUserProfile(userDetails.getUsername());
+    }
+
+    /**
+     * Get point summary for the currently authenticated student.
+     */
+    @PreAuthorize("hasRole('STUDENT')")
+    @GetMapping("/me/points")
+    public StudentPointsDTO getStudentPoints(@AuthenticationPrincipal UserDetails userDetails) {
+         return userService.getStudentPoints(userDetails.getUsername());
     }
 
     /**
