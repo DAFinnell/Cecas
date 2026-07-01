@@ -4,6 +4,7 @@ import RequireRole from './app/RequireRole'
 import ChairPage from './pages/ChairPage'
 import DebugPage from './pages/DebugPage'
 import HomePage from './pages/HomePage'
+import HowItWorksPage from './pages/HowItWorksPage'
 import LoginPage from './pages/LoginPage'
 import NotFoundPage from './pages/NotFoundPage'
 import RegisterPage from './pages/RegisterPage'
@@ -19,6 +20,7 @@ export default function App() {
           <Route index element={<HomePage />} />
           <Route path="login" element={<LoginPage />} />
           <Route path="register" element={<RegisterPage />} />
+          <Route path="how-it-works" element={<HowItWorksPage />} />
 
           <Route element={<RequireRole allowedRoles={['STUDENT']} />}>
             <Route path="student" element={<StudentPage />} />

@@ -2,6 +2,7 @@
 
 const navItems = [
   { to: '/', label: 'Home', end: true },
+  { to: '/how-it-works', label: 'How It Works' },
   { to: '/login', label: 'Login' },
   { to: '/register', label: 'Register' },
   { to: '/student', label: 'Student' },
@@ -44,3 +45,4 @@ export default function Navbar() {
     </header>
   )
 }
+
