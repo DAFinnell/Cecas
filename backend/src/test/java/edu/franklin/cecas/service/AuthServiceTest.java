@@ -1,5 +1,6 @@
 package edu.franklin.cecas.service;
 
+import org.junit.jupiter.api.AfterEach;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
@@ -7,9 +8,7 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.AfterEach;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.mock.web.MockHttpServletResponse;
@@ -21,8 +20,6 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.context.HttpSessionSecurityContextRepository;
 
-import edu.franklin.cecas.support.MySqlServiceTest;
-import jakarta.servlet.http.HttpSession;
 import edu.franklin.cecas.domain.User;
 import edu.franklin.cecas.domain.UserRole;
 import edu.franklin.cecas.dto.CurrentUserResponse;
@@ -31,6 +28,9 @@ import edu.franklin.cecas.dto.RegisterRequest;
 import edu.franklin.cecas.exception.EmailAlreadyExistsException;
 import edu.franklin.cecas.exception.InvalidCredentialsException;
 import edu.franklin.cecas.repository.UserRepository;
+import edu.franklin.cecas.support.MySqlServiceTest;
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpSession;
 
 @MySqlServiceTest
 public class AuthServiceTest {
@@ -255,5 +255,41 @@ public class AuthServiceTest {
         assertEquals("Invalid email or password.", ex.getMessage());
         assertNull(httpRequest.getSession(false));
         assertNull(SecurityContextHolder.getContext().getAuthentication());
+    }
+
+    @Test
+    void testLogoutInvalideSession() {
+        createAndSaveStudent("derek@derek.com", "TestPass1!");
+
+        LoginRequest request = createLoginRequest();
+        MockHttpServletRequest httpRequest = new MockHttpServletRequest();
+        MockHttpServletResponse httpResponse = new MockHttpServletResponse();
+
+        authService.login(request, httpRequest, httpResponse);
+
+        HttpSession session = httpRequest.getSession(false);
+        assertNotNull(session);
+
+        authService.logout(httpRequest, httpResponse);
+
+        assertFalse(session.getAttributeNames().hasMoreElements());
+    }
+
+    @Test
+    void testLogoutAddsExpiredSessionCookie() {
+        MockHttpServletRequest httpRequest = new MockHttpServletRequest();
+        MockHttpServletResponse httpResponse = new MockHttpServletResponse();
+
+        httpRequest.getSession();
+
+        authService.logout(httpRequest, httpResponse);
+
+        Cookie cookie = httpResponse.getCookie("CECASSESSION");
+
+        assertNotNull(cookie);
+        assertEquals("", cookie.getValue());
+        assertEquals(0, cookie.getMaxAge());
+        assertEquals("/", cookie.getPath());
+        assertTrue(cookie.isHttpOnly());
     }
 }
