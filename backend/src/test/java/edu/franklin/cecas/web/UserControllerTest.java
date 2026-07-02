@@ -24,6 +24,7 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import edu.franklin.cecas.config.SecurityConfig;
 import edu.franklin.cecas.service.CecasUserDetailsService;
+import edu.franklin.cecas.service.PointAllocationService;
 import edu.franklin.cecas.service.UserService;
 import edu.franklin.cecas.dto.UserProfileResponse;
 import edu.franklin.cecas.exception.InvalidPasswordException;
@@ -43,6 +44,9 @@ public class UserControllerTest {
 
     @MockitoBean
     private UserService userService;
+
+    @MockitoBean
+    private PointAllocationService pointAllocationService;
 
     private final ObjectMapper objectMapper = new ObjectMapper();
 

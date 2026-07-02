@@ -17,6 +17,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import edu.franklin.cecas.config.SecurityConfig;
 import edu.franklin.cecas.dto.StudentPointsDTO;
 import edu.franklin.cecas.service.CecasUserDetailsService;
+import edu.franklin.cecas.service.PointAllocationService;
 import edu.franklin.cecas.service.UserService;
 
 @WebMvcTest(controllers = UserController.class)
@@ -31,6 +32,9 @@ class UserPointsControllerTest {
 
     @MockitoBean
     private UserService userService;
+
+    @MockitoBean
+    private PointAllocationService pointAllocationService;
 
     @Test
     @WithMockUser(username = "student@test.com", roles = { "STUDENT" })
