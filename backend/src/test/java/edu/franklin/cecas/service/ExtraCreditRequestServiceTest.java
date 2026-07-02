@@ -90,7 +90,6 @@ public class ExtraCreditRequestServiceTest {
 
         assertNotNull(response);
         assertEquals(ExtraCreditRequestStatus.PENDING, response.getStatus());
-        assertEquals("I completed the extra assignment", response.getDescription());
     }
 
     @Test
@@ -140,7 +139,6 @@ public class ExtraCreditRequestServiceTest {
         // Student A: should populate
         List<ExtraCreditResponseDTO> requestsA = extraCreditRequestService.getRequestsForStudent(studentA.getEmail());
         assertEquals(1, requestsA.size());
-        assertEquals("Student A Request", requestsA.get(0).getDescription());
 
         // Student B: should return empty
         List<ExtraCreditResponseDTO> requestsB = extraCreditRequestService.getRequestsForStudent(studentB.getEmail());
@@ -167,7 +165,6 @@ public class ExtraCreditRequestServiceTest {
     List<ExtraCreditResponseDTO> requestsA =
             extraCreditRequestService.getRequestsForStudent(studentA.getEmail());
     assertEquals(1, requestsA.size());
-    assertEquals("Student A Null-ID Request", requestsA.get(0).getDescription());
 
     List<ExtraCreditResponseDTO> requestsB =
             extraCreditRequestService.getRequestsForStudent(studentB.getEmail());

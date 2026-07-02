@@ -26,14 +26,14 @@ export default function App() {
           <Route path="how-it-works" element={<HowItWorksPage />} />
 
           <Route element={<RequireRole allowedRoles={['STUDENT']} />}>
-            <Route path="student" element={<StudentPage />} />
-            <Route path="student/requests/new" element={<NewExtraCreditRequestPage />} />
+            <Route path="student-dashboard" element={<StudentPage />} />
+            <Route path="create-request" element={<NewExtraCreditRequestPage />} />
           </Route>
 
           <Route element={<RequireRole allowedRoles={['CHAIR']} />}>
-            <Route path="chair" element={<ChairPage />} />
+            <Route path="chair-dashboard" element={<ChairPage />} />
           </Route>
-
+          <Route path="logout" element={<HomePage />} /> // needs changed
           <Route path="debug" element={<DebugPage />} />
           <Route path="*" element={<NotFoundPage />} />
         </Route>

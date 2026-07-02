@@ -24,12 +24,17 @@ public class UserService {
     private final PasswordEncoder passwordEncoder;
     private final PointAllocationService pointAllocationService;
 
-    UserService(UserRepository userRepository, PasswordEncoder passwordEncoder, PointAllocationService pointAllocationService) {
+    UserService(UserRepository userRepository, PasswordEncoder passwordEncoder, PointAllocationService pointAllocationService) {    
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
         this.pointAllocationService = pointAllocationService;
     }
     
+    /**
+     * Get student by studentId. Throws if not found.
+     * @param studentId
+     * @return userDTO
+     */
     public UserDTO getStudentByStudentId(Integer studentId) {
         return userRepository.findByStudentId(studentId)
                 .map(UserDTO::new)

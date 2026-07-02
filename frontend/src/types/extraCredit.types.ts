@@ -33,8 +33,13 @@ export type ExtraCreditRequestResponse = {
   category: CategoryOption
   status: ExtraCreditRequestStatus
   awardedPoints: number | null
-  createdAt: string | null
   updatedAt: string | null
+  // for dashboard
+  courseCode: string ;
+  term: string ;
+  section: string;
+  defaultPoints: number;
+  categoryName: string;
 }
 
 export type CreateExtraCreditRequestPayload = {
@@ -42,3 +47,4 @@ export type CreateExtraCreditRequestPayload = {
   categoryId: number
   description: string
 }
+

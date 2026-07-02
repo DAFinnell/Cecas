@@ -1,5 +1,8 @@
 package edu.franklin.cecas.web;
 
+import java.util.Map;
+
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -15,6 +18,9 @@ import edu.franklin.cecas.dto.ChangePasswordRequest;
 import edu.franklin.cecas.dto.StudentPointsDTO;
 import edu.franklin.cecas.dto.UserDTO;
 import edu.franklin.cecas.dto.UserProfileResponse;
+import edu.franklin.cecas.dto.ValidatePointsRequest;
+import edu.franklin.cecas.exception.PointCapExceededException;
+import edu.franklin.cecas.service.PointAllocationService;
 import edu.franklin.cecas.service.UserService;
 import jakarta.validation.Valid;
 
@@ -23,9 +29,11 @@ import jakarta.validation.Valid;
 public class UserController {
 
     private final UserService userService;
+    private final PointAllocationService pointAllocationService;
 
-    public UserController(UserService userService) {
+    public UserController(UserService userService, PointAllocationService pointAllocationService) {
         this.userService = userService;
+        this.pointAllocationService = pointAllocationService;
     }
 
 
@@ -96,4 +104,22 @@ public class UserController {
         userService.forceChangePassword(email, request);
         return ResponseEntity.ok("Password changed successfully.");
     }
+
+    @GetMapping("/{studentId}/points")
+    @PreAuthorize("hasRole('CHAIR')")
+    public StudentPointsDTO getStudentPoints(@PathVariable Integer studentId) {
+        return pointAllocationService.getStudentPoints(studentId);
+    }
+
+    @PostMapping("/points/validate")
+    @PreAuthorize("hasRole('CHAIR')")
+    public ResponseEntity<?> validatePointAllocation(@RequestBody ValidatePointsRequest request) {
+        try {
+            pointAllocationService.validatePointAllocation(request.getStudentId(), request.getRequestedPoints());
+            return ResponseEntity.ok().build();
+        } catch (PointCapExceededException ex) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of("message", ex.getMessage()));
+        }
+    }
+
 }

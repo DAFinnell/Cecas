@@ -2,145 +2,145 @@ package edu.franklin.cecas.dto;
 
 import edu.franklin.cecas.domain.ExtraCreditRequest;
 import edu.franklin.cecas.domain.ExtraCreditRequestStatus;
-import edu.franklin.cecas.domain.User;
-import edu.franklin.cecas.domain.Course;
-import edu.franklin.cecas.domain.Category;
 import java.time.LocalDateTime;
 
 public class ExtraCreditResponseDTO {
     private Integer id;
-    private String description;
-    private User student;
-    private User chair;
-    private Course course;
-    private Category category;
+    // course
+    private String courseCode;
+    private String term;
+    private String section;
+    // category
+    private Integer defaultPoints;
+    private String categoryName;
+
+    private Integer studentId;
+    // status & points
     private ExtraCreditRequestStatus status;
-    private String evidenceFilePath;
-    private LocalDateTime dueDate;
-    private Integer awardedPoints;
-    private String chairFeedback;
+    private Integer requestedPoints;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
+    // for UI purposes
+    private boolean actionRequired;
+    private boolean canUploadEvidence;
 
     public ExtraCreditResponseDTO() {}
 
     public ExtraCreditResponseDTO(ExtraCreditRequest extraCreditRequest) {
         this.id = extraCreditRequest.getId();
-        this.description = extraCreditRequest.getDescription();
-        this.student = extraCreditRequest.getStudent();
-        this.chair = extraCreditRequest.getChair();
-        this.course = extraCreditRequest.getCourse();
-        this.category = extraCreditRequest.getCategory();
+        this.studentId = extraCreditRequest.getStudent().getId();
+        this.courseCode = extraCreditRequest.getCourse().getCourseCode();
+        this.term = extraCreditRequest.getCourse().getTerm();
+        this.section = extraCreditRequest.getCourse().getSection();
+        this.defaultPoints = extraCreditRequest.getCategory().getDefaultPoints();
+        this.categoryName = extraCreditRequest.getCategory().getCategoryName();
         this.status = extraCreditRequest.getStatus();
-        this.evidenceFilePath = extraCreditRequest.getEvidenceFilePath();
-        this.dueDate = extraCreditRequest.getDueDate();
-        this.awardedPoints = extraCreditRequest.getAwardedPoints();
-        this.chairFeedback = extraCreditRequest.getChairFeedback();
         this.createdAt = extraCreditRequest.getCreatedAt();
         this.updatedAt = extraCreditRequest.getUpdatedAt();
     }
 
-        public Integer getId() {
-            return id;
-        }
+    public Integer getId() {
+        return id;
+    }
 
-        public void setId(Integer id) {
-            this.id = id;
-        }
+    public void setId(Integer id) {
+        this.id = id;
+    }
 
-        public String getDescription() {
-            return description;
-        }
+    public String getCourseCode() {
+        return courseCode;
+    }
 
-        public void setDescription(String description) {
-            this.description = description;
-        }
+    public void setCourseCode(String courseCode) {
+        this.courseCode = courseCode;
+    }
 
-        public User getStudent() {
-            return student;
-        }
+    public String getTerm() {
+        return term;
+    }
 
-        public void setStudent(User student) {
-            this.student = student;
-        }
+    public void setTerm(String term) {
+        this.term = term;
+    }
 
-        public User getChair() {
-            return chair;
-        }
+    public String getSection() {
+        return section;
+    }
 
-        public void setChair(User chair) {
-            this.chair = chair;
-        }
+    public void setSection(String section) {
+        this.section = section;
+    }
 
-        public Course getCourse() {
-            return course;
-        }
+    public Integer getDefaultPoints() {
+        return defaultPoints;
+    }
 
-        public void setCourse(Course course) {
-            this.course = course;
-        }
+    public void setDefaultPoints(Integer defaultPoints) {
+        this.defaultPoints = defaultPoints;
+    }
 
-        public Category getCategory() {
-            return category;
-        }
+    public String getCategoryName() {
+        return categoryName;
+    }
 
-        public void setCategory(Category category) {
-            this.category = category;
-        }
+    public void setCategoryName(String categoryName) {
+        this.categoryName = categoryName;
+    }
 
-        public ExtraCreditRequestStatus getStatus() {
-            return status;
-        }
+    public Integer getStudentId() {
+        return studentId;
+    }
 
-        public void setStatus(ExtraCreditRequestStatus status) {
-            this.status = status;
-        }
+    public void setStudentId(Integer studentId) {
+        this.studentId = studentId;
+    }
 
-        public String getEvidenceFilePath() {
-            return evidenceFilePath;
-        }
+    public ExtraCreditRequestStatus getStatus() {
+        return status;
+    }
 
-        public void setEvidenceFilePath(String evidenceFilePath) {
-            this.evidenceFilePath = evidenceFilePath;
-        }
+    public void setStatus(ExtraCreditRequestStatus status) {
+        this.status = status;
+    }
 
-        public LocalDateTime getDueDate() {
-            return dueDate;
-        }
+    public Integer getRequestedPoints() {
+        return requestedPoints;
+    }
 
-        public void setDueDate(LocalDateTime dueDate) {
-            this.dueDate = dueDate;
-        }
+    public void setRequestedPoints(Integer requestedPoints) {
+        this.requestedPoints = requestedPoints;
+    }
 
-        public Integer getAwardedPoints() {
-            return awardedPoints;
-        }
+    public LocalDateTime getCreatedAt() {
+        return createdAt;
+    }
 
-        public void setAwardedPoints(Integer awardedPoints) {
-            this.awardedPoints = awardedPoints;
-        }
+    public void setCreatedAt(LocalDateTime createdAt) {
+        this.createdAt = createdAt;
+    }
 
-        public String getChairFeedback() {
-            return chairFeedback;
-        }
+    public LocalDateTime getUpdatedAt() {
+        return updatedAt;
+    }
 
-        public void setChairFeedback(String chairFeedback) {
-            this.chairFeedback = chairFeedback;
-        }
+    public void setUpdatedAt(LocalDateTime updatedAt) {
+        this.updatedAt = updatedAt;
+    }
 
-        public LocalDateTime getCreatedAt() {
-            return createdAt;
-        }
+    public boolean isActionRequired() {
+        return actionRequired;
+    }
 
-        public void setCreatedAt(LocalDateTime createdAt) {
-            this.createdAt = createdAt;
-        }
+    public void setActionRequired(boolean actionRequired) {
+        this.actionRequired = actionRequired;
+    }
 
-        public LocalDateTime getUpdatedAt() {
-            return updatedAt;
-        }
+    public boolean isCanUploadEvidence() {
+        return canUploadEvidence;
+    }
 
-        public void setUpdatedAt(LocalDateTime updatedAt) {
-            this.updatedAt = updatedAt;
-        }
-}
+    public void setCanUploadEvidence(boolean canUploadEvidence) {
+        this.canUploadEvidence = canUploadEvidence;
+    }
+} 
+       

@@ -43,9 +43,7 @@ class AuthService {
     await csrfService.init()
 
     const res = await csrfService.fetch(`${this.AUTH_BASE}/login`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload),
+      method: 'POST', credentials: 'include', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload),
     })
 
     if (!res.ok) {
@@ -56,8 +54,9 @@ class AuthService {
 
       throw new Error(await readErrorMessage(res, fallback))
     }
-
-    return (await res.json()) as CurrentUserResponse
+    const body = (await res.json()) as CurrentUserResponse
+    window.dispatchEvent(new Event('auth-changed'));
+    return body
   }
 
   async fetchCurrentUser(): Promise<CurrentUserResponse> {

@@ -16,19 +16,30 @@ export function useCurrentUser() {
   useEffect(() => {
     let active = true
 
-    void authService.fetchCurrentUser()
-      .then((response) => {
+    const load = async () => {
+      try {
+        const response = await authService.fetchCurrentUser()
         if (active) setUser(response)
-      })
-      .catch(() => {
+      } catch {
         if (active) setUser(anonymousUser)
-      })
-      .finally(() => {
+      } finally {
         if (active) setLoading(false)
-      })
+      }
+    }
+
+    load()
+
+    const onAuthChanged = () => {
+      void authService.fetchCurrentUser()
+        .then((resp) => { if (active) setUser(resp) })
+        .catch(() => { if (active) setUser(anonymousUser) })
+    }
+
+    window.addEventListener('auth-changed', onAuthChanged)
 
     return () => {
       active = false
+      window.removeEventListener('auth-changed', onAuthChanged)
     }
   }, [])
 

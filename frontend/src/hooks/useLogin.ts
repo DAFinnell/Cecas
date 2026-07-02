@@ -38,13 +38,14 @@ export function useLogin() {
     try {
       await authService.login({
         email: normalizedEmail,
-        password,
+        password
       })
+
 
       setSuccess(true)
       await new Promise((resolve) => setTimeout(resolve, 500))
 
-      navigate('/')
+      navigate('/student-dashboard')
     } catch (err) {
       if (err instanceof Error) {
         setError(err.message)

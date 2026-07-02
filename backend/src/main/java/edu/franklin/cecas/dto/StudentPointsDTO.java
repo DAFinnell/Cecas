@@ -10,9 +10,10 @@ public class StudentPointsDTO {
 
     public StudentPointsDTO() {}
     public StudentPointsDTO(int issued, int pending, int available) { 
-        this.issued=issued; 
-        this.pending=pending; 
-        this.available=available; 
+        this.issued = issued; 
+        this.pending = pending; 
+        this.available = available; 
+
     }
     public int getIssued() {
         return issued;

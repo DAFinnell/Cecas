@@ -1,6 +1,7 @@
 ﻿import { type FormEvent, useEffect, useMemo, useState } from 'react'
 import extraCreditRequestService from '../services/ExtraCreditRequestService'
 import type { CategoryOption, CourseOption, StudentPointsSummary } from '../types/extraCredit.types'
+import { useNavigate } from 'react-router-dom'
 
 const POINT_CAP = 50
 const MIN_DESCRIPTION_LENGTH = 15
@@ -10,6 +11,7 @@ function formatCourse(course: CourseOption) {
 }
 
 export default function NewExtraCreditRequestPage() {
+  const navigate = useNavigate()
   const [courses, setCourses] = useState<CourseOption[]>([])
   const [categories, setCategories] = useState<CategoryOption[]>([])
   const [courseId, setCourseId] = useState('')
@@ -37,8 +39,11 @@ export default function NewExtraCreditRequestPage() {
   )
 
   const trimmedDescription = description.trim()
-  const newRequestPoints = selectedCategory?.defaultPoints ?? 0
-  const projectedTotal = pointsSummary.issued + pointsSummary.pending + newRequestPoints
+  const issued = Number(pointsSummary?.issued ?? 0)
+  const pendingPts = Number(pointsSummary?.pending ?? 0)
+  const newRequestPoints = Number(selectedCategory?.defaultPoints ?? 0)
+  const projectedTotal = issued + pendingPts + newRequestPoints
+  const availablePts = Number(pointsSummary?.available ?? Math.max(0, POINT_CAP - issued - pendingPts))
   const exceedsPointCap = projectedTotal > POINT_CAP
   const descriptionTooShort =
     trimmedDescription.length > 0 && trimmedDescription.length < MIN_DESCRIPTION_LENGTH
@@ -124,6 +129,7 @@ export default function NewExtraCreditRequestPage() {
       setCategoryId('')
       setDescription('')
       await refreshPointSummary()
+      navigate('/student-dashboard', { replace: true})
     } catch (error) {
       setSubmitError(error instanceof Error ? error.message : 'Unable to submit request.')
     } finally {
@@ -292,15 +298,15 @@ export default function NewExtraCreditRequestPage() {
           <dl className="space-y-3 text-sm">
             <div className="flex justify-between gap-4">
               <dt className="text-slate-600">Earned</dt>
-              <dd className="font-semibold text-slate-950">{pointsSummary.issued}</dd>
+              <dd className="font-semibold text-slate-950">{issued}</dd>
             </div>
             <div className="flex justify-between gap-4">
               <dt className="text-slate-600">Pending</dt>
-              <dd className="font-semibold text-slate-950">{pointsSummary.pending}</dd>
+              <dd className="font-semibold text-slate-950">{pendingPts}</dd>
             </div>
             <div className="flex justify-between gap-4">
               <dt className="text-slate-600">Available</dt>
-              <dd className="font-semibold text-slate-950">{pointsSummary.available}</dd>
+              <dd className="font-semibold text-slate-950">{availablePts}</dd>
             </div>
             <div className="flex justify-between gap-4">
               <dt className="text-slate-600">This request</dt>
