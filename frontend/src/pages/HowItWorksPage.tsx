@@ -1,8 +1,10 @@
+import type { ReactElement } from "react"
+
 type Step = {
   number: string
   title: string
   description: string
-  icon: JSX.Element
+  icon: ReactElement
   colorClasses: string
 }
 
