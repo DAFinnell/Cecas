@@ -10,7 +10,7 @@ export function useLogin() {
   const [email, setEmail] = useState(
     () => location.state?.email ?? ''
   );
-  
+
   const [password, setPassword] = useState('')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
@@ -36,16 +36,26 @@ export function useLogin() {
     setLoading(true)
 
     try {
-      await authService.login({
+
+      const user = await authService.login({
         email: normalizedEmail,
         password
-      })
-
+      });
 
       setSuccess(true)
-      await new Promise((resolve) => setTimeout(resolve, 500))
+      await new Promise((resolve) => setTimeout(resolve, 500)) // allow success state to render before redirecting
 
-      navigate('/student-dashboard')
+      if (user.role === 'CHAIR') {
+        if (user.mustChangePassword) {
+
+          navigate('/chair/force-change-password')
+        } else {
+          navigate('/chair')
+        }
+      } else {
+        navigate('/student-dashboard')
+      }
+
     } catch (err) {
       if (err instanceof Error) {
         setError(err.message)

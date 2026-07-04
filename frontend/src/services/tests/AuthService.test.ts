@@ -12,6 +12,10 @@ vi.mock('../CsrfService', () => ({
 describe('AuthService', () => {
     beforeEach(() => {
         vi.clearAllMocks();
+
+        vi.stubGlobal('window', {
+            dispatchEvent: vi.fn(),
+        });
     });
 
     it('registers user successfully', async () => {

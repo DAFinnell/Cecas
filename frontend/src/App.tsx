@@ -12,6 +12,8 @@ import PrivacyPolicyPage from './pages/PrivacyPolicyPage'
 import RegisterPage from './pages/RegisterPage'
 import StudentPage from './pages/StudentPage'
 import CsrfInitializer from './components/CsrfInitializer'
+import ForceChangePasswordPage from './pages/ForceChangePasswordPage'
+import RequireChairPasswordChange from './app/RequireChairPasswordChange'
 
 export default function App() {
   return (
@@ -31,8 +33,17 @@ export default function App() {
           </Route>
 
           <Route element={<RequireRole allowedRoles={['CHAIR']} />}>
-            <Route path="chair-dashboard" element={<ChairPage />} />
+
+            <Route element={<RequireChairPasswordChange />}>
+              <Route path="chair" element={<ChairPage />} />
+            </Route>
+
+            <Route
+              path="chair/force-change-password"
+              element={<ForceChangePasswordPage />}
+            />
           </Route>
+
           <Route path="logout" element={<HomePage />} /> // needs changed
           <Route path="debug" element={<DebugPage />} />
           <Route path="*" element={<NotFoundPage />} />

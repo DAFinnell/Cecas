@@ -112,6 +112,8 @@ class AuthService {
       throw new Error(`Force change password failed (${res.status}): ${msg}`)
     }
 
+  
+    window.dispatchEvent(new Event('auth-changed'))
     return await res.text()
   }
 }
