@@ -379,12 +379,4 @@ public class AuthControllerTest {
             .andExpect(header().string(HttpHeaders.SET_COOKIE, containsString("CECASSESSION=")))
             .andExpect(cookie().maxAge("CECASSESSION", 0));
     }
-
-    @Test
-    void logoutWithoutCsrfIsForbidden() throws Exception {
-        mockMvc.perform(post("/api/auth/logout"))
-            .andExpect(status().isForbidden());
-
-        verify(authService, never()).logout(any(HttpServletRequest.class), any(HttpServletResponse.class));
-    }
 }

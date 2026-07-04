@@ -22,10 +22,8 @@ import edu.franklin.cecas.dto.RegisterRequest;
 import edu.franklin.cecas.exception.EmailAlreadyExistsException;
 import edu.franklin.cecas.exception.InvalidCredentialsException;
 import edu.franklin.cecas.repository.UserRepository;
-import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import jakarta.servlet.http.HttpSession;
 
 @Service
 @Transactional
@@ -101,24 +99,6 @@ public class AuthService {
             SecurityContextHolder.clearContext();
             throw new InvalidCredentialsException("Invalid email or password.");
         }
-    }
-
-    public void logout(HttpServletRequest httpRequest, HttpServletResponse httpResponse) {
-
-        HttpSession session = httpRequest.getSession(false);
-
-        if (session != null) {
-            session.invalidate();
-        }
-
-        SecurityContextHolder.clearContext();
-
-        Cookie cookie = new Cookie("CECASSESSION", "");
-        cookie.setPath("/");
-        cookie.setHttpOnly(true);
-        cookie.setMaxAge(0);
-
-        httpResponse.addCookie(cookie);
     }
 
     public CurrentUserResponse getCurrentUserResponse(Authentication authentication) {
