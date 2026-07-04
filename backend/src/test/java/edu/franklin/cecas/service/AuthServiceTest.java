@@ -29,7 +29,6 @@ import edu.franklin.cecas.exception.EmailAlreadyExistsException;
 import edu.franklin.cecas.exception.InvalidCredentialsException;
 import edu.franklin.cecas.repository.UserRepository;
 import edu.franklin.cecas.support.MySqlServiceTest;
-import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpSession;
 
 @MySqlServiceTest

@@ -47,8 +47,7 @@ export default function App() {
               element={<ForceChangePasswordPage />}
             />
           </Route>
-
-          <Route path="logout" element={<HomePage />} /> // needs changed
+          <Route path="logout" element={<HomePage />} /> 
           <Route path="debug" element={<DebugPage />} />
           <Route path="*" element={<NotFoundPage />} />
         </Route>

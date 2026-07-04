@@ -79,6 +79,7 @@ class AuthService {
     if (!res.ok) {
       throw new Error(`Logout failed (${res.status})`)
     }
+    window.dispatchEvent(new Event('auth-changed'))
   }
 
   async changePassword(payload: ChangePasswordRequest): Promise<string> {

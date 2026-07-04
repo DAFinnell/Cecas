@@ -9,15 +9,21 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
+import org.springframework.test.context.bean.override.mockito.MockitoSpyBean;
 import org.springframework.test.web.servlet.MockMvc;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors;
+import org.springframework.security.web.context.SecurityContextRepository;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.cookie;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user;
@@ -44,6 +50,9 @@ public class AuthControllerTest {
 
     @Autowired
     private MockMvc mockMvc;
+
+    @MockitoSpyBean
+    private SecurityContextRepository securityContextRepository;
 
     private final ObjectMapper objectMapper = new ObjectMapper();
 
@@ -360,5 +369,22 @@ public class AuthControllerTest {
                 .andExpect(jsonPath("$.errors.fullName").exists());
 
         verify(authService, never()).register(any(RegisterRequest.class));
+    }
+
+    @Test
+    void logoutEndpointReturns204AndClearsCookie() throws Exception {
+        mockMvc.perform(post("/api/auth/logout")
+                .with(SecurityMockMvcRequestPostProcessors.csrf()))
+            .andExpect(status().isNoContent())
+            .andExpect(header().string(HttpHeaders.SET_COOKIE, containsString("CECASSESSION=")))
+            .andExpect(cookie().maxAge("CECASSESSION", 0));
+    }
+
+    @Test
+    void logoutWithoutCsrfIsForbidden() throws Exception {
+        mockMvc.perform(post("/api/auth/logout"))
+            .andExpect(status().isForbidden());
+
+        verify(authService, never()).logout(any(HttpServletRequest.class), any(HttpServletResponse.class));
     }
 }
