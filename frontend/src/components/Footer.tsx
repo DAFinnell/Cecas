@@ -6,8 +6,12 @@ export default function Footer() {
       <p>© 2026 CECAS</p>
 
       <nav aria-label="Footer navigation" className="mt-3 flex flex-wrap justify-center gap-4">
-        <span className="text-slate-400">About</span>
-        <span className="text-slate-400">Contact</span>
+        <Link to="/about" className="transition hover:text-sky-700">
+          About
+        </Link>
+        <Link to="/contact" className="transition hover:text-sky-700">
+          Contact
+        </Link>
         <Link to="/privacy-policy" className="transition hover:text-sky-700">
           Privacy Policy
         </Link>
