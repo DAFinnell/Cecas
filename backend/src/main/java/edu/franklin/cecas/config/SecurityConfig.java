@@ -57,6 +57,7 @@ public class SecurityConfig {
                         .deleteCookies("CECASSESSION") // must match application.properties
                         .addLogoutHandler(new HeaderWriterLogoutHandler(
                                 new ClearSiteDataHeaderWriter(ClearSiteDataHeaderWriter.Directive.COOKIES)))
+                        .logoutSuccessHandler(new HttpStatusReturningLogoutSuccessHandler(HttpStatus.NO_CONTENT))
                         .permitAll())
                 .httpBasic(httpBasic -> httpBasic.disable());
 

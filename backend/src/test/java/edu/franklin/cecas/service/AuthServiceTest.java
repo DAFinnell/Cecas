@@ -256,40 +256,4 @@ public class AuthServiceTest {
         assertNull(httpRequest.getSession(false));
         assertNull(SecurityContextHolder.getContext().getAuthentication());
     }
-
-    @Test
-    void testLogoutInvalideSession() {
-        createAndSaveStudent("derek@derek.com", "TestPass1!");
-
-        LoginRequest request = createLoginRequest();
-        MockHttpServletRequest httpRequest = new MockHttpServletRequest();
-        MockHttpServletResponse httpResponse = new MockHttpServletResponse();
-
-        authService.login(request, httpRequest, httpResponse);
-
-        HttpSession session = httpRequest.getSession(false);
-        assertNotNull(session);
-
-        authService.logout(httpRequest, httpResponse);
-
-        assertFalse(session.getAttributeNames().hasMoreElements());
-    }
-
-    @Test
-    void testLogoutAddsExpiredSessionCookie() {
-        MockHttpServletRequest httpRequest = new MockHttpServletRequest();
-        MockHttpServletResponse httpResponse = new MockHttpServletResponse();
-
-        httpRequest.getSession();
-
-        authService.logout(httpRequest, httpResponse);
-
-        Cookie cookie = httpResponse.getCookie("CECASSESSION");
-
-        assertNotNull(cookie);
-        assertEquals("", cookie.getValue());
-        assertEquals(0, cookie.getMaxAge());
-        assertEquals("/", cookie.getPath());
-        assertTrue(cookie.isHttpOnly());
-    }
 }

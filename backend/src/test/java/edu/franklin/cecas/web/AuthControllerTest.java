@@ -119,6 +119,14 @@ public class AuthControllerTest {
     }
 
     @Test
+    void testLogoutUser() throws Exception {
+
+        mockMvc.perform(post("/api/auth/logout")
+                .with(csrf()))
+                .andExpect(status().isNoContent());
+    }
+
+    @Test
     void testGetCurrentUserReturnsAnonymousWhenUnauthenticated() throws Exception {
         CurrentUserResponse response = new CurrentUserResponse(
                 false,

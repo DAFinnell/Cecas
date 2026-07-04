@@ -60,20 +60,6 @@ public class AuthController {
     }
 
     /**
-     * POST /api/auth/logout
-     * Authenticated user logs out and clears server session and session cookie.
-     */
-    @PostMapping("/logout")
-    public ResponseEntity<Void> logoutUser(
-        HttpServletRequest httpRequest,
-        HttpServletResponse httpResponse) {
-            
-        authService.logout(httpRequest, httpResponse);
-
-        return ResponseEntity.noContent().build();
-        }
-
-    /**
      * GET /api/auth/csrf
      * Give csrf token to front end.
      */
