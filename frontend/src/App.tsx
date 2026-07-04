@@ -13,6 +13,7 @@ import RegisterPage from './pages/RegisterPage'
 import StudentPage from './pages/StudentPage'
 import CsrfInitializer from './components/CsrfInitializer'
 import ContactPage from './pages/ContactPage'
+import AboutPage from './pages/AboutPage'
 import ForceChangePasswordPage from './pages/ForceChangePasswordPage'
 import RequireChairPasswordChange from './app/RequireChairPasswordChange'
 
@@ -24,6 +25,7 @@ export default function App() {
         <Route path="/" element={<AppLayout />}>
           <Route index element={<HomePage />} />
           <Route path="contact" element={<ContactPage />} />
+          <Route path="about" element={<AboutPage />} />
           <Route path="login" element={<LoginPage />} />
           <Route path="register" element={<RegisterPage />} />
           <Route path="privacy-policy" element={<PrivacyPolicyPage />} />
