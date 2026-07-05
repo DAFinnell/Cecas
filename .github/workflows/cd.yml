@@ -1,0 +1,41 @@
+name: CECAS Release Build
+
+on:
+  workflow_dispatch:   # manual only
+
+jobs:
+  release-build:
+    name: Production Build
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Download backend JAR artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: backend-jar
+          path: backend/target
+
+      - name: Download frontend dist artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: frontend-dist
+          path: frontend/dist
+
+      - name: Prepare production environment
+        run: cp .env.prod.local.example .env
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build production Docker images
+        run: docker compose -f docker-compose.prod.yml build
+
+      - name: Upload production package
+        run: |
+          mkdir -p production/backend production/frontend
+          cp backend/target/*.jar production/backend/ || true
+          cp -r frontend/dist production/frontend/ || true
+        
