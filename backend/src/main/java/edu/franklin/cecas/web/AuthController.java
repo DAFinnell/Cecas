@@ -8,13 +8,14 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+
 import edu.franklin.cecas.dto.CurrentUserResponse;
+import edu.franklin.cecas.dto.LoginRequest;
+import edu.franklin.cecas.dto.RegisterRequest;
+import edu.franklin.cecas.service.AuthService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
-import edu.franklin.cecas.service.AuthService;
-import edu.franklin.cecas.dto.RegisterRequest;
-import edu.franklin.cecas.dto.LoginRequest;
 
 @RestController
 @RequestMapping("/api/auth")
