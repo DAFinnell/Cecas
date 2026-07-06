@@ -1,4 +1,4 @@
-name: CECAS CI/CD Pipeline
+name: CECAS CI Workflow
 
 # Trigger workflow on push to develop branch or manually
 on:
@@ -10,7 +10,7 @@ on:
 
 jobs:
   build-backend:
-    name: Backend Build & Tests
+    name: Backend CI
     runs-on: ubuntu-latest
 
     steps:
@@ -28,6 +28,10 @@ jobs:
         working-directory: ./backend
         run: chmod +x mvnw
 
+      - name: Run backend tests
+        working-directory: ./backend
+        run: ./mvnw -B test 
+        
       - name: Build backend (package)
         working-directory: ./backend
         run: |
@@ -35,7 +39,7 @@ jobs:
           ./mvnw -B clean package -DskipTests
 
       - name: Upload backend JAR artifact
-        if: always()
+        if: success()
         uses: actions/upload-artifact@v4
         with:
           name: backend-jar
@@ -43,7 +47,7 @@ jobs:
           retention-days: 7
 
   build-frontend:
-    name: Build Frontend (React + Vite)
+    name: Frontend CI
     runs-on: ubuntu-latest
 
     steps:
@@ -68,7 +72,7 @@ jobs:
           npm run build --if-present
 
       - name: Upload frontend dist artifact
-        if: always()
+        if: success()
         uses: actions/upload-artifact@v4
         with:
           name: frontend-dist
@@ -76,7 +80,7 @@ jobs:
           retention-days: 7
 
   docker-deploy:
-    name: Build Docker images & Deploy with docker-compose
+    name: Validate Docker Compose
     runs-on: ubuntu-latest
     needs: [build-backend, build-frontend]
 
@@ -96,18 +100,22 @@ jobs:
           name: frontend-dist
           path: frontend/dist
 
-      - name: Prepare .env from .env.example
+      - name: Prepare .env for compose
         run: |
           set -euo pipefail
-          if [ -f .env.example ]; then
+          if [ -f .env.prod.local.example ]; then
+            cp .env.prod.local.example .env
+            chmod 600 .env || true
+            echo ".env created from .env.prod.local.example"
+          elif [ -f .env.example ]; then
             cp .env.example .env
             chmod 600 .env || true
             echo ".env created from .env.example"
           else
-            echo ".env.example not found; failing"
+            echo "No env example file found; failing"
             exit 1
           fi
-
+          
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
@@ -122,35 +130,16 @@ jobs:
           echo "frontend/dist contents:"
           ls -la frontend/dist || true
 
+      - name: Validate docker-compose config
+        run: |
+          set -euo pipefail
+          docker compose config --quiet
+          echo "docker-compose config is valid"
+          
       - name: Build images via docker-compose
         run: |
           set -euo pipefail
-          docker compose build --pull --no-cache
-
-      - name: Start services
-        run: |
-          set -euo pipefail
-          docker compose up -d
-
-      - name: Wait for backend health
-        run: |
-          set -euo pipefail
-          for i in {1..24}; do
-            if curl -sSf http://localhost:8080/actuator/health >/dev/null 2>&1; then
-              echo "backend healthy"; exit 0
-            fi
-            echo "waiting for backend ($i/24)..."
-            sleep 5
-          done
-          echo "backend did not become healthy; dumping logs"
-          docker compose logs backend --no-color | sed -n '1,300p' || true
-          exit 1
-
-      - name: Tear down services (always)
-        if: always()
-        run: |
-          set -euo pipefail
-          docker compose down --volumes --remove-orphans
+          docker compose build 
 
   summary:
     name: Build Summary
