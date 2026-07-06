@@ -1,0 +1,10 @@
+app:
+  seed:
+    enabled: false
+
+server:
+  forward-headers-strategy: framework
+
+logging:
+  level:
+    root: WARN

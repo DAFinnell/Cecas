@@ -110,10 +110,34 @@ To stop services:
 docker compose down
 ```
 
-To reset services and delete local database data (should not be needed often):
+For a full local database rebuild
 ```bash
-docker compose down -v
+make reset-db
 ```
+
+### Seed Data
+A clean Docker startup will run Flyway migrations first and then load the seed files when startup seeding is enabled.
+
+The backend reads seed files from the repository `seed/` directory:
+- `courses.csv`
+- `categories.csv`
+- `chairs.csv`
+
+Important behavior:
+- Editing a CSV file by itself does not change the running database.
+- Seed changes are only applied when the backend starts with seeding enabled, or when you run the manual reseed command.
+- The seed directory is mounted into the backend container as read-only, so seed file updates do not require Java code changes or rebuilding the backend image.
+
+To apply updated seed files without resetting the database:
+```bash
+make seed
+```
+Use this command for normal reseeding after editing a seed CSV.
+To completely reset the local database and rebuild it from Flyway migrations plus the current seed files:
+```bash
+make reset-db
+```
+make reset-db is destructive and is only meant for local development. It is not the normal way to apply seed file changes.
 
 ## Git Workflow
 Follow these steps to ensure your local code is synchronized with the team's progress.
@@ -143,3 +167,16 @@ git push -u origin feature/your-ticket-name
 ```
 ## Open Pull Request into develop on GitHub
 Go to the GitHub repository website to open a Pull Request (PR) from your feature branch into develop for review.
+
+## Testing Notes
+We are testing against the MySQL database rather than using in memory for consistency and expected behavior.
+We have created some custom annotations for testing to streamline things. Use:
+- @MySqlDataJpaTest for repository/entity tests
+- @MySqlServiceTest for service-layer tests with real Spring + MySQL
+- @MySqlMockMvcTest for auth/web integration tests with real Spring + MySQL + MockMvc
+- @WebMvcTest for lightweight controller-slice tests
+
+## Documentation
+Design and implementation notes for all shared project subsystems.
+
+- [Seed System Overview](docs/seed-system.md)

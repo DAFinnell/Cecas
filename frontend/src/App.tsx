@@ -1,25 +1,57 @@
 import { Route, Routes } from 'react-router-dom'
 import AppLayout from './app/AppLayout'
+import RequireRole from './app/RequireRole'
 import ChairPage from './pages/ChairPage'
 import DebugPage from './pages/DebugPage'
 import HomePage from './pages/HomePage'
+import HowItWorksPage from './pages/HowItWorksPage'
 import LoginPage from './pages/LoginPage'
+import NewExtraCreditRequestPage from './pages/NewExtraCreditRequestPage'
 import NotFoundPage from './pages/NotFoundPage'
+import PrivacyPolicyPage from './pages/PrivacyPolicyPage'
 import RegisterPage from './pages/RegisterPage'
 import StudentPage from './pages/StudentPage'
+import CsrfInitializer from './components/CsrfInitializer'
+import ContactPage from './pages/ContactPage'
+import AboutPage from './pages/AboutPage'
+import ForceChangePasswordPage from './pages/ForceChangePasswordPage'
+import RequireChairPasswordChange from './app/RequireChairPasswordChange'
 
 export default function App() {
   return (
-    <Routes>
-      <Route path="/" element={<AppLayout />}>
-        <Route index element={<HomePage />} />
-        <Route path="login" element={<LoginPage />} />
-        <Route path="register" element={<RegisterPage />} />
-        <Route path="student" element={<StudentPage />} />
-        <Route path="chair" element={<ChairPage />} />
-        <Route path="debug" element={<DebugPage />} />
-        <Route path="*" element={<NotFoundPage />} />
-      </Route>
-    </Routes>
+    <>
+      <CsrfInitializer />
+      <Routes>
+        <Route path="/" element={<AppLayout />}>
+          <Route index element={<HomePage />} />
+          <Route path="contact" element={<ContactPage />} />
+          <Route path="about" element={<AboutPage />} />
+          <Route path="login" element={<LoginPage />} />
+          <Route path="register" element={<RegisterPage />} />
+          <Route path="privacy-policy" element={<PrivacyPolicyPage />} />
+          <Route path="how-it-works" element={<HowItWorksPage />} />
+
+          <Route element={<RequireRole allowedRoles={['STUDENT']} />}>
+            <Route path="student-dashboard" element={<StudentPage />} />
+            <Route path="create-request" element={<NewExtraCreditRequestPage />} />
+          </Route>
+
+          <Route element={<RequireRole allowedRoles={['CHAIR']} />}>
+
+            <Route element={<RequireChairPasswordChange />}>
+              <Route path="chair" element={<ChairPage />} />
+            </Route>
+
+            <Route
+              path="chair/force-change-password"
+              element={<ForceChangePasswordPage />}
+            />
+          </Route>
+          <Route path="logout" element={<HomePage />} /> 
+          <Route path="debug" element={<DebugPage />} />
+          <Route path="*" element={<NotFoundPage />} />
+        </Route>
+      </Routes>
+    </>
   )
 }

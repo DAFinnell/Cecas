@@ -1,0 +1,14 @@
+package edu.franklin.cecas.repository;
+
+import java.util.List;
+import java.util.Optional;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.stereotype.Repository;
+import edu.franklin.cecas.domain.Category;
+
+@Repository
+public interface CategoryRepository extends JpaRepository<Category, Integer> {
+    Optional<Category> findByCategoryNameIgnoreCase(String categoryName);
+
+    List<Category> findAllByIsActiveTrue();
+}
