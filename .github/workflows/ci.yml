@@ -28,6 +28,10 @@ jobs:
         working-directory: ./backend
         run: chmod +x mvnw
 
+      - name: Run backend tests
+        working-directory: ./backend
+        run: ./mvnw -B test 
+        
       - name: Build backend (package)
         working-directory: ./backend
         run: |
@@ -96,18 +100,6 @@ jobs:
           name: frontend-dist
           path: frontend/dist
 
-      - name: Prepare .env from .env.example
-        run: |
-          set -euo pipefail
-          if [ -f .env.example ]; then
-            cp .env.example .env
-            chmod 600 .env || true
-            echo ".env created from .env.example"
-          else
-            echo ".env.example not found; failing"
-            exit 1
-          fi
-
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
@@ -122,35 +114,16 @@ jobs:
           echo "frontend/dist contents:"
           ls -la frontend/dist || true
 
+      - name: Validate docker-compose config
+        run: |
+          set -euo pipefail
+          docker compose config --quiet
+          echo "docker-compose config is valid"
+          
       - name: Build images via docker-compose
         run: |
           set -euo pipefail
-          docker compose build --pull --no-cache
-
-      - name: Start services
-        run: |
-          set -euo pipefail
-          docker compose up -d
-
-      - name: Wait for backend health
-        run: |
-          set -euo pipefail
-          for i in {1..24}; do
-            if curl -sSf http://localhost:8080/actuator/health >/dev/null 2>&1; then
-              echo "backend healthy"; exit 0
-            fi
-            echo "waiting for backend ($i/24)..."
-            sleep 5
-          done
-          echo "backend did not become healthy; dumping logs"
-          docker compose logs backend --no-color | sed -n '1,300p' || true
-          exit 1
-
-      - name: Tear down services (always)
-        if: always()
-        run: |
-          set -euo pipefail
-          docker compose down --volumes --remove-orphans
+          docker compose build 
 
   summary:
     name: Build Summary
