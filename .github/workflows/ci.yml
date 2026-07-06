@@ -100,6 +100,22 @@ jobs:
           name: frontend-dist
           path: frontend/dist
 
+      - name: Prepare .env for compose
+        run: |
+          set -euo pipefail
+          if [ -f .env.prod.local.example ]; then
+            cp .env.prod.local.example .env
+            chmod 600 .env || true
+            echo ".env created from .env.prod.local.example"
+          elif [ -f .env.example ]; then
+            cp .env.example .env
+            chmod 600 .env || true
+            echo ".env created from .env.example"
+          else
+            echo "No env example file found; failing"
+            exit 1
+          fi
+          
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
