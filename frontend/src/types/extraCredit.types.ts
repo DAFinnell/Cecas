@@ -26,20 +26,23 @@ export type ExtraCreditRequestStatus =
   | 'CLOSED'
   | 'APPROVED'
 
-export type ExtraCreditRequestResponse = {
+export type StudentRequestSummary = {
   id: number
-  description: string
-  course: CourseOption
-  category: CategoryOption
+  courseCode: string
+  term: string
+  section: string
+  categoryName: string
   status: ExtraCreditRequestStatus
+  defaultPoints: number
   awardedPoints: number | null
   updatedAt: string | null
-  // for dashboard
-  courseCode: string ;
-  term: string ;
-  section: string;
-  defaultPoints: number;
-  categoryName: string;
+}
+
+export type StudentRequestDetail = StudentRequestSummary & {
+  categoryDescription: string
+  description: string
+  createdAt: string | null
+  chairFeedback: string | null
 }
 
 export type CreateExtraCreditRequestPayload = {

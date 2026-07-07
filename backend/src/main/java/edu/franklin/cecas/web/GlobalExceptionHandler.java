@@ -18,6 +18,7 @@ import edu.franklin.cecas.exception.PasswordChangeNotRequiredException;
 import edu.franklin.cecas.exception.PasswordMismatchException;
 import edu.franklin.cecas.exception.PointCapExceededException;
 import edu.franklin.cecas.exception.RegistrationNotAllowedException;
+import edu.franklin.cecas.exception.ResourceNotFoundException;
 import edu.franklin.cecas.exception.UnauthorizedRoleException;
 
 @RestControllerAdvice
@@ -125,6 +126,15 @@ public class GlobalExceptionHandler {
         problem.setTitle("Point cap exceeded");
         problem.setDetail(ex.getMessage());
         problem.setProperty("errorCode", "POINT_CAP_EXCEEDED");
+        return problem;
+    }
+
+    @ExceptionHandler(ResourceNotFoundException.class)
+    public ProblemDetail handleResourceNotFound(ResourceNotFoundException ex) {
+        ProblemDetail problem = ProblemDetail.forStatus(HttpStatus.NOT_FOUND);
+        problem.setTitle("Not Found");
+        problem.setDetail(ex.getMessage());
+        problem.setProperty("errorCode", "RESOURCE_NOT_FOUND");
         return problem;
     }
 

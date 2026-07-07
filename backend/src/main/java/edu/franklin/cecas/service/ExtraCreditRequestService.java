@@ -13,7 +13,8 @@ import edu.franklin.cecas.domain.ExtraCreditRequestStatus;
 import edu.franklin.cecas.domain.User;
 import edu.franklin.cecas.domain.UserRole;
 import edu.franklin.cecas.dto.ExtraCreditRequestCreateDTO;
-import edu.franklin.cecas.dto.ExtraCreditResponseDTO;
+import edu.franklin.cecas.dto.StudentRequestDetailDTO;
+import edu.franklin.cecas.dto.StudentRequestSummaryDTO;
 import edu.franklin.cecas.exception.InvalidExtraCreditRequestException;
 import edu.franklin.cecas.exception.UnauthorizedRoleException;
 import edu.franklin.cecas.repository.CategoryRepository;
@@ -46,7 +47,7 @@ public class ExtraCreditRequestService {
 
     // Create and persist a new Extra Credit Request.
     @Transactional
-    public ExtraCreditResponseDTO createRequest(String studentEmail, ExtraCreditRequestCreateDTO dto) {
+    public StudentRequestDetailDTO createRequest(String studentEmail, ExtraCreditRequestCreateDTO dto) {
         Course course = courseRepository.findById(dto.getCourseId())
                 .orElseThrow(() -> new InvalidExtraCreditRequestException("Course not found with ID: " + dto.getCourseId()));
 
@@ -71,16 +72,16 @@ public class ExtraCreditRequestService {
         request.setStatus(ExtraCreditRequestStatus.PENDING);
 
         ExtraCreditRequest savedRequest = requestRepository.save(request);
-        return new ExtraCreditResponseDTO(savedRequest);
+        return new StudentRequestDetailDTO(savedRequest);
     }
 
     // Get a list of all requests for a student
-    public List<ExtraCreditResponseDTO> getRequestsForStudent(String studentEmail) {
+    public List<StudentRequestSummaryDTO> getRequestsForStudent(String studentEmail) {
         User student = userRepository.findByEmailIgnoreCase(studentEmail)
                 .orElseThrow(() -> new UsernameNotFoundException("Student not found with Email: " + studentEmail));
 
         return requestRepository.findByStudent_Id(student.getId()).stream()
-                .map(ExtraCreditResponseDTO::new)
+                .map(StudentRequestSummaryDTO::new)
                 .collect(Collectors.toList());
     }
 }

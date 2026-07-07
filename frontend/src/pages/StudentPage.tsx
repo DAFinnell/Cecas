@@ -2,13 +2,14 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import type {  UserProfileResponse, } from "../types/user.types";
-import StudentWorkflowService from "../services/StudentWorkflowService";
-import type { StudentPointsSummary, ExtraCreditRequestResponse } from "../types/extraCredit.types";
+import userService from '../services/UserService'
+import extraCreditRequestService from '../services/ExtraCreditRequestService'
+import type { StudentPointsSummary, StudentRequestSummary } from '../types/extraCredit.types'
 
 export default function StudentPage() {
   const [profile, setProfile] = useState<UserProfileResponse | null>(null);
   const [points, setPoints] = useState<StudentPointsSummary | null>(null);
-  const [requests, setRequests] = useState<ExtraCreditRequestResponse[]>([]);
+  const [requests, setRequests] = useState<StudentRequestSummary[]>([]);
   const [selectedTerm, setSelectedTerm] = useState<string>('');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -21,9 +22,9 @@ export default function StudentPage() {
       try {
         // these are async
         const [profile, points, requests] = await Promise.all([
-          StudentWorkflowService.getUserProfile().catch(() => null),
-          StudentWorkflowService.getMyPoints().catch(() => null),
-          StudentWorkflowService.getRequests().catch(() => []),
+          userService.getUserProfile().catch(() => null),
+          userService.getMyPoints().catch(() => null),
+          extraCreditRequestService.getStudentRequests().catch(() => []),
         ]);
 
         if (!active) return;

@@ -1,6 +1,7 @@
 package edu.franklin.cecas.repository;
 
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 
@@ -21,4 +22,6 @@ public interface ExtraCreditRequestRepository extends JpaRepository<ExtraCreditR
     List<ExtraCreditRequest> findByStudent_IdAndStatus(Integer userId, ExtraCreditRequestStatus status);
 
     List<ExtraCreditRequest> findByChair_IdAndStatus(Integer chairId, ExtraCreditRequestStatus status);
+
+    Optional<ExtraCreditRequest> findByIdAndStudent_Id(Integer id, Integer studentId);
 }
