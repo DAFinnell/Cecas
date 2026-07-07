@@ -24,7 +24,7 @@ import edu.franklin.cecas.support.MySqlServiceTest;
 
 @MySqlServiceTest
 public class ExtraCreditRequestServiceTest {
-    
+
     @Autowired
     private UserRepository userRepository;
 
@@ -46,7 +46,8 @@ public class ExtraCreditRequestServiceTest {
         user.setFullName(name);
         user.setEmail(email);
         user.setPassword("password");
-        user.setStudentId(studentId); //Generates a unique ID, without it the testing rewrites it with the new student for testing A and B students
+        user.setStudentId(studentId); // Generates a unique ID, without it the testing rewrites it with the new
+                                      // student for testing A and B students
         user.setProgram("Computer Science");
         user.setIsActive(true);
         user.setMustChangePassword(false);
@@ -57,10 +58,10 @@ public class ExtraCreditRequestServiceTest {
 
     private Course createTestCourse() {
         Course course = new Course();
-        
+
         course.setCourseCode("COMP-201");
-        course.setSection("B01");
-        course.setTerm("Summer 2026");
+        course.setSection("H1WW");
+        course.setTerm("26/SU");
 
         return courseRepository.save(course);
     }
@@ -89,7 +90,12 @@ public class ExtraCreditRequestServiceTest {
         ExtraCreditResponseDTO response = extraCreditRequestService.createRequest(student.getEmail(), dto);
 
         assertNotNull(response);
+        assertNotNull(response.getId());
         assertEquals(ExtraCreditRequestStatus.PENDING, response.getStatus());
+
+        var savedRequest = extraCreditRequestRepository.findById(response.getId()).orElseThrow();
+        assertEquals(ExtraCreditRequestStatus.PENDING, savedRequest.getStatus());
+        assertEquals("I completed the extra assignment", savedRequest.getDescription());
     }
 
     @Test
@@ -106,9 +112,8 @@ public class ExtraCreditRequestServiceTest {
         dto.setCategoryId(category.getCategoryId());
         dto.setDescription("Attempt by non-student");
 
-        RuntimeException ex = assertThrows(RuntimeException.class, () -> 
-            extraCreditRequestService.createRequest(faculty.getEmail(), dto)
-        );
+        RuntimeException ex = assertThrows(RuntimeException.class,
+                () -> extraCreditRequestService.createRequest(faculty.getEmail(), dto));
 
         assertEquals("Unauthorized: User is not a student", ex.getMessage());
     }
@@ -146,28 +151,116 @@ public class ExtraCreditRequestServiceTest {
     }
 
     /**
-     * Tests that applications for students by UserId are successful still while StudentId is null.
+     * Tests that applications for students by UserId are successful still while
+     * StudentId is null.
      */
     @Test
     public void testGetRequestsForStudentWorksWhenBusinessStudentIdIsNull() {
         User studentA = createTestStudent("Student A", "studentA-null@test.com", null);
-    User studentB = createTestStudent("Student B", "studentB-null@test.com", null);
-    Course course = createTestCourse();
-    Category category = createTestCategory();
+        User studentB = createTestStudent("Student B", "studentB-null@test.com", null);
+        Course course = createTestCourse();
+        Category category = createTestCategory();
 
-    ExtraCreditRequestCreateDTO dto = new ExtraCreditRequestCreateDTO();
-    dto.setCourseId(course.getCourseId());
-    dto.setCategoryId(category.getCategoryId());
-    dto.setDescription("Student A Null-ID Request");
+        ExtraCreditRequestCreateDTO dto = new ExtraCreditRequestCreateDTO();
+        dto.setCourseId(course.getCourseId());
+        dto.setCategoryId(category.getCategoryId());
+        dto.setDescription("Student A Null-ID Request");
 
-    extraCreditRequestService.createRequest(studentA.getEmail(), dto);
+        extraCreditRequestService.createRequest(studentA.getEmail(), dto);
 
-    List<ExtraCreditResponseDTO> requestsA =
-            extraCreditRequestService.getRequestsForStudent(studentA.getEmail());
-    assertEquals(1, requestsA.size());
+        List<ExtraCreditResponseDTO> requestsA = extraCreditRequestService.getRequestsForStudent(studentA.getEmail());
+        assertEquals(1, requestsA.size());
 
-    List<ExtraCreditResponseDTO> requestsB =
-            extraCreditRequestService.getRequestsForStudent(studentB.getEmail());
-    assertTrue(requestsB.isEmpty());
+        List<ExtraCreditResponseDTO> requestsB = extraCreditRequestService.getRequestsForStudent(studentB.getEmail());
+        assertTrue(requestsB.isEmpty());
+    }
+
+    /**
+     * Verifies that getRequestsForStudent method returns a dto with the expected
+     * fields.
+     */
+    @Test
+    public void testGetRequestsForStudentReturnsExpectedFields() {
+        User student = createTestStudent("Derek Finnell", "derek@derek.com", 4001);
+        Course course = createTestCourse();
+        Category category = createTestCategory();
+
+        ExtraCreditRequestCreateDTO dto = new ExtraCreditRequestCreateDTO();
+        dto.setCourseId(course.getCourseId());
+        dto.setCategoryId(category.getCategoryId());
+        dto.setDescription("Testing mapping for dto fields");
+
+        extraCreditRequestService.createRequest(student.getEmail(), dto);
+
+        List<ExtraCreditResponseDTO> requests = extraCreditRequestService.getRequestsForStudent(student.getEmail());
+
+        assertEquals(1, requests.size());
+
+        ExtraCreditResponseDTO response = requests.get(0);
+        assertEquals("COMP-201", response.getCourseCode());
+        assertEquals("H1WW", response.getSection());
+        assertEquals("26/SU", response.getTerm());
+        assertEquals("Homework", response.getCategoryName());
+        assertEquals(10, response.getDefaultPoints());
+        assertEquals(ExtraCreditRequestStatus.PENDING, response.getStatus());
+        assertNotNull(response.getUpdatedAt());
+    }
+
+    /**
+     * Verifies the foreign key relationship between ExtraCreditRequest and Course
+     * is enforced.
+     */
+    @Test
+    public void testCreateRequestPersistsCourseRelationship() {
+        User student = createTestStudent("Derek Finnell", "derek@derek.com", 5001);
+        Course course = createTestCourse();
+        Category category = createTestCategory();
+
+        ExtraCreditRequestCreateDTO dto = new ExtraCreditRequestCreateDTO();
+        dto.setCourseId(course.getCourseId());
+        dto.setCategoryId(category.getCategoryId());
+        dto.setDescription("Testing that the selected course is saved on the request.");
+
+        ExtraCreditResponseDTO response = extraCreditRequestService.createRequest(student.getEmail(), dto);
+
+        assertNotNull(response.getId());
+
+        var savedRequest = extraCreditRequestRepository.findById(response.getId()).orElseThrow();
+
+        assertNotNull(savedRequest.getCourse());
+        assertEquals(course.getCourseId(), savedRequest.getCourse().getCourseId());
+        assertEquals("COMP-201", savedRequest.getCourse().getCourseCode());
+        assertEquals("26/SU", savedRequest.getCourse().getTerm());
+        assertEquals("H1WW", savedRequest.getCourse().getSection());
+    }
+
+    /**
+     * Verifies that the selected category and default points are returned in the
+     * response dto.
+     */
+    @Test
+    public void testCreateRequestReturnsSelectedCategoryAndDefaultPoints() {
+        User student = createTestStudent("Category Student", "category@test.com", 6001);
+        Course course = createTestCourse();
+        Category category = createTestCategory();
+
+        ExtraCreditRequestCreateDTO dto = new ExtraCreditRequestCreateDTO();
+        dto.setCourseId(course.getCourseId());
+        dto.setCategoryId(category.getCategoryId());
+        dto.setDescription("Testing that the selected category data is returned.");
+
+        ExtraCreditResponseDTO response = extraCreditRequestService.createRequest(student.getEmail(), dto);
+
+        assertNotNull(response);
+        assertEquals("Homework", response.getCategoryName());
+        assertEquals(10, response.getDefaultPoints());
+        assertEquals(ExtraCreditRequestStatus.PENDING, response.getStatus());
+
+        var savedRequest = extraCreditRequestRepository.findById(response.getId()).orElseThrow();
+
+        assertNotNull(savedRequest.getCategory());
+        assertEquals(category.getCategoryId(), savedRequest.getCategory().getCategoryId());
+        assertEquals("Homework", savedRequest.getCategory().getCategoryName());
+        assertEquals(10, savedRequest.getCategory().getDefaultPoints());
     }
 }
