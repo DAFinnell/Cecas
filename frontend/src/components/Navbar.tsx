@@ -11,16 +11,20 @@ import LogoutIcon from '../assets/Logout.svg'
 import authService from '../services/AuthService'
 import { useState } from 'react'
 
+import { routes } from '../app/routes'
+
 const navItems = [
-  { to: '/', label: 'Home', end: true, icon : HomeIcon },
-  { to: '/how-it-works', label: 'How It Works', roles: ['ANONYMOUS'], icon: HowItWorksIcon },
-  { to: '/login', label: 'Login', roles: ['ANONYMOUS'], icon: LoginIcon },
-  { to: '/register', label: 'Register', roles: ['ANONYMOUS'], icon: RegisterIcon },
-  { to: '/student-dashboard', label: 'Dashboard', roles: ['STUDENT'], icon: DashboardIcon },
-  { to: '/chair-dashboard', label: 'Dashboard', roles: ['CHAIR'], icon: DashboardIcon },
-  { to: '/my-requests', label: 'My Requests', roles: ['STUDENT'], icon: ListIcon },
-  { to: '/create-request', label: 'Create New Request', roles: ['STUDENT'], icon: CreateNewRequestIcon },
-  { to: '/logout', label:'Logout', roles: ['STUDENT','CHAIR'], icon: LogoutIcon}
+  { to: routes.home, label: 'Home', end: true, roles: ['ANONYMOUS'], icon: HomeIcon },
+  { to: routes.howItWorks, label: 'How It Works', roles: ['ANONYMOUS'], icon: HowItWorksIcon },
+  { to: routes.login, label: 'Login', roles: ['ANONYMOUS'], icon: LoginIcon },
+  { to: routes.register, label: 'Register', roles: ['ANONYMOUS'], icon: RegisterIcon },
+
+  { to: routes.student.dashboard, label: 'Dashboard', roles: ['STUDENT'], icon: DashboardIcon },
+  { to: routes.chair.dashboard, label: 'Dashboard', roles: ['CHAIR'], icon: DashboardIcon },
+  { to: routes.student.applications, label: 'My Requests', roles: ['STUDENT'], icon: ListIcon },
+  { to: routes.student.newRequest, label: 'Create New Request', roles: ['STUDENT'], icon: CreateNewRequestIcon },
+
+  { to: routes.logout, label: 'Logout', roles: ['STUDENT', 'CHAIR'], icon: LogoutIcon },
 ]
 
 export default function Navbar() {
@@ -53,8 +57,8 @@ export default function Navbar() {
           </h1>
         </div>
         <nav aria-label="Main navigation" className="flex flex-wrap gap-2">
-        {visibleItems.map((item) => {
-            if (item.to === '/logout') {
+          {visibleItems.map((item) => {
+            if (item.to === routes.logout) {
               return (
                 <button
                   key="logout"
@@ -63,7 +67,7 @@ export default function Navbar() {
                     try {
                       setLoggingOut(true)
                       await authService.logout()
-                      navigate('/')
+                      navigate(routes.home)
                     } catch (e) {
                       // optionally show error
                     } finally {
@@ -85,10 +89,9 @@ export default function Navbar() {
                 to={item.to}
                 end={item.end}
                 className={({ isActive }) =>
-                  `rounded-md px-3 py-2 text-sm font-medium transition ${
-                    isActive
-                      ? 'bg-sky-100 text-sky-800'
-                      : 'text-slate-700 hover:bg-slate-100 hover:text-slate-950'
+                  `rounded-md px-3 py-2 text-sm font-medium transition ${isActive
+                    ? 'bg-sky-100 text-sky-800'
+                    : 'text-slate-700 hover:bg-slate-100 hover:text-slate-950'
                   }`
                 }
               >
@@ -102,4 +105,3 @@ export default function Navbar() {
     </header>
   )
 }
-

@@ -1,10 +1,10 @@
-
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import type {  UserProfileResponse, } from "../types/user.types";
+import type { UserProfileResponse, } from "../types/user.types";
 import userService from '../services/UserService'
 import extraCreditRequestService from '../services/ExtraCreditRequestService'
 import type { StudentPointsSummary, StudentRequestSummary } from '../types/extraCredit.types'
+import { routes } from "../app/routes";
 
 export default function StudentPage() {
   const [profile, setProfile] = useState<UserProfileResponse | null>(null);
@@ -13,7 +13,7 @@ export default function StudentPage() {
   const [selectedTerm, setSelectedTerm] = useState<string>('');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  
+
   useEffect(() => {
     let active = true;
     setLoading(true);
@@ -82,7 +82,7 @@ export default function StudentPage() {
             </select>
           </div>
           <div className="h-10 w-10 rounded-full bg-slate-200 flex items-center justify-center text-sm font-medium text-slate-700">
-            {fullName.split(" ").map(s => s[0]).slice(0,2).join("")}
+            {fullName.split(" ").map(s => s[0]).slice(0, 2).join("")}
           </div>
         </div>
       </header>
@@ -108,7 +108,7 @@ export default function StudentPage() {
       <section className="bg-white rounded-lg shadow-sm p-4">
         <div className="flex items-center justify-between mb-4">
           <h3 className="text-lg font-medium">My Applications</h3>
-          <Link to="/create-request" className="inline-flex items-center gap-2 rounded-md bg-sky-700 text-white px-4 py-2">
+          <Link to={routes.student.newRequest} className="inline-flex items-center gap-2 rounded-md bg-sky-700 text-white px-4 py-2">
             + New Application
           </Link>
         </div>
@@ -134,21 +134,20 @@ export default function StudentPage() {
                 {filteredRequests.map((req) => (
                   <tr key={req.id} className="border-t">
                     <td className="py-3 text-sm">{([req.courseCode, req.term, req.section].filter(Boolean).join('-') || '—')}</td>
-                    <td className="text-sm">{ req.categoryName ?? '—'}</td>
+                    <td className="text-sm">{req.categoryName ?? '—'}</td>
                     <td className="text-sm">
-                      <span className={`inline-flex items-center px-2 py-1 rounded text-xs font-medium ${
-                        req.status === 'APPROVED' ? 'bg-emerald-100 text-emerald-700' :
+                      <span className={`inline-flex items-center px-2 py-1 rounded text-xs font-medium ${req.status === 'APPROVED' ? 'bg-emerald-100 text-emerald-700' :
                         req.status === 'PRE_APPROVED' ? 'bg-yellow-100 text-yellow-700' :
-                        req.status === 'PENDING' ? 'bg-indigo-100 text-indigo-700' :
-                        'bg-red-100 text-red-700'
-                      }`}>
+                          req.status === 'PENDING' ? 'bg-indigo-100 text-indigo-700' :
+                            'bg-red-100 text-red-700'
+                        }`}>
                         {req.status}
                       </span>
                     </td>
                     <td className="text-sm">{req.defaultPoints}</td>
                     <td className="text-sm">{req.updatedAt ? new Date(req.updatedAt).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })
-                    : '—' }</td>
-                    <td className="text-sm text-sky-700"><Link to={`/requests/${req.id}`}>View</Link></td>
+                      : '—'}</td>
+                    <td className="text-sm text-sky-700"><Link to={routes.student.requestDetail(req.id)}>View</Link></td>
                   </tr>
                 ))}
               </tbody>

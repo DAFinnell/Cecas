@@ -2,6 +2,7 @@
 import extraCreditRequestService from '../services/ExtraCreditRequestService'
 import type { CategoryOption, CourseOption, StudentPointsSummary } from '../types/extraCredit.types'
 import { useNavigate } from 'react-router-dom'
+import { routes } from '../app/routes'
 
 const POINT_CAP = 50
 const MIN_DESCRIPTION_LENGTH = 15
@@ -129,7 +130,7 @@ export default function NewExtraCreditRequestPage() {
       setCategoryId('')
       setDescription('')
       await refreshPointSummary()
-      navigate('/student-dashboard', { replace: true})
+      navigate(routes.student.dashboard, { replace: true })
     } catch (error) {
       setSubmitError(error instanceof Error ? error.message : 'Unable to submit request.')
     } finally {

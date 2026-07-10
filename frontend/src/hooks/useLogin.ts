@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import authService from '../services/AuthService'
 import { useLocation } from 'react-router-dom'
+import { routes } from '../app/routes'
 
 export function useLogin() {
   const navigate = useNavigate()
@@ -46,14 +47,9 @@ export function useLogin() {
       await new Promise((resolve) => setTimeout(resolve, 500)) // allow success state to render before redirecting
 
       if (user.role === 'CHAIR') {
-        if (user.mustChangePassword) {
-
-          navigate('/chair/force-change-password')
-        } else {
-          navigate('/chair')
-        }
+        navigate(user.mustChangePassword ? routes.chair.forceChangePassword : routes.chair.dashboard)
       } else {
-        navigate('/student-dashboard')
+        navigate(routes.student.dashboard)
       }
 
     } catch (err) {
