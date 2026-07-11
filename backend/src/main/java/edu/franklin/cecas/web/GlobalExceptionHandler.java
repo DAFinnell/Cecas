@@ -14,6 +14,7 @@ import edu.franklin.cecas.exception.EmailAlreadyExistsException;
 import edu.franklin.cecas.exception.InvalidExtraCreditRequestException;
 import edu.franklin.cecas.exception.InvalidCredentialsException;
 import edu.franklin.cecas.exception.InvalidPasswordException;
+import edu.franklin.cecas.exception.InvalidStateTransitionException;
 import edu.franklin.cecas.exception.PasswordChangeNotRequiredException;
 import edu.franklin.cecas.exception.PasswordMismatchException;
 import edu.franklin.cecas.exception.PointCapExceededException;
@@ -138,6 +139,14 @@ public class GlobalExceptionHandler {
         return problem;
     }
 
+    @ExceptionHandler(InvalidStateTransitionException.class)
+    public ProblemDetail handleInvalidTransition(InvalidStateTransitionException ex) {
+        ProblemDetail problem = ProblemDetail.forStatus(HttpStatus.CONFLICT);
+        problem.setTitle("Invalid state transition");
+        problem.setDetail(ex.getMessage());
+        problem.setProperty("errorCode", "INVALID_TRANSITION");
+        return problem;
+    }
     /*
      * Generic exception handler to catch any unhandled exceptions and return a
      * standardized error response.
