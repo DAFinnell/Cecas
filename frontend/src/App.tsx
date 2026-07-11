@@ -18,6 +18,7 @@ import NotFoundPage from './pages/NotFoundPage'
 import PrivacyPolicyPage from './pages/PrivacyPolicyPage'
 import RegisterPage from './pages/RegisterPage'
 import StudentPage from './pages/StudentPage'
+import StudentApplicationsPage from './pages/StudentApplicationsPage'
 
 function RootPage() {
   const { user, loading } = useCurrentUser()
@@ -59,6 +60,10 @@ export default function App() {
 
           <Route element={<RequireRole allowedRoles={['STUDENT']} />}>
             <Route path={routePath(routes.student.dashboard)} element={<StudentPage />} />
+            <Route
+              path={routePath(routes.student.applications)}
+              element={<StudentApplicationsPage />}
+            />
             <Route
               path={routePath(routes.student.newRequest)}
               element={<NewExtraCreditRequestPage />}
