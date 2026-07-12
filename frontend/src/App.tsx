@@ -18,6 +18,7 @@ import NotFoundPage from './pages/NotFoundPage'
 import PrivacyPolicyPage from './pages/PrivacyPolicyPage'
 import RegisterPage from './pages/RegisterPage'
 import StudentPage from './pages/StudentPage'
+import StudentApplicationDetailPage from './pages/StudentApplicationDetailPage'
 import StudentApplicationsPage from './pages/StudentApplicationsPage'
 
 function RootPage() {
@@ -60,6 +61,7 @@ export default function App() {
 
           <Route element={<RequireRole allowedRoles={['STUDENT']} />}>
             <Route path={routePath(routes.student.dashboard)} element={<StudentPage />} />
+
             <Route
               path={routePath(routes.student.applications)}
               element={<StudentApplicationsPage />}
@@ -68,6 +70,11 @@ export default function App() {
               path={routePath(routes.student.newRequest)}
               element={<NewExtraCreditRequestPage />}
             />
+            <Route
+              path={routePath("/student/requests/:requestId")}
+              element={<StudentApplicationDetailPage />}
+            />
+
           </Route>
 
           <Route element={<RequireRole allowedRoles={['CHAIR']} />}>

@@ -80,6 +80,12 @@ class ExtraCreditRequestService {
         return fetchJson<StudentRequestSummary[]>('/api/extra-credit-requests')
     }
 
+    getStudentRequestDetail(requestId: number): Promise<StudentRequestDetail> {
+        return fetchJson<StudentRequestDetail>(
+            `/api/extra-credit-requests/${requestId}`
+        )
+    }
+
     createRequest(payload: CreateExtraCreditRequestPayload): Promise<StudentRequestDetail> {
         return postJson<StudentRequestDetail>('/api/extra-credit-requests', payload)
     }
