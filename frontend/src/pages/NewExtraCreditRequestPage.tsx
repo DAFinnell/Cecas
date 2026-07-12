@@ -63,17 +63,15 @@ export default function NewExtraCreditRequestPage() {
         setIsLoading(true)
         setLoadError(null)
 
-        const [courseOptions, categoryOptions, pointSummary] = await Promise.all([
+        const [courseOptions, categoryOptions] = await Promise.all([
           extraCreditRequestService.getCourses(),
           extraCreditRequestService.getCategories(),
-          extraCreditRequestService.getPointSummary(),
         ])
 
         if (!isActive) return
 
         setCourses(courseOptions)
         setCategories(categoryOptions)
-        setPointsSummary(pointSummary)
       } catch (error) {
         if (isActive) {
           setLoadError(error instanceof Error ? error.message : 'Unable to load request form data.')
@@ -92,9 +90,38 @@ export default function NewExtraCreditRequestPage() {
     }
   }, [])
 
-  async function refreshPointSummary() {
-    setPointsSummary(await extraCreditRequestService.getPointSummary())
-  }
+  useEffect(() => {
+    let isActive = true
+
+    async function loadPointSummaryForSelectedCourse() {
+      if (!selectedCourse) {
+        setPointsSummary({
+          issued: 0,
+          pending: 0,
+          available: POINT_CAP,
+        })
+        return
+      }
+
+      try {
+        const pointSummary = await extraCreditRequestService.getPointSummary(selectedCourse.term)
+
+        if (isActive) {
+          setPointsSummary(pointSummary)
+        }
+      } catch (error) {
+        if (isActive) {
+          setSubmitError(error instanceof Error ? error.message : 'Unable to load point summary.')
+        }
+      }
+    }
+
+    void loadPointSummaryForSelectedCourse()
+
+    return () => {
+      isActive = false
+    }
+  }, [selectedCourse])
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
@@ -129,7 +156,6 @@ export default function NewExtraCreditRequestPage() {
       setCourseId('')
       setCategoryId('')
       setDescription('')
-      await refreshPointSummary()
       navigate(routes.student.dashboard, { replace: true })
     } catch (error) {
       setSubmitError(error instanceof Error ? error.message : 'Unable to submit request.')
@@ -320,11 +346,10 @@ export default function NewExtraCreditRequestPage() {
           </dl>
 
           <div
-            className={`rounded-2xl p-4 text-sm ${
-              exceedsPointCap
-                ? 'bg-rose-50 text-rose-800 ring-1 ring-rose-200'
-                : 'bg-emerald-50 text-emerald-800 ring-1 ring-emerald-200'
-            }`}
+            className={`rounded-2xl p-4 text-sm ${exceedsPointCap
+              ? 'bg-rose-50 text-rose-800 ring-1 ring-rose-200'
+              : 'bg-emerald-50 text-emerald-800 ring-1 ring-emerald-200'
+              }`}
           >
             {isLoading
               ? 'Loading point totals...'

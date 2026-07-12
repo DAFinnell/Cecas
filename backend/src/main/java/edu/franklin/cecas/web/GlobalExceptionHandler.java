@@ -11,8 +11,8 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 import edu.franklin.cecas.exception.EmailAlreadyExistsException;
-import edu.franklin.cecas.exception.InvalidExtraCreditRequestException;
 import edu.franklin.cecas.exception.InvalidCredentialsException;
+import edu.franklin.cecas.exception.InvalidExtraCreditRequestException;
 import edu.franklin.cecas.exception.InvalidPasswordException;
 import edu.franklin.cecas.exception.InvalidStateTransitionException;
 import edu.franklin.cecas.exception.PasswordChangeNotRequiredException;
@@ -21,6 +21,7 @@ import edu.franklin.cecas.exception.PointCapExceededException;
 import edu.franklin.cecas.exception.RegistrationNotAllowedException;
 import edu.franklin.cecas.exception.ResourceNotFoundException;
 import edu.franklin.cecas.exception.UnauthorizedRoleException;
+import edu.franklin.cecas.exception.UserNotFoundException;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
@@ -139,6 +140,15 @@ public class GlobalExceptionHandler {
         return problem;
     }
 
+    @ExceptionHandler(UserNotFoundException.class)
+    public ProblemDetail handleUserNotFound(UserNotFoundException ex) {
+        ProblemDetail problem = ProblemDetail.forStatus(HttpStatus.NOT_FOUND);
+        problem.setTitle("User Not Found");
+        problem.setDetail(ex.getMessage());
+        problem.setProperty("errorCode", "USER_NOT_FOUND");
+        return problem;
+    }
+
     @ExceptionHandler(InvalidStateTransitionException.class)
     public ProblemDetail handleInvalidTransition(InvalidStateTransitionException ex) {
         ProblemDetail problem = ProblemDetail.forStatus(HttpStatus.CONFLICT);
@@ -147,10 +157,7 @@ public class GlobalExceptionHandler {
         problem.setProperty("errorCode", "INVALID_TRANSITION");
         return problem;
     }
-    /*
-     * Generic exception handler to catch any unhandled exceptions and return a
-     * standardized error response.
-     */
+
     @ExceptionHandler(Exception.class)
     public ProblemDetail handleGenericException(Exception ex) {
         ProblemDetail problem = ProblemDetail.forStatus(HttpStatus.INTERNAL_SERVER_ERROR);

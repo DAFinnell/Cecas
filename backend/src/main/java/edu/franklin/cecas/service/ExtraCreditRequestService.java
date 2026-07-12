@@ -26,82 +26,76 @@ import jakarta.transaction.Transactional;
 @Service
 @Transactional
 public class ExtraCreditRequestService {
-        private final ExtraCreditRequestRepository requestRepository;
-        private final CourseRepository courseRepository;
-        private final CategoryRepository categoryRepository;
-        private final UserRepository userRepository;
-        private final PointAllocationService pointAllocationService;
+    private final ExtraCreditRequestRepository requestRepository;
+    private final CourseRepository courseRepository;
+    private final CategoryRepository categoryRepository;
+    private final UserRepository userRepository;
+    private final PointAllocationService pointAllocationService;
 
-        public ExtraCreditRequestService(
-                        ExtraCreditRequestRepository requestRepository,
-                        CourseRepository courseRepository,
-                        CategoryRepository categoryRepository,
-                        UserRepository userRepository,
-                        PointAllocationService pointAllocationService) {
-                this.requestRepository = requestRepository;
-                this.courseRepository = courseRepository;
-                this.categoryRepository = categoryRepository;
-                this.userRepository = userRepository;
-                this.pointAllocationService = pointAllocationService;
+    public ExtraCreditRequestService(
+            ExtraCreditRequestRepository requestRepository,
+            CourseRepository courseRepository,
+            CategoryRepository categoryRepository,
+            UserRepository userRepository,
+            PointAllocationService pointAllocationService) {
+        this.requestRepository = requestRepository;
+        this.courseRepository = courseRepository;
+        this.categoryRepository = categoryRepository;
+        this.userRepository = userRepository;
+        this.pointAllocationService = pointAllocationService;
+    }
+
+    @Transactional
+    public StudentRequestDetailDTO createRequest(String studentEmail, ExtraCreditRequestCreateDTO dto) {
+        Course course = courseRepository.findById(dto.getCourseId())
+                .orElseThrow(() -> new InvalidExtraCreditRequestException(
+                        "Course not found with ID: " + dto.getCourseId()));
+
+        Category category = categoryRepository.findById(dto.getCategoryId())
+                .orElseThrow(() -> new InvalidExtraCreditRequestException(
+                        "Category not found with ID: " + dto.getCategoryId()));
+
+        User student = userRepository.findByEmailIgnoreCase(studentEmail)
+                .orElseThrow(() -> new RuntimeException("Student not found with Email: " + studentEmail));
+
+        userRepository.findByIdForUpdate(student.getId())
+                .orElseThrow(() -> new RuntimeException("Student not found"));
+
+        if (student.getRole() != UserRole.STUDENT) {
+            throw new UnauthorizedRoleException("Unauthorized: User is not a student");
         }
 
-        // Create and persist a new Extra Credit Request.
-        @Transactional
-        public StudentRequestDetailDTO createRequest(String studentEmail, ExtraCreditRequestCreateDTO dto) {
-                Course course = courseRepository.findById(dto.getCourseId())
-                                .orElseThrow(() -> new InvalidExtraCreditRequestException(
-                                                "Course not found with ID: " + dto.getCourseId()));
+        int requestedPoints = category.getDefaultPoints() == null ? 0 : category.getDefaultPoints();
+        pointAllocationService.validatePendingRequestAllowed(student.getId(), course.getTerm(), requestedPoints);
 
-                Category category = categoryRepository.findById(dto.getCategoryId())
-                                .orElseThrow(() -> new InvalidExtraCreditRequestException(
-                                                "Category not found with ID: " + dto.getCategoryId()));
+        ExtraCreditRequest request = new ExtraCreditRequest();
+        request.setCourse(course);
+        request.setCategory(category);
+        request.setStudent(student);
+        request.setDescription(dto.getDescription());
+        request.setStatus(ExtraCreditRequestStatus.PENDING);
 
-                User student = userRepository.findByEmailIgnoreCase(studentEmail)
-                                .orElseThrow(() -> new RuntimeException(
-                                                "Student not found with Email: " + studentEmail));
+        ExtraCreditRequest savedRequest = requestRepository.save(request);
+        return new StudentRequestDetailDTO(savedRequest);
+    }
 
-                if (student.getRole() != UserRole.STUDENT) {
-                        throw new UnauthorizedRoleException("Unauthorized: User is not a student");
-                }
+    public List<StudentRequestSummaryDTO> getRequestsForStudent(String studentEmail) {
+        User student = userRepository.findByEmailIgnoreCase(studentEmail)
+                .orElseThrow(() -> new UsernameNotFoundException("Student not found with Email: " + studentEmail));
 
-                int requestedPoints = category.getDefaultPoints() == null ? 0 : category.getDefaultPoints();
-                pointAllocationService.validatePendingRequestAllowed(student.getId(), requestedPoints);
+        return requestRepository.findByStudent_Id(student.getId()).stream()
+                .map(StudentRequestSummaryDTO::new)
+                .collect(Collectors.toList());
+    }
 
-                ExtraCreditRequest request = new ExtraCreditRequest();
-                request.setCourse(course);
-                request.setCategory(category);
-                request.setStudent(student);
-                request.setDescription(dto.getDescription());
-                request.setStatus(ExtraCreditRequestStatus.PENDING);
+    public StudentRequestDetailDTO getRequestForStudent(String studentEmail, Integer requestId) {
+        User student = userRepository.findByEmailIgnoreCase(studentEmail)
+                .orElseThrow(() -> new UsernameNotFoundException("Student not found with Email: " + studentEmail));
 
-                ExtraCreditRequest savedRequest = requestRepository.save(request);
-                return new StudentRequestDetailDTO(savedRequest);
-        }
+        ExtraCreditRequest request = requestRepository
+                .findByIdAndStudent_Id(requestId, student.getId())
+                .orElseThrow(() -> new InvalidExtraCreditRequestException("Extra credit request not found."));
 
-        // Get a list of all requests for a student
-        public List<StudentRequestSummaryDTO> getRequestsForStudent(String studentEmail) {
-                User student = userRepository.findByEmailIgnoreCase(studentEmail)
-                                .orElseThrow(() -> new UsernameNotFoundException(
-                                                "Student not found with Email: " + studentEmail));
-
-                return requestRepository.findByStudent_Id(student.getId()).stream()
-                                .map(StudentRequestSummaryDTO::new)
-                                .collect(Collectors.toList());
-        }
-
-        public StudentRequestDetailDTO getRequestForStudent(
-                        String studentEmail,
-                        Integer requestId) {
-
-                User student = userRepository.findByEmailIgnoreCase(studentEmail)
-                                .orElseThrow(() -> new UsernameNotFoundException(
-                                                "Student not found with Email: " + studentEmail));
-
-                ExtraCreditRequest request = requestRepository
-                                .findByIdAndStudent_Id(requestId, student.getId())
-                                .orElseThrow(() -> new InvalidExtraCreditRequestException(
-                                                "Extra credit request not found."));
-
-                return new StudentRequestDetailDTO(request);
-        }
+        return new StudentRequestDetailDTO(request);
+    }
 }

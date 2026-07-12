@@ -69,9 +69,9 @@ describe('ExtraCreditRequestService', () => {
       }),
     )
 
-    const result = await extraCreditRequestService.getPointSummary()
+    const result = await extraCreditRequestService.getPointSummary('26/FA')
 
-    expect(csrfService.fetch).toHaveBeenCalledWith('/api/users/me/points')
+    expect(csrfService.fetch).toHaveBeenCalledWith('/api/users/me/points?term=26%2FFA')
     expect(result).toEqual(payload)
   })
 

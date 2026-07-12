@@ -157,6 +157,7 @@ function Alert({
 
 export default function StudentApplicationsPage() {
   const [data, setData] = useState<LoadState>(emptyState)
+  const [selectedTerm, setSelectedTerm] = useState('')
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
 
@@ -168,16 +169,15 @@ export default function StudentApplicationsPage() {
       setError('')
 
       try {
-        const [profile, points, requests] = await Promise.all([
+        const [profile, requests] = await Promise.all([
           userService.getUserProfile(),
-          userService.getMyPoints(),
           extraCreditRequestService.getStudentRequests(),
         ])
 
         if (active) {
           setData({
             profile,
-            points,
+            points: null,
             requests,
           })
         }
@@ -203,12 +203,61 @@ export default function StudentApplicationsPage() {
     }
   }, [])
 
+  useEffect(() => {
+    let active = true
+
+    async function loadPointsForSelectedTerm() {
+      if (!selectedTerm) {
+        setData((current) => ({
+          ...current,
+          points: null,
+        }))
+        return
+      }
+
+      try {
+        const points = await userService.getMyPoints(selectedTerm)
+
+        if (active) {
+          setData((current) => ({
+            ...current,
+            points,
+          }))
+        }
+      } catch (loadError) {
+        if (active) {
+          setError(
+            loadError instanceof Error
+              ? loadError.message
+              : 'Unable to load point summary.',
+          )
+        }
+      }
+    }
+
+    void loadPointsForSelectedTerm()
+
+    return () => {
+      active = false
+    }
+  }, [selectedTerm])
+
+  const terms = useMemo(
+    () =>
+      Array.from(
+        new Set(data.requests.map((request) => request.term).filter(Boolean)),
+      ).sort(),
+    [data.requests],
+  )
+
   const sortedRequests = useMemo(
     () =>
-      [...data.requests].sort(
-        (left, right) => getSortDate(right) - getSortDate(left),
-      ),
-    [data.requests],
+      [...data.requests]
+        .filter((request) => !selectedTerm || request.term === selectedTerm)
+        .sort(
+          (left, right) => getSortDate(right) - getSortDate(left),
+        ),
+    [data.requests, selectedTerm],
   )
 
   const profileName =
@@ -280,31 +329,57 @@ export default function StudentApplicationsPage() {
         </Alert>
       )}
 
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <StatCard
-          label="Earned"
-          value={earned}
-          helpText="Points already awarded"
-        />
+      <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
+        <label className="block text-sm font-medium text-slate-600" htmlFor="term-filter">
+          Term
+        </label>
 
-        <StatCard
-          label="Pending"
-          value={pending}
-          helpText="Points under review"
-        />
-
-        <StatCard
-          label="Available"
-          value={available}
-          helpText="Points still available"
-        />
-
-        <StatCard
-          label="Total Allowed"
-          value={TOTAL_ALLOWED_POINTS}
-          helpText="Semester maximum"
-        />
+        <select
+          id="term-filter"
+          className="mt-2 rounded-md border border-slate-300 bg-white px-3 py-2 text-sm shadow-sm"
+          value={selectedTerm}
+          onChange={(event) => setSelectedTerm(event.target.value)}
+        >
+          <option value="">All terms</option>
+          {terms.map((term) => (
+            <option key={term} value={term}>
+              {formatTerm(term)}
+            </option>
+          ))}
+        </select>
       </div>
+
+      {selectedTerm ? (
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          <StatCard
+            label="Earned"
+            value={earned}
+            helpText="Points already awarded"
+          />
+
+          <StatCard
+            label="Pending"
+            value={pending}
+            helpText="Points under review"
+          />
+
+          <StatCard
+            label="Available"
+            value={available}
+            helpText="Points still available"
+          />
+
+          <StatCard
+            label="Total Allowed"
+            value={TOTAL_ALLOWED_POINTS}
+            helpText="Semester maximum"
+          />
+        </div>
+      ) : (
+        <div className="rounded-xl border border-slate-200 bg-white p-5 text-sm text-slate-600 shadow-sm">
+          Select a term to view your semester point summary.
+        </div>
+      )}
 
       <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
         <div className="flex flex-col gap-3 border-b border-slate-200 p-5 sm:flex-row sm:items-center sm:justify-between">

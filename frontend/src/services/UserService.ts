@@ -10,8 +10,8 @@ class UserService {
     return res.json()
   }
 
-  async getMyPoints(): Promise<StudentPointsSummary> {
-    const res = await fetch(`${this.USER_BASE}/me/points`, { credentials: 'same-origin' })
+  async getMyPoints(term: string): Promise<StudentPointsSummary> {
+    const res = await fetch(`${this.USER_BASE}/me/points?term=${encodeURIComponent(term)}`, { credentials: 'same-origin' })
     if (!res.ok) throw new Error(`Failed to load points (${res.status})`)
     return res.json()
   }

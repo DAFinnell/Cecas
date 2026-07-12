@@ -21,16 +21,14 @@ export default function StudentPage() {
     (async () => {
       try {
         // these are async
-        const [profile, points, requests] = await Promise.all([
+        const [profile, requests] = await Promise.all([
           userService.getUserProfile().catch(() => null),
-          userService.getMyPoints().catch(() => null),
           extraCreditRequestService.getStudentRequests().catch(() => []),
         ]);
 
         if (!active) return;
 
         if (profile) setProfile(profile);
-        if (points) setPoints(points);
         if (requests) setRequests(requests);
       } catch (e: any) {
         if (!active) return;
@@ -45,6 +43,35 @@ export default function StudentPage() {
     };
   }, []);
 
+  useEffect(() => {
+    let active = true
+
+    async function loadPointsForSelectedTerm() {
+      if (!selectedTerm) {
+        setPoints(null)
+        return
+      }
+
+      try {
+        const termPoints = await userService.getMyPoints(selectedTerm)
+
+        if (active) {
+          setPoints(termPoints)
+        }
+      } catch (e: any) {
+        if (active) {
+          setError(e?.message ?? String(e))
+        }
+      }
+    }
+
+    void loadPointsForSelectedTerm()
+
+    return () => {
+      active = false
+    }
+  }, [selectedTerm])
+
   const fullName = profile?.fullName ?? profile?.email ?? "Student";
   const maxPoints = 50;
   const earned = points?.issued ?? 0;
@@ -54,6 +81,9 @@ export default function StudentPage() {
     ? requests.filter((req) => (req.term === selectedTerm))
     : requests;
 
+  const terms = Array.from(
+    new Set(requests.map((req) => req.term).filter(Boolean))
+  ).sort()
   return (
     <main className="mx-auto max-w-6xl p-6">
       <header className="mb-6 flex items-start justify-between gap-4">
@@ -77,8 +107,11 @@ export default function StudentPage() {
               onChange={(e) => setSelectedTerm(e.target.value)}
             >
               <option value="">All terms</option>
-              <option value="27/SP">Spring 2027</option>
-              <option value="26/FA">Fall 2026</option>
+              {terms.map((term) => (
+                <option key={term} value={term}>
+                  {term}
+                </option>
+              ))}
             </select>
           </div>
           <div className="h-10 w-10 rounded-full bg-slate-200 flex items-center justify-center text-sm font-medium text-slate-700">
@@ -87,24 +120,30 @@ export default function StudentPage() {
         </div>
       </header>
 
-      <section className="mb-6 grid grid-cols-1 sm:grid-cols-4 gap-4">
-        <div className="rounded-lg bg-green-50 p-4">
-          <div className="text-sm text-slate-600">Earned Points</div>
-          <div className="text-2xl font-bold">{earned} pts</div>
-        </div>
-        <div className="rounded-lg bg-yellow-50 p-4">
-          <div className="text-sm text-slate-600">Pending Points</div>
-          <div className="text-2xl font-bold">{pending} pts</div>
-        </div>
-        <div className="rounded-lg bg-indigo-50 p-4">
-          <div className="text-sm text-slate-600">Available Points</div>
-          <div className="text-2xl font-bold">{available} pts</div>
-        </div>
-        <div className="rounded-lg bg-white border p-4">
-          <div className="text-sm text-slate-600">Total Allowed</div>
-          <div className="text-2xl font-bold">{maxPoints} pts</div>
-        </div>
-      </section>
+      {selectedTerm ? (
+        <section className="mb-6 grid grid-cols-1 sm:grid-cols-4 gap-4">
+          <div className="rounded-lg bg-green-50 p-4">
+            <div className="text-sm text-slate-600">Earned Points</div>
+            <div className="text-2xl font-bold">{earned} pts</div>
+          </div>
+          <div className="rounded-lg bg-yellow-50 p-4">
+            <div className="text-sm text-slate-600">Pending Points</div>
+            <div className="text-2xl font-bold">{pending} pts</div>
+          </div>
+          <div className="rounded-lg bg-indigo-50 p-4">
+            <div className="text-sm text-slate-600">Available Points</div>
+            <div className="text-2xl font-bold">{available} pts</div>
+          </div>
+          <div className="rounded-lg bg-white border p-4">
+            <div className="text-sm text-slate-600">Total Allowed</div>
+            <div className="text-2xl font-bold">{maxPoints} pts</div>
+          </div>
+        </section>
+      ) : (
+        <section className="mb-6 rounded-lg border bg-white p-4 text-sm text-slate-600">
+          Select a term to view your semester point summary.
+        </section>
+      )}
       <section className="bg-white rounded-lg shadow-sm p-4">
         <div className="flex items-center justify-between mb-4">
           <h3 className="text-lg font-medium">My Applications</h3>
@@ -158,4 +197,3 @@ export default function StudentPage() {
     </main>
   );
 }
-

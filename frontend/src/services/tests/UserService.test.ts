@@ -42,9 +42,9 @@ describe('UserService', () => {
       }),
     )
 
-    const result = await userService.getMyPoints()
+    const result = await userService.getMyPoints('26/FA')
 
-    expect(fetchSpy).toHaveBeenCalledWith('/api/users/me/points', {
+    expect(fetchSpy).toHaveBeenCalledWith('/api/users/me/points?term=26%2FFA', {
       credentials: 'same-origin',
     })
     expect(result).toEqual(payload)

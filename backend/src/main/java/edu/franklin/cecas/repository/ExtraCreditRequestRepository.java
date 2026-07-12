@@ -24,4 +24,8 @@ public interface ExtraCreditRequestRepository extends JpaRepository<ExtraCreditR
     List<ExtraCreditRequest> findByChair_IdAndStatus(Integer chairId, ExtraCreditRequestStatus status);
 
     Optional<ExtraCreditRequest> findByIdAndStudent_Id(Integer id, Integer studentId);
+
+    List<ExtraCreditRequest> findByStudent_IdAndCourse_TermAndStatus(Integer userId, String term, ExtraCreditRequestStatus status);
+
+    List<ExtraCreditRequest> findByStudent_IdAndCourse_TermAndStatusIn(Integer userId, String term, List<ExtraCreditRequestStatus> statuses);
 }
