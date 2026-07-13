@@ -66,7 +66,6 @@ public class Category {
         this.defaultPoints = defaultPoints;
     }
 
-
     public boolean isActive() {
         return isActive;
     }
