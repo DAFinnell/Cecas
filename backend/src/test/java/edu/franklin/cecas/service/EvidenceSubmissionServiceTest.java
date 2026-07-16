@@ -11,6 +11,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
+import java.nio.charset.StandardCharsets;
 import java.util.Optional;
 
 import org.junit.jupiter.api.BeforeEach;
@@ -88,7 +89,7 @@ public class EvidenceSubmissionServiceTest {
                 "evidence",
                 "proof.pdf",
                 "application/pdf",
-                "%PDF-1.7 test".getBytes());
+                "%PDF-1.7 test".getBytes(StandardCharsets.UTF_8));
     }
 
     @Test

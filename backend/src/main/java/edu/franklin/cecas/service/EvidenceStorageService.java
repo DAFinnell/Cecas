@@ -29,7 +29,12 @@ public class EvidenceStorageService {
         EvidenceType type = detectType(file);
         String fileName = UUID.randomUUID() + "." + type.extension();
         Path relativePath = Path.of("evidence", "request-" + requestId, fileName);
-        Path destination = Path.of(uploadDir).resolve(relativePath).normalize();
+        Path uploadRoot = Path.of(uploadDir).toAbsolutePath().normalize();
+        Path destination = uploadRoot.resolve(relativePath).normalize();
+
+        if (!destination.startsWith(uploadRoot)) {
+            throw new EvidenceUploadException("Evidence file could not be saved.");
+        }
 
         try {
             Files.createDirectories(destination.getParent());
@@ -42,7 +47,15 @@ public class EvidenceStorageService {
 
     public void deleteIfExists(String relativePath) {
         try {
-            Files.deleteIfExists(Path.of(uploadDir).resolve(relativePath).normalize());
+            Path uploadRoot = Path.of(uploadDir).toAbsolutePath().normalize();
+            Path destination = uploadRoot.resolve(relativePath).normalize();
+
+            if (!destination.startsWith(uploadRoot)) {
+                log.warn("Skipped cleanup for evidence path outside upload directory: {}", relativePath);
+                return;
+            }
+
+            Files.deleteIfExists(destination);
         } catch (IOException ex) {
             log.warn("Failed to clean up evidence file after failed upload transaction: {}", relativePath, ex);
         }

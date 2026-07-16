@@ -71,8 +71,12 @@ public class ExtraCreditRequestController {
     @PreAuthorize("hasRole('STUDENT')")
     @PostMapping(value = "/{requestId}/evidence", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<StudentRequestDetailDTO> uploadEvidence(@AuthenticationPrincipal UserDetails userDetails,
-            @PathVariable Integer requestId, @RequestPart("evidence") MultipartFile evidence) {
-        StudentRequestDetailDTO response = evidenceSubmissionService.submitEvidence(userDetails.getUsername(), requestId, evidence);
+            @PathVariable Integer requestId,
+            @RequestPart(value = "evidence", required = false) MultipartFile evidence) {
+        StudentRequestDetailDTO response = evidenceSubmissionService.submitEvidence(
+                userDetails.getUsername(),
+                requestId,
+                evidence);
 
         return ResponseEntity.ok(response);
     }

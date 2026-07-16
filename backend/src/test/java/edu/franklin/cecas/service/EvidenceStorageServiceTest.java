@@ -144,4 +144,18 @@ public class EvidenceStorageServiceTest {
 
         assertFalse(Files.exists(savedFile));
     }
+
+    @Test
+    void testDeleteIfExistsSkipsPathOutsideUploadDirectory() throws IOException {
+        Path outsideFile = uploadDir.getParent().resolve("outside-evidence.pdf");
+        Files.writeString(outsideFile, "outside");
+
+        assertTrue(Files.exists(outsideFile));
+
+        evidenceStorageService.deleteIfExists("../outside-evidence.pdf");
+
+        assertTrue(Files.exists(outsideFile));
+
+        Files.deleteIfExists(outsideFile);
+    }
 }

@@ -20,6 +20,7 @@ import static org.hamcrest.Matchers.nullValue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.ArgumentMatchers.isNull;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -41,6 +42,7 @@ import edu.franklin.cecas.domain.UserRole;
 import edu.franklin.cecas.dto.ExtraCreditRequestCreateDTO;
 import edu.franklin.cecas.dto.StudentRequestDetailDTO;
 import edu.franklin.cecas.dto.StudentRequestSummaryDTO;
+import edu.franklin.cecas.exception.EvidenceUploadException;
 import edu.franklin.cecas.service.CecasUserDetailsService;
 import edu.franklin.cecas.service.EvidenceSubmissionService;
 import edu.franklin.cecas.service.ExtraCreditRequestService;
@@ -214,6 +216,25 @@ public class ExtraCreditRequestControllerTest {
                 .andExpect(jsonPath("$.evidenceFilePath").doesNotExist());
 
         verify(evidenceSubmissionService).submitEvidence(eq("derek@derek.com"), eq(42), any());
+    }
+
+    /**
+     * Tests that an evidence upload without a file returns a clear validation error.
+     */
+    @Test
+    @WithMockUser(username = "derek@derek.com", roles = { "STUDENT" })
+    void testUploadEvidenceWithoutFileReturnsBadRequest() throws Exception {
+        when(evidenceSubmissionService.submitEvidence(eq("derek@derek.com"), eq(42), isNull()))
+                .thenThrow(new EvidenceUploadException("Evidence file is required."));
+
+        mockMvc.perform(multipart("/api/extra-credit-requests/{requestId}/evidence", 42)
+                .with(csrf()))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.title").value("Invalid Evidence Upload"))
+                .andExpect(jsonPath("$.detail").value("Evidence file is required."))
+                .andExpect(jsonPath("$.errorCode").value("EVIDENCE_UPLOAD_INVALID"));
+
+        verify(evidenceSubmissionService).submitEvidence(eq("derek@derek.com"), eq(42), isNull());
     }
 
     /**
