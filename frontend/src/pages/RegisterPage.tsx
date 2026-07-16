@@ -11,6 +11,7 @@ export default function RegisterPage() {
     studentId,
     loading,
     error,
+    fieldErrors,
     setFullName,
     setEmail,
     setPassword,
@@ -45,10 +46,14 @@ export default function RegisterPage() {
               type="text"
               value={fullName}
               onChange={(e) => setFullName(e.target.value)}
-              className="w-full rounded-md border px-3 py-2 focus:border-blue-500 focus:outline-none"
+              className={`w-full rounded-md border px-3 py-2 focus:outline-none 
+                        ${fieldErrors.fullName ? 'border-red-500 focus:border-red-500' : 'border-slate-300 focus:border-blue-500'}`}
               placeholder="Enter your full name"
               required
             />
+            {fieldErrors.fullName && (
+              <p className="mt-1 text-xs text-red-600 font-medium">{fieldErrors.fullName}</p>
+            )}
           </div>
 
           <div>
@@ -60,10 +65,14 @@ export default function RegisterPage() {
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="w-full rounded-md border px-3 py-2 focus:border-blue-500 focus:outline-none"
+              className={`w-full rounded-md border px-3 py-2 focus:outline-none 
+                        ${fieldErrors.email ? 'border-red-500 focus:border-red-500' : 'border-slate-300 focus:border-blue-500'}`}
               placeholder="Enter your email"
               required
             />
+            {fieldErrors.email && (
+              <p className="mt-1 text-xs text-red-600 font-medium">{fieldErrors.email}</p>
+            )}
           </div>
 
           <div>
@@ -75,10 +84,14 @@ export default function RegisterPage() {
               type="text"
               value={program}
               onChange={(e) => setProgram(e.target.value)}
-              className="w-full rounded-md border px-3 py-2 focus:border-blue-500 focus:outline-none"
+              className={`w-full rounded-md border px-3 py-2 focus:outline-none 
+            ${fieldErrors.program ? 'border-red-500 focus:border-red-500' : 'border-slate-300 focus:border-blue-500'}`}
               placeholder="Enter your program"
               required
             />
+            {fieldErrors.program && (
+              <p className="mt-1 text-xs text-red-600 font-medium">{fieldErrors.program}</p>
+            )}
           </div>
 
           <div>
@@ -90,10 +103,14 @@ export default function RegisterPage() {
               type="number"
               value={studentId}
               onChange={(e) => setStudentId(e.target.value)}
-              className="w-full rounded-md border px-3 py-2 focus:border-blue-500 focus:outline-none"
+              className={`w-full rounded-md border px-3 py-2 focus:outline-none 
+            ${fieldErrors.studentId ? 'border-red-500 focus:border-red-500' : 'border-slate-300 focus:border-blue-500'}`}
               placeholder="Enter your student ID"
               required
             />
+            {fieldErrors.studentId && (
+              <p className="mt-1 text-xs text-red-600 font-medium">{fieldErrors.studentId}</p>
+            )}
           </div>
 
           <div>
@@ -105,10 +122,14 @@ export default function RegisterPage() {
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="w-full rounded-md border px-3 py-2 focus:border-blue-500 focus:outline-none"
+              className={`w-full rounded-md border px-3 py-2 focus:outline-none 
+            ${fieldErrors.password ? 'border-red-500 focus:border-red-500' : 'border-slate-300 focus:border-blue-500'}`}
               placeholder="Enter your password"
               required
             />
+            {fieldErrors.password && (
+              <p className="mt-1 text-xs text-red-600 font-medium">{fieldErrors.password}</p>
+            )}
           </div>
 
           <div>

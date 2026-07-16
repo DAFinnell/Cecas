@@ -59,25 +59,29 @@ describe('AuthService', () => {
             })
         );
 
+        const spyEvent = vi.fn();
+        vi.stubGlobal('window', { dispatchEvent: spyEvent });
+
         const result = await authService.login({
             email: 'student@test.edu',
             password: 'password123',
         });
 
         expect(result).toEqual(user);
+        expect(spyEvent).toHaveBeenCalled();
+        vi.unstubAllGlobals();
     });
 
     it('throws on login failure', async () => {
-        vi.mocked(csrfService.fetch).mockResolvedValue(
-            new Response(null, { status: 401 })
-        );
+        const mockResponse = new Response(null, { status: 401 });
+        vi.mocked(csrfService.fetch).mockResolvedValue(mockResponse);
 
         await expect(
             authService.login({
                 email: 'bad@test.edu',
                 password: 'wrong',
             })
-        ).rejects.toThrow('Invalid email or password.')
+        ).rejects.toBe(mockResponse);
     });
 
     it('logs out successfully', async () => {
@@ -96,13 +100,10 @@ describe('AuthService', () => {
     });
 
     it('throws on logout failure', async () => {
-        vi.mocked(csrfService.fetch).mockResolvedValue(
-            new Response(null, { status: 500 })
-        );
+        const mockResponse = new Response(null, { status: 500 });
+        vi.mocked(csrfService.fetch).mockResolvedValue(mockResponse);
 
-        await expect(authService.logout()).rejects.toThrow(
-            'Logout failed (500)'
-        );
+        await expect(authService.logout()).rejects.toBe(mockResponse);
     });
 
     it('fetches current user', async () => {
@@ -142,11 +143,8 @@ describe('AuthService', () => {
     });
 
     it('throws on change password failure', async () => {
-        vi.mocked(csrfService.fetch).mockResolvedValue(
-            new Response('Invalid password', {
-                status: 400,
-            })
-        );
+        const mockResponse = new Response('Invalid password', { status: 400 });
+        vi.mocked(csrfService.fetch).mockResolvedValue(mockResponse);
 
         await expect(
             authService.changePassword({
@@ -154,7 +152,7 @@ describe('AuthService', () => {
                 newPassword: 'bad',
                 confirmPassword: 'bad',
             })
-        ).rejects.toThrow('Change password failed (400): Invalid password');
+        ).rejects.toBe(mockResponse);
     });
 
     it('force changes password successfully', async () => {
@@ -174,11 +172,8 @@ describe('AuthService', () => {
     });
 
     it('throws on force change password failure', async () => {
-        vi.mocked(csrfService.fetch).mockResolvedValue(
-            new Response('Forbidden', {
-                status: 403,
-            })
-        );
+        const mockResponse = new Response('Forbidden', { status: 403 });
+        vi.mocked(csrfService.fetch).mockResolvedValue(mockResponse);
 
         await expect(
             authService.forceChangePassword({
@@ -186,7 +181,7 @@ describe('AuthService', () => {
                 newPassword: 'newpassword',
                 confirmPassword: 'newpassword',
             })
-        ).rejects.toThrow('Force change password failed (403): Forbidden');
+        ).rejects.toBe(mockResponse);
     });
 
     it('preserves mustChangePassword when current user requires a password change', async () => {

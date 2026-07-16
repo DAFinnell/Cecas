@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 import edu.franklin.cecas.exception.EmailAlreadyExistsException;
+import edu.franklin.cecas.exception.ExtraCreditRequestNotFoundException;
 import edu.franklin.cecas.exception.InvalidCredentialsException;
 import edu.franklin.cecas.exception.InvalidExtraCreditRequestException;
 import edu.franklin.cecas.exception.InvalidPasswordException;
@@ -20,6 +21,7 @@ import edu.franklin.cecas.exception.PasswordMismatchException;
 import edu.franklin.cecas.exception.PointCapExceededException;
 import edu.franklin.cecas.exception.RegistrationNotAllowedException;
 import edu.franklin.cecas.exception.ResourceNotFoundException;
+import edu.franklin.cecas.exception.StudentNotFoundException;
 import edu.franklin.cecas.exception.UnauthorizedRoleException;
 import edu.franklin.cecas.exception.UserNotFoundException;
 
@@ -163,6 +165,24 @@ public class GlobalExceptionHandler {
         ProblemDetail problem = ProblemDetail.forStatus(HttpStatus.INTERNAL_SERVER_ERROR);
         problem.setTitle("Internal Server Error");
         problem.setDetail("An unexpected error occurred.");
+        return problem;
+    }
+
+    @ExceptionHandler(StudentNotFoundException.class)
+    public ProblemDetail handleStudentNotFoundException(StudentNotFoundException ex) {
+        ProblemDetail problem = ProblemDetail.forStatus(HttpStatus.NOT_FOUND);
+        problem.setTitle("Student Not Found");
+        problem.setDetail(ex.getMessage());
+        problem.setProperty("errorCode", "STUDENT_NOT_FOUND");
+        return problem;
+    }
+
+    @ExceptionHandler(ExtraCreditRequestNotFoundException.class)
+    public ProblemDetail handleExtraCreditRequestNotFoundException(ExtraCreditRequestNotFoundException ex) {
+        ProblemDetail problem = ProblemDetail.forStatus(HttpStatus.NOT_FOUND);
+        problem.setTitle("Extra Credit Request Not Found");
+        problem.setDetail(ex.getMessage());
+        problem.setProperty("errorCode", "EXTRA_CREDIT_REQUEST_NOT_FOUND");
         return problem;
     }
 }

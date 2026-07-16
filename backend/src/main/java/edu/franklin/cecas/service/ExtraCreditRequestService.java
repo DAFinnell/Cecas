@@ -16,6 +16,7 @@ import edu.franklin.cecas.dto.ExtraCreditRequestCreateDTO;
 import edu.franklin.cecas.dto.StudentRequestDetailDTO;
 import edu.franklin.cecas.dto.StudentRequestSummaryDTO;
 import edu.franklin.cecas.exception.InvalidExtraCreditRequestException;
+import edu.franklin.cecas.exception.StudentNotFoundException;
 import edu.franklin.cecas.exception.UnauthorizedRoleException;
 import edu.franklin.cecas.repository.CategoryRepository;
 import edu.franklin.cecas.repository.CourseRepository;
@@ -56,7 +57,7 @@ public class ExtraCreditRequestService {
                         "Category not found with ID: " + dto.getCategoryId()));
 
         User student = userRepository.findByEmailIgnoreCase(studentEmail)
-                .orElseThrow(() -> new RuntimeException("Student not found with Email: " + studentEmail));
+                .orElseThrow(() -> new StudentNotFoundException("Student not found with Email: " + studentEmail));
 
         userRepository.findByIdForUpdate(student.getId())
                 .orElseThrow(() -> new RuntimeException("Student not found"));
