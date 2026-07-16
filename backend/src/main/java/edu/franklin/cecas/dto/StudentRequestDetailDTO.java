@@ -1,5 +1,6 @@
 package edu.franklin.cecas.dto;
 
+import java.nio.file.Path;
 import java.time.LocalDateTime;
 
 import edu.franklin.cecas.domain.ExtraCreditRequest;
@@ -19,6 +20,10 @@ public class StudentRequestDetailDTO {
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
     private String chairFeedback;
+    private LocalDateTime dueDate;
+    private boolean evidenceFileUploaded;
+    private boolean evidenceUploadAvailable;
+    private String evidenceFileName;
 
     public StudentRequestDetailDTO(ExtraCreditRequest request) {
         this.id = request.getId();
@@ -34,6 +39,13 @@ public class StudentRequestDetailDTO {
         this.createdAt = request.getCreatedAt();
         this.updatedAt = request.getUpdatedAt();
         this.chairFeedback = request.getChairFeedback();
+        this.dueDate = request.getDueDate();
+        this.evidenceFileUploaded = request.getEvidenceFilePath() != null && !request.getEvidenceFilePath().isBlank();
+        this.evidenceUploadAvailable = request.getStatus() == ExtraCreditRequestStatus.PRE_APPROVED
+                && !this.evidenceFileUploaded;
+        this.evidenceFileName = this.evidenceFileUploaded
+                ? Path.of(request.getEvidenceFilePath()).getFileName().toString()
+                : null;
     }
 
     public Integer getId() {
@@ -83,8 +95,24 @@ public class StudentRequestDetailDTO {
     public LocalDateTime getUpdatedAt() {
         return updatedAt;
     }
-    
+
     public String getChairFeedback() {
         return chairFeedback;
+    }
+
+    public LocalDateTime getDueDate() {
+        return dueDate;
+    }
+
+    public boolean isEvidenceFileUploaded() {
+        return evidenceFileUploaded;
+    }
+
+    public boolean isEvidenceUploadAvailable() {
+        return evidenceUploadAvailable;
+    }
+
+    public String getEvidenceFileName() {
+        return evidenceFileName;
     }
 }
