@@ -92,6 +92,9 @@ public class EvidenceSubmissionServiceTest {
                 "%PDF-1.7 test".getBytes(StandardCharsets.UTF_8));
     }
 
+    /**
+     * Verifies that submitting evidence returns the updated request.
+     */
     @Test
     void testSubmitEvidenceReturnsUpdatedRequest() {
         User student = createStudent();
@@ -115,6 +118,9 @@ public class EvidenceSubmissionServiceTest {
         verify(evidenceStorageService, never()).deleteIfExists(anyString());
     }
 
+    /**
+     * Verifies that submitting evidence fails when the student is missing.
+     */
     @Test
     void testSubmitEvidenceThrowsWhenStudentIsMissing() {
         MockMultipartFile file = createFile();
@@ -129,6 +135,9 @@ public class EvidenceSubmissionServiceTest {
         verifyNoInteractions(stateMachineService);
     }
 
+    /**
+     * Verifies that the saved file is cleaned up when the transition fails.
+     */
     @Test
     void testSubmitEvidenceDeletesFileWhenTransitionFails() {
         User student = createStudent();

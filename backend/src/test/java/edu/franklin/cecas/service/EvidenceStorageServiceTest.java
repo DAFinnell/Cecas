@@ -30,6 +30,9 @@ public class EvidenceStorageServiceTest {
         ReflectionTestUtils.setField(evidenceStorageService, "uploadDir", uploadDir.toString());
     }
 
+    /**
+     * Verifies that PDF files are accepted by magic bytes.
+     */
     @Test
     void testSaveEvidenceAcceptsPdfMagicBytes() {
         MockMultipartFile file = new MockMultipartFile(
@@ -46,6 +49,9 @@ public class EvidenceStorageServiceTest {
         assertTrue(Files.exists(uploadDir.resolve(relativePath)));
     }
 
+    /**
+     * Verifies that JPG files are accepted by magic bytes.
+     */
     @Test
     void testSaveEvidenceAcceptsJpgMagicBytes() {
         MockMultipartFile file = new MockMultipartFile(
@@ -61,6 +67,9 @@ public class EvidenceStorageServiceTest {
         assertTrue(Files.exists(uploadDir.resolve(relativePath)));
     }
 
+    /**
+     * Verifies that PNG files are accepted by magic bytes.
+     */
     @Test
     void testSaveEvidenceAcceptsPngMagicBytes() {
         MockMultipartFile file = new MockMultipartFile(
@@ -76,6 +85,9 @@ public class EvidenceStorageServiceTest {
         assertTrue(Files.exists(uploadDir.resolve(relativePath)));
     }
 
+    /**
+     * Verifies that files with unsupported magic bytes fail validation.
+     */
     @Test
     void testSaveEvidenceRejectsInvalidMagicBytes() {
         MockMultipartFile file = new MockMultipartFile(
@@ -91,6 +103,9 @@ public class EvidenceStorageServiceTest {
         assertTrue(ex.getMessage().contains("PDF, JPG, or PNG"));
     }
 
+    /**
+     * Verifies that an empty evidence file fails validation.
+     */
     @Test
     void testSaveEvidenceRejectsEmptyFile() {
         MockMultipartFile file = new MockMultipartFile(
@@ -106,6 +121,9 @@ public class EvidenceStorageServiceTest {
         assertTrue(ex.getMessage().contains("required"));
     }
 
+    /**
+     * Verifies that an evidence file over 10 MB fails validation.
+     */
     @Test
     void testSaveEvidenceRejectsOversizedFile() {
         byte[] content = new byte[(10 * 1024 * 1024) + 1];
@@ -127,6 +145,9 @@ public class EvidenceStorageServiceTest {
         assertTrue(ex.getMessage().contains("10 MB"));
     }
 
+    /**
+     * Verifies that cleanup removes a saved evidence file.
+     */
     @Test
     void testDeleteIfExistsRemovesSavedFile() throws IOException {
         MockMultipartFile file = new MockMultipartFile(
@@ -145,6 +166,9 @@ public class EvidenceStorageServiceTest {
         assertFalse(Files.exists(savedFile));
     }
 
+    /**
+     * Verifies that cleanup does not delete files outside the upload directory.
+     */
     @Test
     void testDeleteIfExistsSkipsPathOutsideUploadDirectory() throws IOException {
         Path outsideFile = uploadDir.getParent().resolve("outside-evidence.pdf");

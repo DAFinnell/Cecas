@@ -94,7 +94,11 @@ class StateMachineServiceImplTest {
         return "evidence/request-" + savedRequest.getId() + "/test.pdf";
     }
 
-     @Test
+    /**
+     * Verifies that a pending request can be pre-approved and then submitted
+     * with evidence by the student.
+     */
+    @Test
     void testPendingRequestCanBePreApprovedByChairThenStudentCanSubmitEvidence() {
         // prepare: ensure request is PENDING and owned by studentUser
         savedRequest.setStatus(ExtraCreditRequestStatus.PENDING);
@@ -147,6 +151,10 @@ class StateMachineServiceImplTest {
             .isInstanceOf(UnauthorizedRoleException.class)
             .hasMessageContaining("required role");
     }
+    /**
+     * Verifies that evidence must be submitted before the chair can approve or
+     * reject from final review.
+     */
     @Test
     void testPreApprovedRequiresEvidenceThenChairCanApproveOrRejectFromEvidenceSubmitted() {
         // happy path: submit evidence then approve
@@ -227,7 +235,10 @@ class StateMachineServiceImplTest {
             .hasMessageContaining("EVIDENCE_SUBMITTED");
     }
 
-    // Student uploads evidence only when PRE_APPROVED and only the owning student may do so.
+    /**
+     * Verifies that the owning student can submit evidence for a pre-approved
+     * request.
+     */
     @Test
     void testSubmitEvidenceRequest() {
         // prepare: set to PRE_APPROVED
@@ -244,6 +255,9 @@ class StateMachineServiceImplTest {
         assertThat(db.getEvidenceFilePath()).isEqualTo(evidencePath());
     }
 
+    /**
+     * Verifies that evidence cannot be submitted before pre-approval.
+     */
     @Test
     void testSubmitEvidenceRequestShouldThrowWhenNotPreApproved() {
         // ensure not PRE_APPROVED (use PENDING)
@@ -255,6 +269,10 @@ class StateMachineServiceImplTest {
             .hasMessageContaining("PRE_APPROVED");
     }
 
+    /**
+     * Verifies that a student cannot submit evidence for another student's
+     * request.
+     */
     @Test
     void testSubmitEvidenceRequestShouldThrowWhenNotOwningStudent() {
         // prepare: PRE_APPROVED but different student actor
@@ -278,6 +296,9 @@ class StateMachineServiceImplTest {
             .hasMessageContaining("owning");
     }
 
+    /**
+     * Verifies that a request cannot receive more than one evidence file.
+     */
     @Test
     void testSubmitEvidenceRequestShouldThrowWhenEvidenceAlreadyExists() {
         savedRequest.setStatus(ExtraCreditRequestStatus.PRE_APPROVED);
@@ -328,7 +349,11 @@ class StateMachineServiceImplTest {
             .hasMessageContaining("final state");
     }
 
-     @Test
+    /**
+     * Verifies that rejected, approved, and closed requests cannot transition
+     * again.
+     */
+    @Test
     void testRejectedApprovedClosedAreFinalNoFurtherTransitionsAllowed() {
         // REJECTED = Final
         savedRequest.setStatus(ExtraCreditRequestStatus.REJECTED);
