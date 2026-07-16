@@ -54,7 +54,7 @@ public class EvidenceStorageService {
         }
 
         if (file.getSize() > MAX_BYTES) {
-            throw new EvidenceUploadException("Evidence file must be 10MB or smaller.");
+            throw new EvidenceUploadException("Evidence file must be 10 MB or smaller.");
         }
     }
 

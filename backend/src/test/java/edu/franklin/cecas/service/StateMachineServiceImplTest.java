@@ -12,6 +12,7 @@ import edu.franklin.cecas.domain.ExtraCreditRequest;
 import edu.franklin.cecas.domain.ExtraCreditRequestStatus;
 import edu.franklin.cecas.domain.User;
 import edu.franklin.cecas.domain.UserRole;
+import edu.franklin.cecas.exception.EvidenceUploadException;
 import edu.franklin.cecas.exception.InvalidStateTransitionException;
 import edu.franklin.cecas.exception.PointCapExceededException;
 import edu.franklin.cecas.exception.UnauthorizedRoleException;
@@ -89,6 +90,10 @@ class StateMachineServiceImplTest {
         savedRequest = requestRepository.save(request);
     }
 
+    private String evidencePath() {
+        return "evidence/request-" + savedRequest.getId() + "/test.pdf";
+    }
+
      @Test
     void testPendingRequestCanBePreApprovedByChairThenStudentCanSubmitEvidence() {
         // prepare: ensure request is PENDING and owned by studentUser
@@ -100,11 +105,13 @@ class StateMachineServiceImplTest {
         assertThat(preApproved.getStatus()).isEqualTo(ExtraCreditRequestStatus.PRE_APPROVED);
 
         // student submits evidence (ownership enforced by service)
-        ExtraCreditRequest evidenceSubmitted = stateMachineService.submitEvidenceRequest(savedRequest.getId(), studentUser);
+        ExtraCreditRequest evidenceSubmitted = stateMachineService.submitEvidenceRequest(savedRequest.getId(), studentUser, evidencePath());
         assertThat(evidenceSubmitted.getStatus()).isEqualTo(ExtraCreditRequestStatus.EVIDENCE_SUBMITTED);
+        assertThat(evidenceSubmitted.getEvidenceFilePath()).isEqualTo(evidencePath());
 
         ExtraCreditRequest db = requestRepository.findById(savedRequest.getId()).orElseThrow();
         assertThat(db.getStatus()).isEqualTo(ExtraCreditRequestStatus.EVIDENCE_SUBMITTED);
+        assertThat(db.getEvidenceFilePath()).isEqualTo(evidencePath());
     }
 
     @Test
@@ -146,7 +153,7 @@ class StateMachineServiceImplTest {
         savedRequest.setStatus(ExtraCreditRequestStatus.PRE_APPROVED);
         savedRequest = requestRepository.save(savedRequest);
 
-        ExtraCreditRequest evidence = stateMachineService.submitEvidenceRequest(savedRequest.getId(), studentUser);
+        ExtraCreditRequest evidence = stateMachineService.submitEvidenceRequest(savedRequest.getId(), studentUser, evidencePath());
         assertThat(evidence.getStatus()).isEqualTo(ExtraCreditRequestStatus.EVIDENCE_SUBMITTED);
 
         int award = 3;
@@ -227,12 +234,14 @@ class StateMachineServiceImplTest {
         savedRequest.setStatus(ExtraCreditRequestStatus.PRE_APPROVED);
         savedRequest = requestRepository.save(savedRequest);
 
-        ExtraCreditRequest result = stateMachineService.submitEvidenceRequest(savedRequest.getId(), studentUser);
+        ExtraCreditRequest result = stateMachineService.submitEvidenceRequest(savedRequest.getId(), studentUser, evidencePath());
 
         assertThat(result.getStatus()).isEqualTo(ExtraCreditRequestStatus.EVIDENCE_SUBMITTED);
+        assertThat(result.getEvidenceFilePath()).isEqualTo(evidencePath());
 
         ExtraCreditRequest db = requestRepository.findById(savedRequest.getId()).orElseThrow();
         assertThat(db.getStatus()).isEqualTo(ExtraCreditRequestStatus.EVIDENCE_SUBMITTED);
+        assertThat(db.getEvidenceFilePath()).isEqualTo(evidencePath());
     }
 
     @Test
@@ -241,7 +250,7 @@ class StateMachineServiceImplTest {
         savedRequest.setStatus(ExtraCreditRequestStatus.PENDING);
         savedRequest = requestRepository.save(savedRequest);
 
-        assertThatThrownBy(() -> stateMachineService.submitEvidenceRequest(savedRequest.getId(), studentUser))
+        assertThatThrownBy(() -> stateMachineService.submitEvidenceRequest(savedRequest.getId(), studentUser, evidencePath()))
             .isInstanceOf(InvalidStateTransitionException.class)
             .hasMessageContaining("PRE_APPROVED");
     }
@@ -264,9 +273,20 @@ class StateMachineServiceImplTest {
         otherStudent.setEmailVerified(false);
         userRepository.save(otherStudent);
 
-        assertThatThrownBy(() -> stateMachineService.submitEvidenceRequest(savedRequest.getId(), otherStudent))
+        assertThatThrownBy(() -> stateMachineService.submitEvidenceRequest(savedRequest.getId(), otherStudent, evidencePath()))
             .isInstanceOf(UnauthorizedRoleException.class)
             .hasMessageContaining("owning");
+    }
+
+    @Test
+    void testSubmitEvidenceRequestShouldThrowWhenEvidenceAlreadyExists() {
+        savedRequest.setStatus(ExtraCreditRequestStatus.PRE_APPROVED);
+        savedRequest.setEvidenceFilePath("evidence/request-1/existing.pdf");
+        savedRequest = requestRepository.save(savedRequest);
+
+        assertThatThrownBy(() -> stateMachineService.submitEvidenceRequest(savedRequest.getId(), studentUser, evidencePath()))
+            .isInstanceOf(EvidenceUploadException.class)
+            .hasMessageContaining("already");
     }
 
     // Deadline behavior: PRE_APPROVED -> CLOSED
@@ -326,7 +346,7 @@ class StateMachineServiceImplTest {
         // CLOSED = Final
         savedRequest.setStatus(ExtraCreditRequestStatus.CLOSED);
         savedRequest = requestRepository.save(savedRequest);
-        assertThatThrownBy(() -> stateMachineService.submitEvidenceRequest(savedRequest.getId(), studentUser))
+        assertThatThrownBy(() -> stateMachineService.submitEvidenceRequest(savedRequest.getId(), studentUser, evidencePath()))
             .isInstanceOf(InvalidStateTransitionException.class);
     }
 
