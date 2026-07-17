@@ -7,15 +7,13 @@ import { routes } from '../app/routes'
 const POINT_CAP = 50
 const MIN_DESCRIPTION_LENGTH = 15
 
-function formatCourse(course: CourseOption) {
-  return `${course.courseCode} | ${course.section} | ${course.term}`
-}
-
 export default function NewExtraCreditRequestPage() {
   const navigate = useNavigate()
   const [courses, setCourses] = useState<CourseOption[]>([])
+  const [selectedTerm, setSelectedTerm] = useState('')
+  const [selectedCourseCode, setSelectedCourseCode] = useState('')
+  const [selectedSection, setSelectedSection] = useState('')
   const [categories, setCategories] = useState<CategoryOption[]>([])
-  const [courseId, setCourseId] = useState('')
   const [categoryId, setCategoryId] = useState('')
   const [description, setDescription] = useState('')
   const [pointsSummary, setPointsSummary] = useState<StudentPointsSummary>({
@@ -30,9 +28,33 @@ export default function NewExtraCreditRequestPage() {
   const [successMessage, setSuccessMessage] = useState<string | null>(null)
 
   const selectedCourse = useMemo(
-    () => courses.find((course) => course.courseId === Number(courseId)),
-    [courses, courseId],
+    () =>
+      courses.find(
+        (course) =>
+          course.term === selectedTerm &&
+          course.courseCode === selectedCourseCode &&
+          course.section === selectedSection,
+      ),
+    [courses, selectedTerm, selectedCourseCode, selectedSection],
   )
+
+  const uniqueTerms = useMemo(() => {
+    return Array.from(new Set(courses.map((c) => c.term)))
+  }, [courses])
+
+  const uniqueCourseCodes = useMemo(() => {
+    if (!selectedTerm) return []
+    const filtered = courses.filter((c) => c.term === selectedTerm)
+    return Array.from(new Set(filtered.map((c) => c.courseCode)))
+  }, [courses, selectedTerm])
+
+  const uniqueSections = useMemo(() => {
+    if (!selectedTerm || !selectedCourseCode) return []
+    const filtered = courses.filter(
+      (c) => c.term === selectedTerm && c.courseCode === selectedCourseCode,
+    )
+    return Array.from(new Set(filtered.map((c) => c.section)))
+  }, [courses, selectedTerm, selectedCourseCode])
 
   const selectedCategory = useMemo(
     () => categories.find((category) => category.categoryId === Number(categoryId)),
@@ -94,7 +116,7 @@ export default function NewExtraCreditRequestPage() {
     let isActive = true
 
     async function loadPointSummaryForSelectedCourse() {
-      if (!selectedCourse) {
+      if (!selectedTerm || !selectedCourseCode || !selectedSection || !selectedCourse) {
         setPointsSummary({
           issued: 0,
           pending: 0,
@@ -121,7 +143,7 @@ export default function NewExtraCreditRequestPage() {
     return () => {
       isActive = false
     }
-  }, [selectedCourse])
+  }, [selectedCourse, selectedTerm, selectedCourseCode, selectedSection])
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
@@ -153,9 +175,11 @@ export default function NewExtraCreditRequestPage() {
       })
 
       setSuccessMessage(`Request #${createdRequest.id} was submitted with Pending status.`)
-      setCourseId('')
       setCategoryId('')
       setDescription('')
+      setSelectedTerm('')
+      setSelectedCourseCode('')
+      setSelectedSection('')
       navigate(routes.student.dashboard, { replace: true })
     } catch (error) {
       setSubmitError(error instanceof Error ? error.message : 'Unable to submit request.')
@@ -167,9 +191,7 @@ export default function NewExtraCreditRequestPage() {
   return (
     <section className="space-y-8">
       <div className="rounded-3xl bg-white p-8 shadow-sm ring-1 ring-slate-200">
-        <p className="text-sm font-medium uppercase tracking-[0.2em] text-sky-700">
-          Student workflow
-        </p>
+        
         <h1 className="mt-3 text-3xl font-semibold tracking-tight text-slate-950 sm:text-4xl">
           New Extra Credit Request
         </h1>
@@ -191,30 +213,67 @@ export default function NewExtraCreditRequestPage() {
           className="space-y-6 rounded-3xl bg-white p-8 shadow-sm ring-1 ring-slate-200"
         >
           <div className="grid gap-5 md:grid-cols-2">
-            <label className="space-y-2">
-              <span className="text-sm font-medium text-slate-700">
-                Course / Section / Term
-              </span>
+            <label className="space-y-2 block">
+              <span className="text-sm font-medium text-slate-700">Term</span>
               <select
-                value={courseId}
+                value={selectedTerm}
                 onChange={(event) => {
-                  setCourseId(event.target.value)
+                  setSelectedTerm(event.target.value)
+                  setSelectedCourseCode('')
+                  setSelectedSection('')
                   setSubmitError(null)
                   setSuccessMessage(null)
                 }}
                 disabled={isLoading}
                 className="w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm shadow-sm focus:border-sky-500 focus:outline-none focus:ring-2 focus:ring-sky-100 disabled:bg-slate-100"
               >
-                <option value="">Select course</option>
-                {courses.map((course) => (
-                  <option key={course.courseId} value={course.courseId}>
-                    {formatCourse(course)}
-                  </option>
+                <option value="">Select term</option>
+                {uniqueTerms.map((term) => (
+                  <option key={term} value={term}>{term}</option>
                 ))}
               </select>
             </label>
 
-            <label className="space-y-2">
+            <label className="space-y-2 block">
+              <span className="text-sm font-medium text-slate-700">Course Code</span>
+              <select
+                value={selectedCourseCode}
+                onChange={(event) => {
+                  setSelectedCourseCode(event.target.value)
+                  setSelectedSection('')
+                  setSubmitError(null)
+                  setSuccessMessage(null)
+                }}
+                disabled={isLoading || !selectedTerm}
+                className="w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm shadow-sm focus:border-sky-500 focus:outline-none focus:ring-2 focus:ring-sky-100 disabled:bg-slate-100"
+              >
+                <option value="">Select course code</option>
+                {uniqueCourseCodes.map((code) => (
+                  <option key={code} value={code}>{code}</option>
+                ))}
+              </select>
+            </label>
+
+            <label className="space-y-2 block">
+              <span className="text-sm font-medium text-slate-700">Section</span>
+              <select
+                value={selectedSection}
+                onChange={(event) => {
+                  setSelectedSection(event.target.value)
+                  setSubmitError(null)
+                  setSuccessMessage(null)
+                }}
+                disabled={isLoading || !selectedCourseCode} // Dependent disable rule
+                className="w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm shadow-sm focus:border-sky-500 focus:outline-none focus:ring-2 focus:ring-sky-100 disabled:bg-slate-100"
+              >
+                <option value="">Select section</option>
+                {uniqueSections.map((section) => (
+                  <option key={section} value={section}>{section}</option>
+                ))}
+              </select>
+            </label>
+
+            <label className="space-y-2 block">
               <span className="text-sm font-medium text-slate-700">Category</span>
               <select
                 value={categoryId}
@@ -299,11 +358,13 @@ export default function NewExtraCreditRequestPage() {
             <button
               type="button"
               onClick={() => {
-                setCourseId('')
                 setCategoryId('')
                 setDescription('')
                 setSubmitError(null)
                 setSuccessMessage(null)
+                setSelectedTerm('')
+                setSelectedCourseCode('')
+                setSelectedSection('')
               }}
               className="rounded-md border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
             >

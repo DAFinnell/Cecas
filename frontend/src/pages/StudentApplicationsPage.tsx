@@ -276,9 +276,6 @@ export default function StudentApplicationsPage() {
       <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm sm:p-8">
         <div className="flex flex-col gap-6 md:flex-row md:items-start md:justify-between">
           <div>
-            <p className="text-sm font-semibold uppercase tracking-[0.2em] text-sky-700">
-              Student Workflow
-            </p>
 
             <h1 className="mt-2 text-3xl font-semibold tracking-tight text-slate-950">
               My Applications
