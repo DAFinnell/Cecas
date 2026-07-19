@@ -60,6 +60,7 @@ public class StateMachineServiceImpl implements StateMachineService {
         }
 
         requireRole(user, UserRole.CHAIR);
+        request.setChair(user);
         request.setStatus(ExtraCreditRequestStatus.PRE_APPROVED);
         return requestRepository.save(request);
     }
@@ -79,7 +80,7 @@ public class StateMachineServiceImpl implements StateMachineService {
             throw new InvalidStateTransitionException(
                     "Invalid transition: reject allowed only from PENDING or EVIDENCE_SUBMITTED state.");
         }
-
+        
         requireRole(user, UserRole.CHAIR);
 
         if (feedback == null || feedback.trim().isEmpty()) {
@@ -88,6 +89,7 @@ public class StateMachineServiceImpl implements StateMachineService {
 
         request.setChairFeedback(feedback);
         request.setStatus(ExtraCreditRequestStatus.REJECTED);
+        request.setChair(user);
         return requestRepository.save(request);
     }
 

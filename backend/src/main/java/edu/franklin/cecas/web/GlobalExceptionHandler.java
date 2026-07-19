@@ -10,6 +10,7 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
+import edu.franklin.cecas.exception.ChairNotAssignedException;
 import edu.franklin.cecas.exception.EmailAlreadyExistsException;
 import edu.franklin.cecas.exception.ExtraCreditRequestNotFoundException;
 import edu.franklin.cecas.exception.InvalidCredentialsException;
@@ -76,6 +77,15 @@ public class GlobalExceptionHandler {
         problem.setTitle("Forbidden");
         problem.setDetail("You do not have permission to access this resource.");
         problem.setProperty("errorCode", "ACCESS_DENIED");
+        return problem;
+    }
+
+    @ExceptionHandler(ChairNotAssignedException.class)
+    public ProblemDetail handleChairNotAssigned(ChairNotAssignedException ex) {
+        ProblemDetail problem = ProblemDetail.forStatus(HttpStatus.FORBIDDEN);
+        problem.setTitle("Chair not assigned");
+        problem.setDetail(ex.getMessage());
+        problem.setProperty("errorCode", "CHAIR_NOT_ASSIGNED");
         return problem;
     }
 

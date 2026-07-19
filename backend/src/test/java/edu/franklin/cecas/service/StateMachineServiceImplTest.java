@@ -121,6 +121,10 @@ class StateMachineServiceImplTest {
         ExtraCreditRequest db = requestRepository.findById(savedRequest.getId()).orElseThrow();
         assertThat(db.getStatus()).isEqualTo(ExtraCreditRequestStatus.REJECTED);
         assertThat(db.getChairFeedback()).isEqualTo(feedback);
+        assertThat(rejected.getChair()).isNotNull();
+        assertThat(rejected.getChair().getId()).isEqualTo(chairUser.getId());
+        assertThat(db.getChair()).isNotNull();
+        assertThat(db.getChair().getId()).isEqualTo(chairUser.getId());
     }
 
     @Test
@@ -128,10 +132,19 @@ class StateMachineServiceImplTest {
         ExtraCreditRequest result = stateMachineService.preApproveRequest(savedRequest.getId(), chairUser);
 
         assertThat(result.getStatus()).isEqualTo(ExtraCreditRequestStatus.PRE_APPROVED);
-        
-        ExtraCreditRequest databaseCheck = requestRepository.findById(savedRequest.getId()).orElseThrow();
-        
+
+        ExtraCreditRequest databaseCheck =
+            requestRepository.findById(savedRequest.getId()).orElseThrow();
+
         assertThat(databaseCheck.getStatus()).isEqualTo(ExtraCreditRequestStatus.PRE_APPROVED);
+
+        assertThat(result.getChair()).isNotNull();
+        assertThat(result.getChair().getId())
+            .isEqualTo(chairUser.getId());
+
+        assertThat(databaseCheck.getChair()).isNotNull();
+        assertThat(databaseCheck.getChair().getId())
+            .isEqualTo(chairUser.getId());
     }
 
     @Test
@@ -306,6 +319,9 @@ class StateMachineServiceImplTest {
         assertThatThrownBy(() -> stateMachineService.preApproveRequest(savedRequest.getId(), chairUser))
             .isInstanceOf(InvalidStateTransitionException.class)
             .hasMessageContaining("final state");
+
+        assertThat(rejected.getChair()).isNotNull();
+        assertThat(rejected.getChair().getId()).isEqualTo(chairUser.getId());
     }
 
      @Test
