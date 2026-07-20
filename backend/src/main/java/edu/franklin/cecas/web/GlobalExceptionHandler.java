@@ -9,9 +9,11 @@ import org.springframework.security.access.AccessDeniedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.multipart.MaxUploadSizeExceededException;
 
 import edu.franklin.cecas.exception.ChairNotAssignedException;
 import edu.franklin.cecas.exception.EmailAlreadyExistsException;
+import edu.franklin.cecas.exception.EvidenceUploadException;
 import edu.franklin.cecas.exception.ExtraCreditRequestNotFoundException;
 import edu.franklin.cecas.exception.InvalidCredentialsException;
 import edu.franklin.cecas.exception.InvalidExtraCreditRequestException;
@@ -170,14 +172,6 @@ public class GlobalExceptionHandler {
         return problem;
     }
 
-    @ExceptionHandler(Exception.class)
-    public ProblemDetail handleGenericException(Exception ex) {
-        ProblemDetail problem = ProblemDetail.forStatus(HttpStatus.INTERNAL_SERVER_ERROR);
-        problem.setTitle("Internal Server Error");
-        problem.setDetail("An unexpected error occurred.");
-        return problem;
-    }
-
     @ExceptionHandler(StudentNotFoundException.class)
     public ProblemDetail handleStudentNotFoundException(StudentNotFoundException ex) {
         ProblemDetail problem = ProblemDetail.forStatus(HttpStatus.NOT_FOUND);
@@ -193,6 +187,32 @@ public class GlobalExceptionHandler {
         problem.setTitle("Extra Credit Request Not Found");
         problem.setDetail(ex.getMessage());
         problem.setProperty("errorCode", "EXTRA_CREDIT_REQUEST_NOT_FOUND");
+        return problem;
+    }
+
+    @ExceptionHandler(EvidenceUploadException.class)
+    public ProblemDetail handleEvidenceUploadException(EvidenceUploadException ex) {
+        ProblemDetail problem = ProblemDetail.forStatus(HttpStatus.BAD_REQUEST);
+        problem.setTitle("Invalid Evidence Upload");
+        problem.setDetail(ex.getMessage());
+        problem.setProperty("errorCode", "EVIDENCE_UPLOAD_INVALID");
+        return problem;
+    }
+
+    @ExceptionHandler(MaxUploadSizeExceededException.class)
+    public ProblemDetail handleMaxUploadSize(MaxUploadSizeExceededException ex) {
+        ProblemDetail problem = ProblemDetail.forStatus(HttpStatus.BAD_REQUEST);
+        problem.setTitle("Invalid evidence upload");
+        problem.setDetail("Evidence file must be 10 MB or smaller.");
+        problem.setProperty("errorCode", "EVIDENCE_UPLOAD_TOO_LARGE");
+        return problem;
+    }
+
+    @ExceptionHandler(Exception.class)
+    public ProblemDetail handleGenericException(Exception ex) {
+        ProblemDetail problem = ProblemDetail.forStatus(HttpStatus.INTERNAL_SERVER_ERROR);
+        problem.setTitle("Internal Server Error");
+        problem.setDetail("An unexpected error occurred.");
         return problem;
     }
 }

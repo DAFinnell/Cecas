@@ -15,6 +15,9 @@ public class StudentRequestSummaryDTO {
     private Integer defaultPoints;
     private Integer awardedPoints;
     private LocalDateTime updatedAt;
+    private LocalDateTime dueDate;
+    private boolean evidenceFileUploaded;
+    private boolean evidenceUploadAvailable;
 
     public StudentRequestSummaryDTO(ExtraCreditRequest request) {
         this.id = request.getId();
@@ -26,6 +29,10 @@ public class StudentRequestSummaryDTO {
         this.defaultPoints = request.getCategory().getDefaultPoints();
         this.awardedPoints = request.getAwardedPoints();
         this.updatedAt = request.getUpdatedAt();
+        this.dueDate = request.getDueDate();
+        this.evidenceFileUploaded = request.getEvidenceFilePath() != null && !request.getEvidenceFilePath().isBlank();
+        this.evidenceUploadAvailable = request.getStatus() == ExtraCreditRequestStatus.PRE_APPROVED
+                && !this.evidenceFileUploaded;
     }
 
     public Integer getId() {
@@ -62,5 +69,17 @@ public class StudentRequestSummaryDTO {
 
     public LocalDateTime getUpdatedAt() {
         return updatedAt;
+    }
+
+    public LocalDateTime getDueDate() {
+        return dueDate;
+    }
+
+    public boolean isEvidenceFileUploaded() {
+        return evidenceFileUploaded;
+    }
+
+    public boolean isEvidenceUploadAvailable() {
+        return evidenceUploadAvailable;
     }
 }

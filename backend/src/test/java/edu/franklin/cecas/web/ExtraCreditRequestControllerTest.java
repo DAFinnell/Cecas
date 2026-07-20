@@ -2,6 +2,7 @@ package edu.franklin.cecas.web;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
@@ -11,6 +12,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.security.test.context.support.WithMockUser;
+import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.test.web.servlet.MockMvc;
@@ -18,12 +20,14 @@ import static org.hamcrest.Matchers.nullValue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.ArgumentMatchers.isNull;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -38,7 +42,9 @@ import edu.franklin.cecas.domain.UserRole;
 import edu.franklin.cecas.dto.ExtraCreditRequestCreateDTO;
 import edu.franklin.cecas.dto.StudentRequestDetailDTO;
 import edu.franklin.cecas.dto.StudentRequestSummaryDTO;
+import edu.franklin.cecas.exception.EvidenceUploadException;
 import edu.franklin.cecas.service.CecasUserDetailsService;
+import edu.franklin.cecas.service.EvidenceSubmissionService;
 import edu.franklin.cecas.service.ExtraCreditRequestService;
 
 @WebMvcTest(controllers = ExtraCreditRequestController.class)
@@ -53,6 +59,9 @@ public class ExtraCreditRequestControllerTest {
 
     @MockitoBean
     private ExtraCreditRequestService extraCreditRequestService;
+
+    @MockitoBean
+    private EvidenceSubmissionService evidenceSubmissionService;
 
     private final ObjectMapper objectMapper = new ObjectMapper();
 
@@ -123,6 +132,11 @@ public class ExtraCreditRequestControllerTest {
                 .andExpect(jsonPath("$.createdAt").exists())
                 .andExpect(jsonPath("$.updatedAt").exists())
                 .andExpect(jsonPath("$.chairFeedback").value(nullValue()))
+                .andExpect(jsonPath("$.dueDate").value(nullValue()))
+                .andExpect(jsonPath("$.evidenceFileUploaded").value(false))
+                .andExpect(jsonPath("$.evidenceUploadAvailable").value(false))
+                .andExpect(jsonPath("$.evidenceFileName").value(nullValue()))
+                .andExpect(jsonPath("$.evidenceFilePath").doesNotExist())
                 .andExpect(jsonPath("$.studentId").doesNotExist())
                 .andExpect(jsonPath("$.course").doesNotExist())
                 .andExpect(jsonPath("$.category").doesNotExist())
@@ -153,6 +167,11 @@ public class ExtraCreditRequestControllerTest {
                 .andExpect(jsonPath("$[0].defaultPoints").value(5))
                 .andExpect(jsonPath("$[0].awardedPoints").value(nullValue()))
                 .andExpect(jsonPath("$[0].updatedAt").exists())
+                .andExpect(jsonPath("$[0].dueDate").value(nullValue()))
+                .andExpect(jsonPath("$[0].evidenceFileUploaded").value(false))
+                .andExpect(jsonPath("$[0].evidenceUploadAvailable").value(false))
+                .andExpect(jsonPath("$[0].evidenceFileName").doesNotExist())
+                .andExpect(jsonPath("$[0].evidenceFilePath").doesNotExist())
                 .andExpect(jsonPath("$[0].description").doesNotExist())
                 .andExpect(jsonPath("$[0].categoryDescription").doesNotExist())
                 .andExpect(jsonPath("$[0].createdAt").doesNotExist())
@@ -163,6 +182,59 @@ public class ExtraCreditRequestControllerTest {
                 .andExpect(jsonPath("$[0].student").doesNotExist());
 
         verify(extraCreditRequestService).getRequestsForStudent("derek@derek.com");
+    }
+
+    /**
+     * Tests that a student can upload evidence and receive the updated request payload.
+     */
+    @Test
+    @WithMockUser(username = "derek@derek.com", roles = { "STUDENT" })
+    void testUploadEvidenceReturnsUpdatedRequest() throws Exception {
+        ExtraCreditRequest request = createExtraCreditRequest();
+        request.setStatus(ExtraCreditRequestStatus.EVIDENCE_SUBMITTED);
+        request.setEvidenceFilePath("evidence/request-42/proof.pdf");
+        StudentRequestDetailDTO response = new StudentRequestDetailDTO(request);
+
+        MockMultipartFile evidence = new MockMultipartFile(
+                "evidence",
+                "proof.pdf",
+                "application/pdf",
+                "%PDF-1.7 test".getBytes(StandardCharsets.UTF_8));
+
+        when(evidenceSubmissionService.submitEvidence(eq("derek@derek.com"), eq(42), any()))
+                .thenReturn(response);
+
+        mockMvc.perform(multipart("/api/extra-credit-requests/{requestId}/evidence", 42)
+                .file(evidence)
+                .with(csrf()))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id").value(42))
+                .andExpect(jsonPath("$.status").value("EVIDENCE_SUBMITTED"))
+                .andExpect(jsonPath("$.evidenceFileUploaded").value(true))
+                .andExpect(jsonPath("$.evidenceUploadAvailable").value(false))
+                .andExpect(jsonPath("$.evidenceFileName").value("proof.pdf"))
+                .andExpect(jsonPath("$.evidenceFilePath").doesNotExist());
+
+        verify(evidenceSubmissionService).submitEvidence(eq("derek@derek.com"), eq(42), any());
+    }
+
+    /**
+     * Tests that an evidence upload without a file returns a clear validation error.
+     */
+    @Test
+    @WithMockUser(username = "derek@derek.com", roles = { "STUDENT" })
+    void testUploadEvidenceWithoutFileReturnsBadRequest() throws Exception {
+        when(evidenceSubmissionService.submitEvidence(eq("derek@derek.com"), eq(42), isNull()))
+                .thenThrow(new EvidenceUploadException("Evidence file is required."));
+
+        mockMvc.perform(multipart("/api/extra-credit-requests/{requestId}/evidence", 42)
+                .with(csrf()))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.title").value("Invalid Evidence Upload"))
+                .andExpect(jsonPath("$.detail").value("Evidence file is required."))
+                .andExpect(jsonPath("$.errorCode").value("EVIDENCE_UPLOAD_INVALID"));
+
+        verify(evidenceSubmissionService).submitEvidence(eq("derek@derek.com"), eq(42), isNull());
     }
 
     /**

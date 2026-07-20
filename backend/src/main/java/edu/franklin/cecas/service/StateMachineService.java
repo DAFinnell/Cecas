@@ -22,7 +22,7 @@ public interface StateMachineService {
      * PRE_APPROVED -> EVIDENCE_SUBMITTED 
      * Student Only
      */
-    ExtraCreditRequest submitEvidenceRequest(Integer requestId, User student);
+    ExtraCreditRequest submitEvidenceRequest(Integer requestId, User student, String evidenceFilePath);
 
     /**
      * PRE_APPROVED -> CLOSED 

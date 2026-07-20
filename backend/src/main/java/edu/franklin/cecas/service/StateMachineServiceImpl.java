@@ -8,6 +8,7 @@ import edu.franklin.cecas.domain.ExtraCreditRequest;
 import edu.franklin.cecas.domain.ExtraCreditRequestStatus;
 import edu.franklin.cecas.domain.User;
 import edu.franklin.cecas.domain.UserRole;
+import edu.franklin.cecas.exception.EvidenceUploadException;
 import edu.franklin.cecas.exception.InvalidStateTransitionException;
 import edu.franklin.cecas.exception.ResourceNotFoundException;
 import edu.franklin.cecas.exception.UnauthorizedRoleException;
@@ -94,7 +95,7 @@ public class StateMachineServiceImpl implements StateMachineService {
     }
 
     @Override
-    public ExtraCreditRequest submitEvidenceRequest(Integer requestId, User user) {
+    public ExtraCreditRequest submitEvidenceRequest(Integer requestId, User user, String evidenceFilePath) {
         ExtraCreditRequest request = requestRepository.findById(requestId)
                 .orElseThrow(() -> new ResourceNotFoundException("Request not found with ID: " + requestId));
 
@@ -114,8 +115,13 @@ public class StateMachineServiceImpl implements StateMachineService {
             throw new UnauthorizedRoleException("Only the owning student may submit evidence for this request.");
         }
 
+        if (request.getEvidenceFilePath() != null && !request.getEvidenceFilePath().isBlank()) {
+            throw new EvidenceUploadException("Evidence has already been uploaded for this request.");
+        }
+
+        request.setEvidenceFilePath(evidenceFilePath);
         request.setStatus(ExtraCreditRequestStatus.EVIDENCE_SUBMITTED);
-        return requestRepository.save(request);
+        return requestRepository.saveAndFlush(request);
     }
 
     @Override
