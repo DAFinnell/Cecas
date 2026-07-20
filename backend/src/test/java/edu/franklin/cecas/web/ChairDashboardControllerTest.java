@@ -74,7 +74,7 @@ class ChairDashboardControllerTest {
         request.setAwardedPoints(5);
 
         when(chairDashboardService.getRequestCountSummary(any()))
-                .thenReturn(new ChairDashboardSummaryResponse(1L, 2L, 3L, 4L));
+                .thenReturn(new ChairDashboardSummaryResponse(1L, 1L,2L, 3L, 4L));
 
         ChairDashboardQueueResponse response = new ChairDashboardQueueResponse(request);
 
@@ -124,10 +124,10 @@ class ChairDashboardControllerTest {
     @Test
     void testAnonymousAccess() throws Exception {
         mockMvc.perform(get("/api/chair/dashboard/summary"))
-                .andExpect(status().isForbidden());
+                .andExpect(status().isUnauthorized());
 
         mockMvc.perform(get("/api/chair/dashboard/queue"))
-                .andExpect(status().isForbidden());
+                .andExpect(status().isUnauthorized());
     }
 
     @Test

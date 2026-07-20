@@ -22,9 +22,13 @@ describe('UserService', () => {
 
     const result = await userService.getUserProfile()
 
-    expect(fetchSpy).toHaveBeenCalledWith('/api/users/me', {
-      credentials: 'same-origin',
-    })
+    expect(fetchSpy).toHaveBeenCalledWith(
+      '/api/users/me',
+      expect.objectContaining({
+        credentials: 'include',
+        headers: expect.any(Headers),
+      }),
+    )
     expect(result).toEqual(payload)
   })
 
@@ -44,9 +48,13 @@ describe('UserService', () => {
 
     const result = await userService.getMyPoints('26/FA')
 
-    expect(fetchSpy).toHaveBeenCalledWith('/api/users/me/points?term=26%2FFA', {
-      credentials: 'same-origin',
-    })
+    expect(fetchSpy).toHaveBeenCalledWith(
+      '/api/users/me/points?term=26%2FFA',
+      expect.objectContaining({
+        credentials: 'include',
+        headers: expect.any(Headers),
+      }),
+    )
     expect(result).toEqual(payload)
   })
 })

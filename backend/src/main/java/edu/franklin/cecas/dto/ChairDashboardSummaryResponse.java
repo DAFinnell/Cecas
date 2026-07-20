@@ -2,14 +2,16 @@ package edu.franklin.cecas.dto;
 
 public class ChairDashboardSummaryResponse {
     private long pendingCount;
+    private long preApprovedCount;
     private long evidenceSubmittedCount;
     private long approvedCount;
     private long rejectedCount;
 
     public ChairDashboardSummaryResponse() {}
 
-    public ChairDashboardSummaryResponse(long pendingCount, long evidenceSubmittedCount, long approvedCount, long rejectedCount) {
+    public ChairDashboardSummaryResponse(long pendingCount, long preApprovedCount, long evidenceSubmittedCount, long approvedCount, long rejectedCount) {
         this.pendingCount = pendingCount;
+        this.preApprovedCount = preApprovedCount;
         this.evidenceSubmittedCount = evidenceSubmittedCount;
         this.approvedCount = approvedCount;
         this.rejectedCount = rejectedCount;
@@ -23,6 +25,14 @@ public class ChairDashboardSummaryResponse {
         this.pendingCount = pendingCount;
     }
 
+    public long getPreApprovedCount() {
+        return preApprovedCount;
+    }
+
+    public void setPreApprovedCount(long preApprovedCount) {
+        this.preApprovedCount = preApprovedCount;
+    }
+    
     public long getEvidenceSubmittedCount() {
         return evidenceSubmittedCount;
     }

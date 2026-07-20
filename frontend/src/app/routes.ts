@@ -14,6 +14,7 @@ export const routes = {
   chair: {
     dashboard: '/chair',
     forceChangePassword: '/chair/force-change-password',
+    reviewPage: (requestId: string | number) => `/chair/review/${requestId}`,
   },
 
   logout: '/logout',

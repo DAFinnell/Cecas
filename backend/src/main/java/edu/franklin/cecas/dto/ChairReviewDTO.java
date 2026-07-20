@@ -2,7 +2,7 @@ package edu.franklin.cecas.dto;
 
 import java.time.LocalDateTime;
 
-public class ChairPreReviewDTO {
+public class ChairReviewDTO {
 
     private Integer requestId;
     private String status;
@@ -23,7 +23,7 @@ public class ChairPreReviewDTO {
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 
-    public ChairPreReviewDTO() {
+    public ChairReviewDTO() {
     }
 
     public Integer getRequestId() {

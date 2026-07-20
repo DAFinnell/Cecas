@@ -12,31 +12,31 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import edu.franklin.cecas.dto.ChairPreReviewDTO;
+import edu.franklin.cecas.dto.ChairReviewDTO;
 import edu.franklin.cecas.dto.ChairRejectRequestDTO;
 import edu.franklin.cecas.dto.ChairRequestActionDTO;
-import edu.franklin.cecas.service.ChairRequestReviewService;
+import edu.franklin.cecas.service.ChairReviewRequestService;
 import jakarta.validation.Valid;
 
 @RestController
 @RequestMapping("/api/chair/requests")
 @Validated
-public class ChairRequestReviewController {
+public class ChairReviewRequestController {
 
-    private final ChairRequestReviewService chairRequestReviewService;
+    private final ChairReviewRequestService chairRequestReviewService;
 
-    public ChairRequestReviewController(
-            ChairRequestReviewService chairRequestReviewService) {
+    public ChairReviewRequestController(
+            ChairReviewRequestService chairRequestReviewService) {
         this.chairRequestReviewService = chairRequestReviewService;
     }
 
     @PreAuthorize("hasRole('CHAIR')")
-    @GetMapping("/{requestId}/pre-review")
-    public ResponseEntity<ChairPreReviewDTO> preReview(
+    @GetMapping("/{requestId}/review")
+    public ResponseEntity<ChairReviewDTO> getRequestForReview(
             @AuthenticationPrincipal UserDetails userDetails,
             @PathVariable Integer requestId) {
 
-        ChairPreReviewDTO response = chairRequestReviewService.getPendingRequestForReview(
+        ChairReviewDTO response = chairRequestReviewService.getRequestForReview(
                 userDetails.getUsername(),
                 requestId);
 

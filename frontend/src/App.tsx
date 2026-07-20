@@ -6,7 +6,7 @@ import { routePath, routes } from './app/routes'
 import CsrfInitializer from './components/CsrfInitializer'
 import { useCurrentUser } from './hooks/useCurrentUser'
 import AboutPage from './pages/AboutPage'
-import ChairPage from './pages/ChairPage'
+import ChairPage from './pages/ChairDashboardPage'
 import ContactPage from './pages/ContactPage'
 import DebugPage from './pages/DebugPage'
 import ForceChangePasswordPage from './pages/ForceChangePasswordPage'
@@ -20,6 +20,7 @@ import RegisterPage from './pages/RegisterPage'
 import StudentPage from './pages/StudentPage'
 import StudentApplicationDetailPage from './pages/StudentApplicationDetailPage'
 import StudentApplicationsPage from './pages/StudentApplicationsPage'
+import ChairReviewPage from './pages/ChairReviewPage'
 
 function RootPage() {
   const { user, loading } = useCurrentUser()
@@ -80,6 +81,10 @@ export default function App() {
           <Route element={<RequireRole allowedRoles={['CHAIR']} />}>
             <Route element={<RequireChairPasswordChange />}>
               <Route path={routePath(routes.chair.dashboard)} element={<ChairPage />} />
+              <Route
+                path={routePath("/chair/review/:requestId")}
+                element={<ChairReviewPage />}
+              />
             </Route>
 
             <Route

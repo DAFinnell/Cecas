@@ -101,7 +101,7 @@ public class UserControllerTest {
     @Test
     void testGetUserProfileRequiresAuthentication() throws Exception {
         mockMvc.perform(get("/api/users/me").with(anonymous()))
-                .andExpect(status().isForbidden());
+                .andExpect(status().isUnauthorized());
     }
 
     /**
@@ -145,7 +145,7 @@ public class UserControllerTest {
                 .with(csrf())
                 .contentType(APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(req)))
-                .andExpect(status().isForbidden());
+                .andExpect(status().isUnauthorized());
     }
 
     /**
@@ -239,7 +239,7 @@ public class UserControllerTest {
                 .with(csrf())
                 .contentType(APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(req)))
-                .andExpect(status().isForbidden());
+                .andExpect(status().isUnauthorized());
     }
     /**
      * Test normal password change still requires correct current password

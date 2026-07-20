@@ -9,6 +9,7 @@ import type {
   StudentRequestSummary,
 } from '../types/extraCredit.types'
 import type { UserProfileResponse } from '../types/user.types'
+import { formatCourse, formatDate, formatTerm, formatPoints} from '../util/format.util'
 
 type LoadState = {
   profile: UserProfileResponse | null
@@ -51,61 +52,8 @@ function getStatusBadgeClass(status: ExtraCreditRequestStatus): string {
   }
 }
 
-function formatTerm(term: string): string {
-  const normalized = term.trim().toUpperCase()
-  const match = /^(\d{2}|\d{4})[/-](SP|SU|FA|WI)$/.exec(normalized)
-
-  if (!match) {
-    return term
-  }
-
-  const [, rawYear, code] = match
-  const year = rawYear.length === 2 ? `20${rawYear}` : rawYear
-
-  const termNames: Record<string, string> = {
-    SP: 'Spring',
-    SU: 'Summer',
-    FA: 'Fall',
-    WI: 'Winter',
-  }
-
-  return `${termNames[code]} ${year}`
-}
-
-function formatCourse(request: StudentRequestSummary): string {
-  return [
-    request.courseCode,
-    formatTerm(request.term),
-    request.section,
-  ]
-    .filter(Boolean)
-    .join(' · ')
-}
-
 function getPoints(request: StudentRequestSummary): number {
   return request.awardedPoints ?? request.defaultPoints
-}
-
-function formatPoints(points: number): string {
-  return `${points} pts`
-}
-
-function formatDate(value: string | null): string {
-  if (!value) {
-    return '—'
-  }
-
-  const date = new Date(value)
-
-  if (Number.isNaN(date.getTime())) {
-    return '—'
-  }
-
-  return new Intl.DateTimeFormat('en-US', {
-    month: 'short',
-    day: 'numeric',
-    year: 'numeric',
-  }).format(date)
 }
 
 function getSortDate(request: StudentRequestSummary): number {

@@ -43,19 +43,21 @@ public class ChairDashboardService {
         List<Integer> assignedCourseIds = getAssignedCourseIds(chair);
 
         if (assignedCourseIds.isEmpty()) {
-            return new ChairDashboardSummaryResponse(0L, 0L, 0L, 0L);
+            return new ChairDashboardSummaryResponse(0L, 0L, 0L, 0L, 0L);
         }
 
         long pending = extraCreditRequestRepository
                 .countByCourse_CourseIdInAndStatus(assignedCourseIds, ExtraCreditRequestStatus.PENDING);
+        long preApproved = extraCreditRequestRepository
+                .countByCourse_CourseIdInAndStatus(assignedCourseIds, ExtraCreditRequestStatus.PRE_APPROVED);
         long evidence = extraCreditRequestRepository
                 .countByCourse_CourseIdInAndStatus(assignedCourseIds, ExtraCreditRequestStatus.EVIDENCE_SUBMITTED);
         long approved = extraCreditRequestRepository
-                .countByCourse_CourseIdInAndStatus(assignedCourseIds, ExtraCreditRequestStatus.PRE_APPROVED);
+                .countByCourse_CourseIdInAndStatus(assignedCourseIds, ExtraCreditRequestStatus.APPROVED);
         long rejected = extraCreditRequestRepository
                 .countByCourse_CourseIdInAndStatus(assignedCourseIds, ExtraCreditRequestStatus.REJECTED);
 
-        return new ChairDashboardSummaryResponse(pending, evidence, approved, rejected);
+        return new ChairDashboardSummaryResponse(pending, preApproved, evidence, approved, rejected);
     }
 
     /**

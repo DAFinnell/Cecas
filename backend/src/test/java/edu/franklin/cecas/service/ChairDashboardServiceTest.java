@@ -84,9 +84,10 @@ class ChairDashboardServiceTest {
 
         when(extraCreditRequestRepository.countByCourse_CourseIdInAndStatus(anyList(), eq(ExtraCreditRequestStatus.PENDING)))
                 .thenReturn(5L);
+        when(extraCreditRequestRepository.countByCourse_CourseIdInAndStatus(anyList(), eq(ExtraCreditRequestStatus.PRE_APPROVED))).thenReturn(1L);
         when(extraCreditRequestRepository.countByCourse_CourseIdInAndStatus(anyList(), eq(ExtraCreditRequestStatus.EVIDENCE_SUBMITTED)))
                 .thenReturn(2L);
-        when(extraCreditRequestRepository.countByCourse_CourseIdInAndStatus(anyList(), eq(ExtraCreditRequestStatus.PRE_APPROVED)))
+        when(extraCreditRequestRepository.countByCourse_CourseIdInAndStatus(anyList(), eq(ExtraCreditRequestStatus.APPROVED)))
                 .thenReturn(1L);
         when(extraCreditRequestRepository.countByCourse_CourseIdInAndStatus(anyList(), eq(ExtraCreditRequestStatus.REJECTED)))
                 .thenReturn(0L);
@@ -95,12 +96,13 @@ class ChairDashboardServiceTest {
 
         assertThat(response).isNotNull();
         assertThat(response.getPendingCount()).isEqualTo(5L);
+        assertThat(response.getPreApprovedCount()).isEqualTo(1L);
         assertThat(response.getEvidenceSubmittedCount()).isEqualTo(2L);
         assertThat(response.getApprovedCount()).isEqualTo(1L);
         assertThat(response.getRejectedCount()).isEqualTo(0L);
 
         // verify repository was called with only the two assigned course ids
-        verify(extraCreditRequestRepository, times(4)).countByCourse_CourseIdInAndStatus(courseListCaptor.capture(), any());
+        verify(extraCreditRequestRepository, times(5)).countByCourse_CourseIdInAndStatus(courseListCaptor.capture(), any());
         List<Integer> captured = courseListCaptor.getAllValues().get(0);
         assertThat(captured).containsExactlyInAnyOrder(1, 2);
     }

@@ -4,13 +4,11 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import edu.franklin.cecas.domain.ExtraCreditRequest;
-import edu.franklin.cecas.domain.ExtraCreditRequestStatus;
 import edu.franklin.cecas.domain.User;
-import edu.franklin.cecas.dto.ChairPreReviewDTO;
+import edu.franklin.cecas.dto.ChairReviewDTO;
 import edu.franklin.cecas.dto.ChairRequestActionDTO;
 import edu.franklin.cecas.dto.StudentPointsDTO;
 import edu.franklin.cecas.exception.ChairNotAssignedException;
-import edu.franklin.cecas.exception.InvalidStateTransitionException;
 import edu.franklin.cecas.exception.ResourceNotFoundException;
 import edu.franklin.cecas.repository.ChairCourseAssignmentRepository;
 import edu.franklin.cecas.repository.ExtraCreditRequestRepository;
@@ -18,7 +16,7 @@ import edu.franklin.cecas.repository.UserRepository;
 
 @Service
 @Transactional
-public class ChairRequestReviewService {
+public class ChairReviewRequestService {
 
     private final UserRepository userRepository;
     private final ExtraCreditRequestRepository requestRepository;
@@ -26,7 +24,7 @@ public class ChairRequestReviewService {
     private final PointAllocationService pointAllocationService;
     private final StateMachineService stateMachineService;
 
-    public ChairRequestReviewService(
+    public ChairReviewRequestService(
             UserRepository userRepository,
             ExtraCreditRequestRepository requestRepository,
             ChairCourseAssignmentRepository assignmentRepository,
@@ -40,7 +38,7 @@ public class ChairRequestReviewService {
         this.stateMachineService = stateMachineService;
     }
 
-    public ChairPreReviewDTO getPendingRequestForReview(String username, Integer requestId) {
+    public ChairReviewDTO getRequestForReview(String username, Integer requestId) {
 
         User chair = userRepository.findByEmailIgnoreCase(username)
                 .orElseThrow(() -> new ResourceNotFoundException("Chair not found."));
@@ -52,11 +50,6 @@ public class ChairRequestReviewService {
                 chair.getId(),
                 request.getCourse().getCourseId());
 
-        if (request.getStatus() != ExtraCreditRequestStatus.PENDING) {
-            throw new InvalidStateTransitionException(
-                "Only pending requests can be opened for pre-review. ");
-        }
-
         if (!assigned) {
             throw new ChairNotAssignedException(
                     "Chair is not assigned to this course.");
@@ -66,7 +59,7 @@ public class ChairRequestReviewService {
                 request.getStudent().getId(),
                 request.getCourse().getTerm());
 
-        ChairPreReviewDTO dto = new ChairPreReviewDTO();
+        ChairReviewDTO dto = new ChairReviewDTO();
 
         dto.setRequestId(request.getId());
         dto.setStatus(request.getStatus().name());

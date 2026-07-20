@@ -71,6 +71,6 @@ class LookupControllerTest {
     @Test
     void lookupEndpointsRequireAuthentication() throws Exception {
         mockMvc.perform(get("/api/lookup/courses"))
-                .andExpect(status().isForbidden());
+                .andExpect(status().isUnauthorized());
     }
 }
