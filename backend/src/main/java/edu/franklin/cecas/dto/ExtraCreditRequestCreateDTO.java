@@ -13,7 +13,7 @@ public class ExtraCreditRequestCreateDTO {
     private Integer categoryId;
 
     @NotBlank(message = "description is required")
-    @Size(max = 1000, message = "description must be 1000 characters or fewer")
+    @Size(min = 15, max = 1000, message = "description must be between 15 and 1000 characters")
     private String description;
 
     public ExtraCreditRequestCreateDTO() {}
@@ -39,6 +39,6 @@ public class ExtraCreditRequestCreateDTO {
         }
 
         public void setDescription(String description) {
-            this.description = description;
+            this.description = description == null ? null : description.trim();
         }
 }

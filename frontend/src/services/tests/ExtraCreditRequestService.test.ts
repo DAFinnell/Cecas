@@ -160,7 +160,7 @@ describe('ExtraCreditRequestService', () => {
       new Response(JSON.stringify({
         title: 'Validation failed',
         errors: {
-          description: 'description must be 1000 characters or fewer',
+          description: 'description must be between 15 and 1000 characters',
         },
       }), {
         status: 400,

@@ -278,7 +278,7 @@ public class ExtraCreditRequestControllerTest {
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.title").value("Validation failed"))
                 .andExpect(jsonPath("$.errorCode").value("VALIDATION_FAILED"))
-                .andExpect(jsonPath("$.errors.description").value("description is required"));
+                .andExpect(jsonPath("$.errors.description").exists());
 
         verify(extraCreditRequestService, never()).createRequest(anyString(), any());
     }
@@ -305,8 +305,86 @@ public class ExtraCreditRequestControllerTest {
                 .andExpect(jsonPath("$.title").value("Validation failed"))
                 .andExpect(jsonPath("$.errorCode").value("VALIDATION_FAILED"))
                 .andExpect(jsonPath("$.errors.description")
-                        .value("description must be 1000 characters or fewer"));
+                        .value("description must be between 15 and 1000 characters"));
 
         verify(extraCreditRequestService, never()).createRequest(anyString(), any());
     }
+    /**
+     * Verifies that a 14-character description is rejected.
+     */
+    @Test
+    @WithMockUser(username = "student@test.com", roles = { "STUDENT" })
+    void testCreateRequestWithDescriptionUnder15CharactersReturnsBadRequest() throws Exception {
+        Map<String, Object> request = Map.of(
+                "courseId", 1,
+                "categoryId", 1,
+                "description", "a".repeat(14));
+
+        mockMvc.perform(post("/api/extra-credit-requests")
+                .with(csrf())
+                .contentType(APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.title").value("Validation failed"))
+                .andExpect(jsonPath("$.errorCode").value("VALIDATION_FAILED"))
+                .andExpect(jsonPath("$.errors.description")
+                        .value("description must be between 15 and 1000 characters"));
+
+        verify(extraCreditRequestService, never()).createRequest(anyString(), any());
+    }
+
+    /**
+     * Verifies that a description exactly 15 characters long is accepted.
+     */
+    @Test
+    @WithMockUser(username = "student@test.com", roles = { "STUDENT" })
+    void testCreateRequestWithDescriptionExactly15CharactersIsAccepted() throws Exception {
+        Map<String, Object> request = Map.of(
+                "courseId", 1,
+                "categoryId", 1,
+                "description", "a".repeat(15));
+
+        when(extraCreditRequestService.createRequest(
+                eq("student@test.com"),
+                any(ExtraCreditRequestCreateDTO.class)))
+                .thenReturn(new StudentRequestDetailDTO(createExtraCreditRequest()));
+
+        mockMvc.perform(post("/api/extra-credit-requests")
+                .with(csrf())
+                .contentType(APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isCreated());
+
+        verify(extraCreditRequestService).createRequest(
+                eq("student@test.com"),
+                any(ExtraCreditRequestCreateDTO.class));
+    }
+
+    /**
+     * Verifies that a description exactly 1000 characters long is accepted.
+     */
+    @Test
+    @WithMockUser(username = "student@test.com", roles = { "STUDENT" })
+    void testCreateRequestWithDescriptionExactly1000CharactersIsAccepted() throws Exception {
+        Map<String, Object> request = Map.of(
+                "courseId", 1,
+                "categoryId", 1,
+                "description", "a".repeat(1000));
+
+        when(extraCreditRequestService.createRequest(
+                eq("student@test.com"),
+                any(ExtraCreditRequestCreateDTO.class)))
+                .thenReturn(new StudentRequestDetailDTO(createExtraCreditRequest()));
+
+        mockMvc.perform(post("/api/extra-credit-requests")
+                .with(csrf())
+                .contentType(APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isCreated());
+
+        verify(extraCreditRequestService).createRequest(
+                eq("student@test.com"),
+                any(ExtraCreditRequestCreateDTO.class));
+    }
+
 }

@@ -1,4 +1,4 @@
-﻿import { type FormEvent, useEffect, useMemo, useState } from 'react'
+import { type FormEvent, useEffect, useMemo, useState } from 'react'
 import extraCreditRequestService from '../services/ExtraCreditRequestService'
 import type { CategoryOption, CourseOption, StudentPointsSummary } from '../types/extraCredit.types'
 import { useNavigate } from 'react-router-dom'
@@ -6,6 +6,7 @@ import { routes } from '../app/routes'
 
 const POINT_CAP = 50
 const MIN_DESCRIPTION_LENGTH = 15
+const MAX_DESCRIPTION_LENGTH = 1000
 
 export default function NewExtraCreditRequestPage() {
   const navigate = useNavigate()
@@ -70,11 +71,14 @@ export default function NewExtraCreditRequestPage() {
   const exceedsPointCap = projectedTotal > POINT_CAP
   const descriptionTooShort =
     trimmedDescription.length > 0 && trimmedDescription.length < MIN_DESCRIPTION_LENGTH
+  const descriptionTooLong = trimmedDescription.length > MAX_DESCRIPTION_LENGTH
+  const descriptionInvalid = descriptionTooShort || descriptionTooLong
   const canSubmit =
     !isSubmitting &&
     Boolean(selectedCourse) &&
     Boolean(selectedCategory) &&
     trimmedDescription.length >= MIN_DESCRIPTION_LENGTH &&
+    trimmedDescription.length <= MAX_DESCRIPTION_LENGTH &&
     !exceedsPointCap
 
   useEffect(() => {
@@ -155,8 +159,13 @@ export default function NewExtraCreditRequestPage() {
       return
     }
 
-    if (trimmedDescription.length < MIN_DESCRIPTION_LENGTH) {
-      setSubmitError('Enter a more complete request description before submitting.')
+    if (
+      trimmedDescription.length < MIN_DESCRIPTION_LENGTH ||
+      trimmedDescription.length > MAX_DESCRIPTION_LENGTH
+    ) {
+      setSubmitError(
+        `Description must be between ${MIN_DESCRIPTION_LENGTH} and ${MAX_DESCRIPTION_LENGTH} characters.`,
+      )
       return
     }
 
@@ -325,12 +334,18 @@ export default function NewExtraCreditRequestPage() {
                 setSuccessMessage(null)
               }}
               rows={7}
-              maxLength={1000}
+              maxLength={MAX_DESCRIPTION_LENGTH}
+              aria-describedby="request-description-help"
+              aria-invalid={descriptionInvalid}
               placeholder="Describe the activity, when it occurred, and why it should qualify for extra credit."
               className="w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm shadow-sm focus:border-sky-500 focus:outline-none focus:ring-2 focus:ring-sky-100"
             />
-            <span className={`text-xs ${descriptionTooShort ? 'text-amber-700' : 'text-slate-500'}`}>
-              {description.length}/1000 characters. Minimum {MIN_DESCRIPTION_LENGTH} characters required.
+            <span
+              id="request-description-help"
+              className={`text-xs ${descriptionInvalid ? 'text-rose-700' : 'text-slate-500'}`}
+            >
+              {trimmedDescription.length}/{MAX_DESCRIPTION_LENGTH} characters. Description must be
+              between {MIN_DESCRIPTION_LENGTH} and {MAX_DESCRIPTION_LENGTH} characters.
             </span>
           </label>
 
