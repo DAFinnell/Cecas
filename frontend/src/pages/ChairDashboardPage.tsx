@@ -144,8 +144,6 @@ export default function ChairDashboardPage() {
       },
     ]
 
-  const selectedTab = tabs.find((tab) => tab.status === queueStatus)
-
   return (
     <div className="mx-auto max-w-5xl">
       <h1 className="text-2xl font-semibold text-slate-900">
@@ -186,12 +184,12 @@ export default function ChairDashboardPage() {
 
         <div className="border-b px-5 py-4">
           <h2 className="text-xl font-semibold text-slate-900">
-            {selectedTab?.label ?? "Requests"} Requests
+            Requests
           </h2>
 
           <div className="mt-5 overflow-x-auto">
             <div
-              role="tablist"
+              role="group"
               aria-label="Request status"
               className="flex min-w-max gap-8 text-sm"
             >
@@ -202,8 +200,7 @@ export default function ChairDashboardPage() {
                   <button
                     key={tab.status}
                     type="button"
-                    role="tab"
-                    aria-selected={isSelected}
+                    aria-pressed={isSelected}
                     onClick={() => selectQueueStatus(tab.status)}
                     className={
                       isSelected
@@ -254,7 +251,7 @@ export default function ChairDashboardPage() {
               ) : queue.length === 0 ? (
                 <tr>
                   <td colSpan={6} className="px-5 py-10 text-center text-slate-500">
-                    No {selectedTab?.label.toLowerCase() ?? "matching"} requests.
+                    No requests found for this status.
                   </td>
                 </tr>
               ) : (
