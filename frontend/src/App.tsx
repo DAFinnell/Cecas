@@ -79,7 +79,7 @@ export default function App() {
             <Route
               path={routePath("/student/requests/:requestId/evidence")}
               element={<EvidenceUploadPage />}
-            /> 
+            />
 
           </Route>
 

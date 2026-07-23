@@ -178,9 +178,11 @@ class StateMachineServiceImplTest {
         assertThat(evidence.getStatus()).isEqualTo(ExtraCreditRequestStatus.EVIDENCE_SUBMITTED);
 
         int award = 3;
-        ExtraCreditRequest approved = stateMachineService.approveWithPointsRequest(savedRequest.getId(), award, chairUser);
+        ExtraCreditRequest approved = stateMachineService.approveWithPointsRequest(
+                savedRequest.getId(), award, null, chairUser);
         assertThat(approved.getStatus()).isEqualTo(ExtraCreditRequestStatus.APPROVED);
         assertThat(approved.getAwardedPoints()).isEqualTo(award);
+        assertThat(approved.getChairFeedback()).isNull();
 
         // reject-from-evidence path
         // create fresh request fixture to avoid interfering with approved one
@@ -192,6 +194,14 @@ class StateMachineServiceImplTest {
         ExtraCreditRequest rejected = stateMachineService.rejectRequest(savedRequest.getId(), chairFeedback, chairUser);
         assertThat(rejected.getStatus()).isEqualTo(ExtraCreditRequestStatus.REJECTED);
         assertThat(rejected.getChairFeedback()).isEqualTo(chairFeedback);
+        assertThat(rejected.getChair()).isNotNull();
+        assertThat(rejected.getChair().getId()).isEqualTo(chairUser.getId());
+
+        ExtraCreditRequest databaseCheck = requestRepository.findById(savedRequest.getId()).orElseThrow();
+        assertThat(databaseCheck.getStatus()).isEqualTo(ExtraCreditRequestStatus.REJECTED);
+        assertThat(databaseCheck.getChairFeedback()).isEqualTo(chairFeedback);
+        assertThat(databaseCheck.getChair()).isNotNull();
+        assertThat(databaseCheck.getChair().getId()).isEqualTo(chairUser.getId());
     }
 
     @Test
@@ -214,14 +224,69 @@ class StateMachineServiceImplTest {
         savedRequest = requestRepository.save(savedRequest);
 
         int pointsToAward = 5;
-        ExtraCreditRequest result = stateMachineService.approveWithPointsRequest(savedRequest.getId(), pointsToAward, chairUser);
+        String approvalFeedback = "  Evidence verified.  ";
+        ExtraCreditRequest result = stateMachineService.approveWithPointsRequest(
+                savedRequest.getId(), pointsToAward, approvalFeedback, chairUser);
 
         assertThat(result.getStatus()).isEqualTo(ExtraCreditRequestStatus.APPROVED);
         assertThat(result.getAwardedPoints()).isEqualTo(pointsToAward);
+        assertThat(result.getChairFeedback()).isEqualTo("Evidence verified.");
+        assertThat(result.getChair()).isNotNull();
+        assertThat(result.getChair().getId()).isEqualTo(chairUser.getId());
 
         ExtraCreditRequest databaseCheck = requestRepository.findById(savedRequest.getId()).orElseThrow();
         assertThat(databaseCheck.getStatus()).isEqualTo(ExtraCreditRequestStatus.APPROVED);
         assertThat(databaseCheck.getAwardedPoints()).isEqualTo(pointsToAward);
+        assertThat(databaseCheck.getChairFeedback()).isEqualTo("Evidence verified.");
+        assertThat(databaseCheck.getChair()).isNotNull();
+        assertThat(databaseCheck.getChair().getId()).isEqualTo(chairUser.getId());
+    }
+
+    /**
+     * Verifies that blank approval feedback is stored as null because feedback
+     * is optional when approving a request.
+     */
+    @Test
+    void testApproveWithPointsRequestUsesNullFeedbackWhenFeedbackIsBlank() {
+        savedRequest.setStatus(ExtraCreditRequestStatus.EVIDENCE_SUBMITTED);
+        savedRequest = requestRepository.save(savedRequest);
+
+        ExtraCreditRequest result = stateMachineService.approveWithPointsRequest(
+                savedRequest.getId(), 5, "   ", chairUser);
+
+        assertThat(result.getStatus()).isEqualTo(ExtraCreditRequestStatus.APPROVED);
+        assertThat(result.getChairFeedback()).isNull();
+
+        ExtraCreditRequest databaseCheck = requestRepository.findById(savedRequest.getId()).orElseThrow();
+        assertThat(databaseCheck.getChairFeedback()).isNull();
+    }
+
+    /**
+     * Verifies that approval requires a positive number of points.
+     */
+    @Test
+    void testApproveWithPointsRequestShouldThrowWhenPointsAreNotPositive() {
+        savedRequest.setStatus(ExtraCreditRequestStatus.EVIDENCE_SUBMITTED);
+        savedRequest = requestRepository.save(savedRequest);
+
+        assertThatThrownBy(() -> stateMachineService.approveWithPointsRequest(
+                savedRequest.getId(), null, null, chairUser))
+            .isInstanceOf(InvalidStateTransitionException.class)
+            .hasMessageContaining("greater than zero");
+
+        assertThatThrownBy(() -> stateMachineService.approveWithPointsRequest(
+                savedRequest.getId(), 0, null, chairUser))
+            .isInstanceOf(InvalidStateTransitionException.class)
+            .hasMessageContaining("greater than zero");
+
+        assertThatThrownBy(() -> stateMachineService.approveWithPointsRequest(
+                savedRequest.getId(), -1, null, chairUser))
+            .isInstanceOf(InvalidStateTransitionException.class)
+            .hasMessageContaining("greater than zero");
+
+        ExtraCreditRequest databaseCheck = requestRepository.findById(savedRequest.getId()).orElseThrow();
+        assertThat(databaseCheck.getStatus()).isEqualTo(ExtraCreditRequestStatus.EVIDENCE_SUBMITTED);
+        assertThat(databaseCheck.getAwardedPoints()).isNull();
     }
 
     // Failure: student (unauthorized) attempts to approve
@@ -231,7 +296,8 @@ class StateMachineServiceImplTest {
         savedRequest.setStatus(ExtraCreditRequestStatus.EVIDENCE_SUBMITTED);
         savedRequest = requestRepository.save(savedRequest);
 
-        assertThatThrownBy(() -> stateMachineService.approveWithPointsRequest(savedRequest.getId(), 5, studentUser))
+        assertThatThrownBy(() -> stateMachineService.approveWithPointsRequest(
+                savedRequest.getId(), 5, null, studentUser))
             .isInstanceOf(UnauthorizedRoleException.class)
             .hasMessageContaining("required role");
     }
@@ -243,9 +309,99 @@ class StateMachineServiceImplTest {
         savedRequest.setStatus(ExtraCreditRequestStatus.PRE_APPROVED);
         savedRequest = requestRepository.save(savedRequest);
 
-        assertThatThrownBy(() -> stateMachineService.approveWithPointsRequest(savedRequest.getId(), 5, chairUser))
+        assertThatThrownBy(() -> stateMachineService.approveWithPointsRequest(
+                savedRequest.getId(), 5, null, chairUser))
             .isInstanceOf(InvalidStateTransitionException.class)
             .hasMessageContaining("EVIDENCE_SUBMITTED");
+    }
+
+    /**
+     * Verifies that rejection requires non-empty chair feedback.
+     */
+    @Test
+    void testRejectRequestShouldThrowWhenFeedbackIsBlank() {
+        savedRequest.setStatus(ExtraCreditRequestStatus.EVIDENCE_SUBMITTED);
+        savedRequest = requestRepository.save(savedRequest);
+
+        assertThatThrownBy(() -> stateMachineService.rejectRequest(
+                savedRequest.getId(), null, chairUser))
+            .isInstanceOf(InvalidStateTransitionException.class)
+            .hasMessageContaining("non-empty feedback");
+
+        assertThatThrownBy(() -> stateMachineService.rejectRequest(
+                savedRequest.getId(), "", chairUser))
+            .isInstanceOf(InvalidStateTransitionException.class)
+            .hasMessageContaining("non-empty feedback");
+
+        assertThatThrownBy(() -> stateMachineService.rejectRequest(
+                savedRequest.getId(), "   ", chairUser))
+            .isInstanceOf(InvalidStateTransitionException.class)
+            .hasMessageContaining("non-empty feedback");
+
+        ExtraCreditRequest databaseCheck = requestRepository.findById(savedRequest.getId()).orElseThrow();
+        assertThat(databaseCheck.getStatus()).isEqualTo(ExtraCreditRequestStatus.EVIDENCE_SUBMITTED);
+        assertThat(databaseCheck.getChairFeedback()).isNull();
+    }
+
+    /**
+     * Verifies that rejection is not allowed while a request is waiting for
+     * evidence.
+     */
+    @Test
+    void testRejectRequestShouldThrowWhenRequestIsPreApproved() {
+        savedRequest.setStatus(ExtraCreditRequestStatus.PRE_APPROVED);
+        savedRequest = requestRepository.save(savedRequest);
+
+        assertThatThrownBy(() -> stateMachineService.rejectRequest(
+                savedRequest.getId(), "Evidence was not submitted.", chairUser))
+            .isInstanceOf(InvalidStateTransitionException.class)
+            .hasMessageContaining("PENDING or EVIDENCE_SUBMITTED");
+    }
+
+    /**
+     * Verifies that an approved request cannot receive another final decision.
+     */
+    @Test
+    void testApprovedRequestCannotReceiveAnotherFinalDecision() {
+        savedRequest.setStatus(ExtraCreditRequestStatus.EVIDENCE_SUBMITTED);
+        savedRequest = requestRepository.save(savedRequest);
+
+        ExtraCreditRequest approved = stateMachineService.approveWithPointsRequest(
+                savedRequest.getId(), 5, null, chairUser);
+        assertThat(approved.getStatus()).isEqualTo(ExtraCreditRequestStatus.APPROVED);
+
+        assertThatThrownBy(() -> stateMachineService.approveWithPointsRequest(
+                savedRequest.getId(), 5, null, chairUser))
+            .isInstanceOf(InvalidStateTransitionException.class)
+            .hasMessageContaining("final state");
+
+        assertThatThrownBy(() -> stateMachineService.rejectRequest(
+                savedRequest.getId(), "Changed decision", chairUser))
+            .isInstanceOf(InvalidStateTransitionException.class)
+            .hasMessageContaining("final state");
+    }
+
+    /**
+     * Verifies that a rejected request cannot receive another final decision.
+     */
+    @Test
+    void testRejectedRequestCannotReceiveAnotherFinalDecision() {
+        savedRequest.setStatus(ExtraCreditRequestStatus.EVIDENCE_SUBMITTED);
+        savedRequest = requestRepository.save(savedRequest);
+
+        ExtraCreditRequest rejected = stateMachineService.rejectRequest(
+                savedRequest.getId(), "Insufficient evidence", chairUser);
+        assertThat(rejected.getStatus()).isEqualTo(ExtraCreditRequestStatus.REJECTED);
+
+        assertThatThrownBy(() -> stateMachineService.approveWithPointsRequest(
+                savedRequest.getId(), 5, null, chairUser))
+            .isInstanceOf(InvalidStateTransitionException.class)
+            .hasMessageContaining("final state");
+
+        assertThatThrownBy(() -> stateMachineService.rejectRequest(
+                savedRequest.getId(), "Changed decision", chairUser))
+            .isInstanceOf(InvalidStateTransitionException.class)
+            .hasMessageContaining("final state");
     }
 
     /**
@@ -407,7 +563,8 @@ class StateMachineServiceImplTest {
         requestRepository.save(preApprovedRequest);
 
         // attempting to award 5 should exceed default cap (50)
-        assertThatThrownBy(() -> stateMachineService.approveWithPointsRequest(savedRequest.getId(), 5, chairUser))
+        assertThatThrownBy(() -> stateMachineService.approveWithPointsRequest(
+                savedRequest.getId(), 5, null, chairUser))
             .isInstanceOf(PointCapExceededException.class);
     }
 }

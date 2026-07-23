@@ -22,6 +22,11 @@ public class ChairReviewDTO {
     private StudentPointsDTO pointsSummary;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
+    private Integer awardedPoints;
+    private String chairFeedback;
+    private boolean evidenceAvailable;
+    private String evidenceFileName;
+    private String evidenceContentType;
 
     public ChairReviewDTO() {
     }
@@ -168,5 +173,45 @@ public class ChairReviewDTO {
 
     public void setUpdatedAt(LocalDateTime updatedAt) {
         this.updatedAt = updatedAt;
+    }
+
+    public Integer getAwardedPoints() {
+        return awardedPoints;
+    }
+
+    public void setAwardedPoints(Integer awardedPoints) {
+        this.awardedPoints = awardedPoints;
+    }
+
+    public String getChairFeedback() {
+        return chairFeedback;
+    }
+
+    public void setChairFeedback(String chairFeedback) {
+        this.chairFeedback = chairFeedback;
+    }
+
+    public boolean getEvidenceAvailable() {
+        return evidenceAvailable;
+    }
+
+    public void setEvidenceAvailable(boolean evidenceAvailable) {
+        this.evidenceAvailable = evidenceAvailable;
+    }
+
+    public String getEvidenceFileName() {
+        return evidenceFileName;
+    }
+
+    public void setEvidenceFileName(String evidenceFileName) {
+        this.evidenceFileName = evidenceFileName;
+    }
+
+    public String getEvidenceContentType() {
+        return evidenceContentType;
+    }
+
+    public void setEvidenceContentType(String evidenceContentType) {
+        this.evidenceContentType = evidenceContentType;
     }
 }

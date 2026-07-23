@@ -34,5 +34,5 @@ public interface StateMachineService {
      * EVIDENCE_SUBMITTED -> APPROVED 
      * Chair Only
      */
-    ExtraCreditRequest approveWithPointsRequest(Integer requestId, Integer points, User chair);
+    ExtraCreditRequest approveWithPointsRequest(Integer requestId, Integer points, String feedback, User chair);
 }

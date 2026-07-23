@@ -201,7 +201,7 @@ export default function StudentPage() {
                       {formatDate(req.updatedAt)}
                     </td>
                     <td className="whitespace-nowrap px-2 py-4 text-center">
-                      <Link to={routes.student.requestDetail(req.id)} 
+                      <Link to={routes.student.requestDetail(req.id)}
                       className="font-semibold text-sky-700 hover:text-sky-900 hover:underline">
                         View</Link>
                     </td>
@@ -211,7 +211,7 @@ export default function StudentPage() {
             </table>
           </div>
         )}
-      </section>      
+      </section>
     </main>
   );
 }

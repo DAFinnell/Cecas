@@ -40,17 +40,28 @@ export interface ChairReviewDTO {
     status: ExtraCreditRequestStatus;
     pointsSummary: StudentPointsSummary;
     defaultPoints: number;
+    awardedPoints: number | null;
+    chairFeedback: string | null;
+    evidenceAvailable: boolean;
+    evidenceFileName: string | null;
+    evidenceContentType: string | null;
     createdAt: string;
     updatedAt: string;
 }
 
 export interface ChairRequestActionDTO {
   requestId: number
-  status: string
-  chairFeedback?: string | null
+  status: ExtraCreditRequestStatus
+  awardedPoints: number | null
+  chairFeedback: string | null
   updatedAt: string
 }
 
 export interface ChairRejectRequestDTO {
+  feedback: string
+}
+
+export interface ChairApproveRequestDTO {
+  points: number
   feedback?: string | null
 }

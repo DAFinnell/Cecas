@@ -44,7 +44,7 @@ export type StudentRequestDetail = StudentRequestSummary & {
   description: string
   createdAt: string | null
   chairFeedback: string | null
-  
+
 }
 
 export type CreateExtraCreditRequestPayload = {
@@ -52,4 +52,3 @@ export type CreateExtraCreditRequestPayload = {
   categoryId: number
   description: string
 }
-

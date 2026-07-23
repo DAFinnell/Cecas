@@ -3,6 +3,7 @@ import type {
   ChairReviewDTO,
   ChairRejectRequestDTO,
   ChairRequestActionDTO,
+  ChairApproveRequestDTO,
 } from "../types/chair.types"
 
 async function readErrorMessage(response: Response): Promise<string> {
@@ -61,8 +62,17 @@ class ChairReviewRequestService {
     return postJson<ChairRequestActionDTO>(`${this.BASE}/${requestId}/pre-approve`, {})
   }
 
-  reject(requestId: number, payload?: ChairRejectRequestDTO): Promise<ChairRequestActionDTO> {
-    return postJson<ChairRequestActionDTO>(`${this.BASE}/${requestId}/reject`, payload ?? {})
+  reject(requestId: number, payload: ChairRejectRequestDTO): Promise<ChairRequestActionDTO> {
+    return postJson<ChairRequestActionDTO>(`${this.BASE}/${requestId}/reject`, payload)
+  }
+
+  approve(requestId: number, payload: ChairApproveRequestDTO): Promise<ChairRequestActionDTO> {
+    return postJson<ChairRequestActionDTO>(`${this.BASE}/${requestId}/approve`, payload)
+  }
+
+  evidenceUrl(requestId: number, download = false): string {
+    const suffix = download ? '?download=true' : ''
+    return `${this.BASE}/${requestId}/evidence${suffix}`
   }
 }
 

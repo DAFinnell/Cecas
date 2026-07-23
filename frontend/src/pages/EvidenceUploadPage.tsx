@@ -124,7 +124,7 @@ const fileInputRef = useRef<HTMLInputElement | null>(null)
             <p className="text-xs uppercase tracking-wide text-slate-500">
                 Submitted Description
             </p>
-            
+
             <p className="font-medium">
                 {request.description ?? '—'}
             </p>

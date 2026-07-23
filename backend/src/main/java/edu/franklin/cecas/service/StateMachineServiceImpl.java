@@ -143,7 +143,7 @@ public class StateMachineServiceImpl implements StateMachineService {
     }
 
     @Override
-    public ExtraCreditRequest approveWithPointsRequest(Integer requestId, Integer points, User user) {
+    public ExtraCreditRequest approveWithPointsRequest(Integer requestId, Integer points, String feedback, User user) {
         ExtraCreditRequest request = requestRepository.findById(requestId)
                 .orElseThrow(() -> new ResourceNotFoundException("Request not found with ID: " + requestId));
 
@@ -159,6 +159,10 @@ public class StateMachineServiceImpl implements StateMachineService {
 
         requireRole(user, UserRole.CHAIR);
 
+        if (points == null || points <= 0) {
+            throw new InvalidStateTransitionException("Approval points must be greater than zero.");
+        }
+
         userRepository.findByIdForUpdate(request.getStudent().getId())
                 .orElseThrow(() -> new UserNotFoundException("Student not found."));
 
@@ -167,8 +171,12 @@ public class StateMachineServiceImpl implements StateMachineService {
                 request.getCourse().getTerm(),
                 points);
 
+        String normalizedFeedback = feedback == null || feedback.isBlank() ? null : feedback.trim();
+
         request.setAwardedPoints(points);
+        request.setChairFeedback(normalizedFeedback);
+        request.setChair(user);
         request.setStatus(ExtraCreditRequestStatus.APPROVED);
-        return requestRepository.save(request);
+        return requestRepository.saveAndFlush(request);
     }
 }

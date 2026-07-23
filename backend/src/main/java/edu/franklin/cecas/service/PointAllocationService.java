@@ -45,7 +45,8 @@ public class PointAllocationService {
 
     public int getPendingPoints(Integer studentId, String term) {
         List<ExtraCreditRequest> pendingRequests = requestRepository.findByStudent_IdAndCourse_TermAndStatusIn(
-                studentId, term, List.of(ExtraCreditRequestStatus.PENDING, ExtraCreditRequestStatus.PRE_APPROVED));
+                studentId, term, List.of(ExtraCreditRequestStatus.PENDING, ExtraCreditRequestStatus.PRE_APPROVED,
+                        ExtraCreditRequestStatus.EVIDENCE_SUBMITTED));
 
         int pendingPoints = 0;
 
@@ -76,14 +77,16 @@ public class PointAllocationService {
     @Transactional
     public void validatePendingRequestAllowed(Integer studentId, String term, int requestedPoints) {
         if (!canSubmitPendingRequest(studentId, term, requestedPoints)) {
-            throw new PointCapExceededException("This request would exceed the " + extraCreditProperties.cap() + " point maximum.");
+            throw new PointCapExceededException(
+                    "This request would exceed the " + extraCreditProperties.cap() + " point maximum.");
         }
     }
 
     @Transactional
     public void validateAwardAllowed(Integer studentId, String term, int requestedPoints) {
         if (!canAwardPoints(studentId, term, requestedPoints)) {
-            throw new PointCapExceededException("This award would exceed the " + extraCreditProperties.cap() + " point maximum.");
+            throw new PointCapExceededException(
+                    "This award would exceed the " + extraCreditProperties.cap() + " point maximum.");
         }
     }
 

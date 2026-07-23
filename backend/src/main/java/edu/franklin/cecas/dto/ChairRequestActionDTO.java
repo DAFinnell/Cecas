@@ -6,6 +6,7 @@ public class ChairRequestActionDTO {
 
     private Integer requestId;
     private String status;
+    private Integer awardedPoints;
     private String chairFeedback;
     private LocalDateTime updatedAt;
 
@@ -25,6 +26,14 @@ public class ChairRequestActionDTO {
 
     public void setStatus(String status) {
         this.status = status;
+    }
+
+    public Integer getAwardedPoints() {
+        return awardedPoints;
+    }
+
+    public void setAwardedPoints(Integer awardedPoints) {
+        this.awardedPoints = awardedPoints;
     }
 
     public String getChairFeedback() {

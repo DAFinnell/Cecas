@@ -186,4 +186,66 @@ class ChairDashboardServiceTest {
         assertThat(queueList.get(0).getRequestId()).isEqualTo(11);
         assertThat(queueList.get(1).getRequestId()).isEqualTo(10);
     }
+
+    /**
+     * Verifies that the evidence queue uses the chair's assigned course IDs and
+     * the EVIDENCE_SUBMITTED status.
+     */
+    @Test
+    void testEvidenceSubmittedQueueUsesAssignedCourseIdsAndStatus() {
+        UserDetails userDetails = mock(UserDetails.class);
+        when(userDetails.getUsername()).thenReturn("derek-chair@derek.com");
+
+        User chair = mock(User.class);
+        when(chair.getId()).thenReturn(7);
+        when(userRepository.findByEmailIgnoreCase("derek-chair@derek.com"))
+                .thenReturn(Optional.of(chair));
+
+        Course course = mock(Course.class);
+        when(course.getCourseId()).thenReturn(100);
+        when(course.getCourseCode()).thenReturn("COMP-110");
+        when(course.getTerm()).thenReturn("26/FA");
+        when(course.getSection()).thenReturn("H1WW");
+
+        ChairCourseAssignment assignment = mock(ChairCourseAssignment.class);
+        when(assignment.getCourse()).thenReturn(course);
+        when(chairCourseAssignmentRepository.findAllByChairId(7))
+                .thenReturn(List.of(assignment));
+
+        User student = mock(User.class);
+        when(student.getFullName()).thenReturn("Derek Test");
+        when(student.getEmail()).thenReturn("derek@derek.com");
+
+        Category category = mock(Category.class);
+        when(category.getCategoryId()).thenReturn(9);
+        when(category.getCategoryName()).thenReturn("Seminar Attendance");
+        when(category.getDefaultPoints()).thenReturn(5);
+
+        ExtraCreditRequest request = new ExtraCreditRequest();
+        request.setId(42);
+        request.setStudent(student);
+        request.setCourse(course);
+        request.setCategory(category);
+        request.setDescription("I attended an approved academic seminar");
+        request.setStatus(ExtraCreditRequestStatus.EVIDENCE_SUBMITTED);
+
+        when(extraCreditRequestRepository.findByCourse_CourseIdInAndStatusOrderByUpdatedAtDesc(
+                List.of(100),
+                ExtraCreditRequestStatus.EVIDENCE_SUBMITTED))
+            .thenReturn(List.of(request));
+
+        List<ChairDashboardQueueResponse> queueList = service.getChairReviewQueue(
+                userDetails,
+                ExtraCreditRequestStatus.EVIDENCE_SUBMITTED);
+
+        assertThat(queueList).hasSize(1);
+        assertThat(queueList.get(0).getRequestId()).isEqualTo(42);
+        assertThat(queueList.get(0).getStatus())
+                .isEqualTo(ExtraCreditRequestStatus.EVIDENCE_SUBMITTED);
+
+        verify(extraCreditRequestRepository)
+                .findByCourse_CourseIdInAndStatusOrderByUpdatedAtDesc(
+                        List.of(100),
+                        ExtraCreditRequestStatus.EVIDENCE_SUBMITTED);
+    }
 }

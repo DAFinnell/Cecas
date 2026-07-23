@@ -73,7 +73,7 @@ export function getStatusBadgeClass(status: ExtraCreditRequestStatus): string {
       return 'bg-amber-100 text-amber-800 ring-amber-200'
 
     case 'EVIDENCE_SUBMITTED':
-      return 'bg-orange-100 text-orange-800 ring-orange-200'  
+      return 'bg-orange-100 text-orange-800 ring-orange-200'
 
     case 'REJECTED':
       return 'bg-red-100 text-red-800 ring-red-200'
