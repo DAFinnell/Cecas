@@ -91,6 +91,22 @@ class ExtraCreditRequestService {
   createRequest(payload: CreateExtraCreditRequestPayload): Promise<StudentRequestDetail> {
     return postJson<StudentRequestDetail>('/api/extra-credit-requests', payload)
   }
+
+  uploadEvidence(requestId: number, file: File): Promise<void> {
+    const formData = new FormData()
+    formData.append('evidence', file)
+
+    return csrfService
+      .fetch(`/api/extra-credit-requests/${requestId}/evidence`, {
+        method: 'POST',
+        body: formData,
+      })
+      .then(async (response) => {
+        if (!response.ok) {
+          throw new Error(await readErrorMessage(response))
+        }
+      })
+  }
 }
 
 const extraCreditRequestService = new ExtraCreditRequestService()

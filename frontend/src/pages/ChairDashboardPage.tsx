@@ -105,11 +105,11 @@ export default function ChairDashboardPage() {
       <div className="mt-8 rounded-lg border border-slate-200 bg-white shadow-sm">
 
         <div className="border-b px-5 py-4">
-            <h2 className="text-sm font-semibold text-slate-900">
+            <h2 className="text-xl font-semibold text-slate-900">
             Review Queue
             </h2>
 
-            <div className="mt-4 flex gap-8 text-sm">
+            <div className="mt-5 flex gap-8 text-sm">
             <button className="border-b-2 border-sky-600 pb-2 font-medium text-sky-700">
                 Pre-Review (Pending)
                 <span className="ml-2 rounded-full bg-sky-100 px-2 py-0.5 text-xs">
@@ -134,14 +134,14 @@ export default function ChairDashboardPage() {
         <div className="overflow-x-auto">
             <table className="w-full text-sm">
 
-            <thead className="bg-slate-50 text-left text-xs text-slate-600">
+            <thead className="bg-slate-50 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">
                 <tr>
-                <th className="px-5 py-3">Student</th>
-                <th className="px-5 py-3">Course / Section</th>
-                <th className="px-5 py-3">Activity</th>
-                <th className="px-5 py-3">Submitted</th>
-                <th className="px-5 py-3">Points</th>
-                <th className="px-5 py-3">Action</th>
+                <th className="whitespace-nowrap px-5 py-3 text-center">Student</th>
+                <th className="whitespace-nowrap px-5 py-3 text-center">Course / Section</th>
+                <th className="whitespace-nowrap px-5 py-3 text-center">Activity</th>
+                <th className="whitespace-nowrap px-5 py-3 text-center">Submitted</th>
+                <th className="whitespace-nowrap px-5 py-3 text-center">Points</th>
+                <th className="whitespace-nowrap px-5 py-3 text-center">Action</th>
                 </tr>
             </thead>
 
@@ -153,7 +153,7 @@ export default function ChairDashboardPage() {
                     className="border-t"
                 >
 
-                    <td className="px-5 py-3">
+                    <td className="whitespace-nowrap py-4 text-center">
                     <p className="font-medium text-slate-900">
                         {request.studentName}
                     </p>
@@ -162,26 +162,26 @@ export default function ChairDashboardPage() {
                     </p>
                     </td>
 
-                    <td className="px-5 py-3">
+                    <td className="whitespace-nowrap py-4 text-center">
                     {formatCourse(request)}
                     </td>
 
 
-                    <td className="px-5 py-3">
+                    <td className="whitespace-nowrap py-4 text-center">
                     {request.categoryName}
                     </td>
 
 
-                    <td className="px-5 py-3">
+                    <td className="whitespace-nowrap py-4 text-center">
                     {formatDate(request.createdAt)}
                     </td>
 
-                    <td className="px-5 py-3">
+                    <td className="whitespace-nowrap py-4 text-center">
                     {formatPoints(request.defaultPoints)}
                     </td>
 
 
-                    <td className="pl-1 pr-5 py-3 text-right">
+                    <td className="whitespace-nowrap py-4 text-center">
                     <button
                         onClick={() => navigate(routes.chair.reviewPage(request.requestId))}
                         className="rounded bg-sky-700 px-2 py-2 text-xs font-light text-white hover:bg-sky-800"

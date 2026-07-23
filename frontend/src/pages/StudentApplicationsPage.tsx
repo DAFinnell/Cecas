@@ -4,12 +4,11 @@ import { routes } from '../app/routes'
 import extraCreditRequestService from '../services/ExtraCreditRequestService'
 import userService from '../services/UserService'
 import type {
-  ExtraCreditRequestStatus,
   StudentPointsSummary,
   StudentRequestSummary,
 } from '../types/extraCredit.types'
 import type { UserProfileResponse } from '../types/user.types'
-import { formatCourse, formatDate, formatTerm, formatPoints} from '../util/format.util'
+import { formatCourse, formatDate, formatTerm, formatPoints, formatStatus, getStatusBadgeClass} from '../util/format.util'
 
 type LoadState = {
   profile: UserProfileResponse | null
@@ -23,33 +22,6 @@ const emptyState: LoadState = {
   profile: null,
   points: null,
   requests: [],
-}
-
-function formatStatus(status: ExtraCreditRequestStatus): string {
-  return status
-    .replaceAll('_', ' ')
-    .toLowerCase()
-    .replace(/\b\w/g, (letter) => letter.toUpperCase())
-}
-
-function getStatusBadgeClass(status: ExtraCreditRequestStatus): string {
-  switch (status) {
-    case 'APPROVED':
-      return 'bg-emerald-100 text-emerald-800 ring-emerald-200'
-
-    case 'PRE_APPROVED':
-      return 'bg-blue-100 text-blue-800 ring-blue-200'
-
-    case 'PENDING':
-    case 'EVIDENCE_SUBMITTED':
-      return 'bg-amber-100 text-amber-800 ring-amber-200'
-
-    case 'REJECTED':
-      return 'bg-red-100 text-red-800 ring-red-200'
-
-    case 'CLOSED':
-      return 'bg-slate-200 text-slate-700 ring-slate-300'
-  }
 }
 
 function getPoints(request: StudentRequestSummary): number {
@@ -493,31 +465,31 @@ export default function StudentApplicationsPage() {
             <table className="min-w-full divide-y divide-slate-200 text-sm">
               <thead className="bg-slate-50 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">
                 <tr>
-                  <th className="px-5 py-3">Course</th>
-                  <th className="px-5 py-3">
+                  <th className="whitespace-nowrap px-5 py-3 text-center">Course</th>
+                  <th className="whitespace-nowrap px-5 py-3 text-center">
                     Activity / Category
                   </th>
-                  <th className="px-5 py-3">Status</th>
-                  <th className="px-5 py-3">Points</th>
-                  <th className="px-5 py-3">Last Updated</th>
-                  <th className="px-5 py-3 text-right">Action</th>
+                  <th className="whitespace-nowrap px-5 py-3 text-center">Status</th>
+                  <th className="whitespace-nowrap px-5 py-3 text-center">Points</th>
+                  <th className="whitespace-nowrap px-5 py-3 text-center">Last Updated</th>
+                  <th className="whitespace-nowrap px-5 py-3 text-center">Action</th>
                 </tr>
               </thead>
 
               <tbody className="divide-y divide-slate-200 bg-white">
                 {paginatedRequests.map((request) => (
                   <tr key={request.id}>
-                    <td className="whitespace-nowrap px-5 py-4 font-medium text-slate-900">
+                    <td className="whitespace-nowrap font-medium py-4 text-center">
                       {formatCourse(request)}
                     </td>
 
-                    <td className="max-w-xs px-5 py-4 text-slate-700">
+                    <td className="whitespace-nowrap py-4 text-center">
                       <span className="line-clamp-2">
                         {request.categoryName}
                       </span>
                     </td>
 
-                    <td className="whitespace-nowrap px-5 py-4">
+                    <td className="whitespace-nowrap py-4 text-center">
                       <span
                         className={`inline-flex rounded-full px-2.5 py-1 text-xs font-semibold ring-1 ring-inset ${getStatusBadgeClass(request.status)}`}
                       >
@@ -525,15 +497,15 @@ export default function StudentApplicationsPage() {
                       </span>
                     </td>
 
-                    <td className="whitespace-nowrap px-5 py-4 text-slate-700">
+                    <td className="whitespace-nowrap py-4 text-center">
                       {formatPoints(getPoints(request))}
                     </td>
 
-                    <td className="whitespace-nowrap px-5 py-4 text-slate-700">
+                    <td className="whitespace-nowrap py-4 text-center">
                       {formatDate(request.updatedAt)}
                     </td>
 
-                    <td className="whitespace-nowrap px-5 py-4 text-right">
+                    <td className="whitespace-nowrap px-8 py-4 text-center">
                       <Link
                         to={routes.student.requestDetail(request.id)}
                         className="font-semibold text-sky-700 hover:text-sky-900 hover:underline"

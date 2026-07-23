@@ -21,6 +21,7 @@ import StudentPage from './pages/StudentPage'
 import StudentApplicationDetailPage from './pages/StudentApplicationDetailPage'
 import StudentApplicationsPage from './pages/StudentApplicationsPage'
 import ChairReviewPage from './pages/ChairReviewPage'
+import EvidenceUploadPage from './pages/EvidenceUploadPage'
 
 function RootPage() {
   const { user, loading } = useCurrentUser()
@@ -75,6 +76,10 @@ export default function App() {
               path={routePath("/student/requests/:requestId")}
               element={<StudentApplicationDetailPage />}
             />
+            <Route
+              path={routePath("/student/requests/:requestId/evidence")}
+              element={<EvidenceUploadPage />}
+            /> 
 
           </Route>
 

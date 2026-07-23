@@ -116,17 +116,17 @@ export default function ChairReviewPage() {
           const map = (() => {
             switch (review.status) {
               case "PENDING":
-                return { text: "Pending (Pre-Review)", bg: "bg-yellow-100", color: "text-yellow-700" };
+                return { text: "Pending (Pre-Review)", bg: "bg-amber-100", color: "text-amber-800" };
               case "PRE_APPROVED":
-                return { text: "Pre-Approved", bg: "bg-amber-50", color: "text-amber-700" };
+                return { text: "Pre-Approved", bg: "bg-blue-100", color: "text-blue-800" };
               case "EVIDENCE_SUBMITTED":
-                return { text: "Evidence Submitted", bg: "bg-sky-50", color: "text-sky-700" };
+                return { text: "Evidence Submitted", bg: "bg-orange-100", color: "text-orange-800" };
               case "APPROVED":
-                return { text: "Approved", bg: "bg-green-50", color: "text-green-700" };
+                return { text: "Approved", bg: "bg-emerald-100", color: "text-emerald-800" };
               case "REJECTED":
-                return { text: "Rejected", bg: "bg-red-50", color: "text-red-700" };
-              default:
-                return { text: review.status, bg: "bg-slate-100", color: "text-slate-700" };
+                return { text: "Rejected", bg: "bg-red-100", color: "text-red-800 " };
+              case "CLOSED":
+                return { text: "Closed", bg: "bg-slate-200", color: "text-slate-700" };
             }
           })();
 

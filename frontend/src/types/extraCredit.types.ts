@@ -36,6 +36,7 @@ export type StudentRequestSummary = {
   defaultPoints: number
   awardedPoints: number | null
   updatedAt: string | null
+  dueDate: string | null
 }
 
 export type StudentRequestDetail = StudentRequestSummary & {
@@ -43,6 +44,7 @@ export type StudentRequestDetail = StudentRequestSummary & {
   description: string
   createdAt: string | null
   chairFeedback: string | null
+  
 }
 
 export type CreateExtraCreditRequestPayload = {

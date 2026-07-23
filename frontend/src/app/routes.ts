@@ -9,6 +9,7 @@ export const routes = {
     applications: '/student/applications',
     newRequest: '/student/requests/new',
     requestDetail: (requestId: string | number) => `/student/requests/${requestId}`,
+    evidenceUpload: (requestId: string | number) => `/student/requests/${requestId}/evidence`,
   },
 
   chair: {

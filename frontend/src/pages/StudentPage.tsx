@@ -5,7 +5,7 @@ import userService from '../services/UserService'
 import extraCreditRequestService from '../services/ExtraCreditRequestService'
 import type { StudentPointsSummary, StudentRequestSummary } from '../types/extraCredit.types'
 import { routes } from "../app/routes";
-import { formatCourse, formatDate, formatPoints } from "../util/format.util";
+import { formatCourse, formatDate, formatPoints, formatStatus, getStatusBadgeClass } from "../util/format.util";
 
 export default function StudentPage() {
   const [profile, setProfile] = useState<UserProfileResponse | null>(null);
@@ -85,8 +85,9 @@ export default function StudentPage() {
   const terms = Array.from(
     new Set(requests.map((req) => req.term).filter(Boolean))
   ).sort()
+
   return (
-    <main className="mx-auto max-w-6xl p-6">
+    <main className="mx-auto max-w-6xl">
       <header className="mb-6 flex items-start justify-between gap-4">
         <div>
           <h2 className="text-lg text-slate-600">Welcome back,</h2>
@@ -142,12 +143,20 @@ export default function StudentPage() {
           Select a term to view your semester point summary.
         </section>
       )}
-      <section className="bg-white rounded-lg shadow-sm p-4">
-        <div className="flex items-center justify-between mb-4">
-          <h3 className="text-lg font-medium">My Applications</h3>
-          <Link to={routes.student.newRequest} className="inline-flex items-center gap-2 rounded-md bg-sky-700 text-white px-4 py-2">
-            + New Application
-          </Link>
+      <section className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
+        <div className="flex items-center justify-between gap-3 border-b border-slate-200 p-5">
+          <div>
+            <h2 className="text-xl font-semibold text-slate-950">My Applications</h2>
+          </div>
+
+          <div className="flex-shrink-0">
+            <Link
+              to={routes.student.newRequest}
+              className="inline-flex items-center gap-2 rounded-md bg-sky-700 text-white px-4 py-2"
+            >
+              + New Application
+            </Link>
+          </div>
         </div>
 
         {loading ? (
@@ -156,41 +165,53 @@ export default function StudentPage() {
           <div className="py-8 text-center text-slate-600">No requests found</div>
         ) : (
           <div className="overflow-x-auto">
-            <table className="w-full text-left">
-              <thead className="text-sm text-slate-500">
+            <table className="min-w-full divide-y divide-slate-200 text-sm">
+              <thead className="bg-slate-50 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">
                 <tr>
-                  <th className="py-2">Course</th>
-                  <th>Activity</th>
-                  <th>Status</th>
-                  <th>Points</th>
-                  <th>Last Updated</th>
-                  <th>Action</th>
+                  <th className="whitespace-nowrap px-5 py-3 text-center">Course</th>
+                  <th className="whitespace-nowrap px-5 py-3 text-center">
+                    Activity / Category
+                  </th>
+                  <th className="whitespace-nowrap px-5 py-3 text-center">Status</th>
+                  <th className="whitespace-nowrap px-5 py-3 text-center">Points</th>
+                  <th className="whitespace-nowrap px-5 py-3 text-center">Last Updated</th>
+                  <th className="whitespace-nowrap px-5 py-3 text-center">Action</th>
                 </tr>
               </thead>
-              <tbody>
+              <tbody className="divide-y divide-slate-200 bg-white">
                 {filteredRequests.map((req) => (
-                  <tr key={req.id} className="border-t">
-                    <td className="py-3 text-sm">{formatCourse(req)}</td>
-                    <td className="text-sm">{req.categoryName ?? '—'}</td>
-                    <td className="text-sm">
-                      <span className={`inline-flex items-center px-2 py-1 rounded text-xs font-medium ${req.status === 'APPROVED' ? 'bg-emerald-100 text-emerald-700' :
-                        req.status === 'PRE_APPROVED' ? 'bg-yellow-100 text-yellow-700' :
-                          req.status === 'PENDING' ? 'bg-indigo-100 text-indigo-700' :
-                            'bg-red-100 text-red-700'
-                        }`}>
-                        {req.status}
+                  <tr key={req.id}>
+                    <td className="whitespace-nowrap font-medium py-4 text-center">{formatCourse(req)}</td>
+                    <td className="whitespace-nowrap py-4 text-center">
+                      <span className="line-clamp-2">
+                        {req.categoryName}
                       </span>
                     </td>
-                    <td className="text-sm">{formatPoints(req.defaultPoints)}</td>
-                    <td className="text-sm">{formatDate(req.updatedAt)}</td>
-                    <td className="text-sm text-sky-700"><Link to={routes.student.requestDetail(req.id)}>View</Link></td>
+                    <td className="whitespace-nowrap py-4 text-center">
+                      <span
+                        className={`inline-flex rounded-full px-2.5 py-1 text-xs font-semibold ring-1 ring-inset ${getStatusBadgeClass(req.status)}`}
+                      >
+                        {formatStatus(req.status)}
+                      </span>
+                    </td>
+                    <td className="whitespace-nowrap py-4 text-center">
+                      {formatPoints(req.defaultPoints)}
+                    </td>
+                    <td className="whitespace-nowrap py-4 text-center">
+                      {formatDate(req.updatedAt)}
+                    </td>
+                    <td className="whitespace-nowrap px-2 py-4 text-center">
+                      <Link to={routes.student.requestDetail(req.id)} 
+                      className="font-semibold text-sky-700 hover:text-sky-900 hover:underline">
+                        View</Link>
+                    </td>
                   </tr>
                 ))}
               </tbody>
             </table>
           </div>
         )}
-      </section>
+      </section>      
     </main>
   );
 }

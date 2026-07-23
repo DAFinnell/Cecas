@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
+import { Link, useNavigate, useParams } from 'react-router-dom';
 
 import { routes } from '../app/routes';
 import extraCreditRequestService from '../services/ExtraCreditRequestService';
@@ -175,7 +175,14 @@ export default function StudentApplicationDetailPage() {
                                 'No feedback has been provided.'}
                         </p>
                     </div>
-
+                    <div className="sm:col-span-2">
+                    <Link
+                        to={routes.student.evidenceUpload(request.id)}
+                        className="inline-flex w-full items-center justify-center rounded-md bg-sky-700 px-4 py-2 text-center text-sm font-medium text-white transition hover:bg-sky-800"
+                    >
+                        Upload Evidence
+                    </Link>
+                    </div>
                 </div>
 
             </section>
