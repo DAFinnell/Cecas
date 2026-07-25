@@ -35,6 +35,7 @@ export type StudentRequestSummary = {
   status: ExtraCreditRequestStatus
   defaultPoints: number
   awardedPoints: number | null
+  evidenceUploadAvailable: boolean
   updatedAt: string | null
   dueDate: string | null
 }

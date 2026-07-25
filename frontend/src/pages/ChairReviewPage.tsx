@@ -416,6 +416,13 @@ export default function ChairReviewPage() {
             <span>Default Points</span>
             <span>{review.defaultPoints}</span>
 
+            {review.status === "APPROVED" && (
+              <>
+                <span>Awarded Points</span>
+                <span>{review.awardedPoints ?? "-"}</span>
+              </>
+            )}
+
             <span>Submitted on</span>
             <span>{formatDate(review.createdAt)}</span>
 
