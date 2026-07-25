@@ -20,6 +20,7 @@ export interface ChairDashboardQueueResponse {
     categoryName: string;
     status: ExtraCreditRequestStatus;
     defaultPoints: number;
+    awardedPoints: number | null;
     createdAt: string;
 }
 

@@ -67,9 +67,7 @@ export default function ChairDashboardPage() {
     }
   }, [queueStatus])
 
-  const loading = summaryLoading || queueLoading
-
-  if (loading) {
+  if (summaryLoading) {
     return <p className="p-6">Loading dashboard...</p>
   }
 
@@ -114,6 +112,38 @@ export default function ChairDashboardPage() {
     },
   ]
 
+  const tabs: {
+    label: string
+    status: ExtraCreditRequestStatus
+    count: number
+  }[] = [
+      {
+        label: "Pending",
+        status: "PENDING",
+        count: summary?.pendingCount ?? 0,
+      },
+      {
+        label: "Waiting for Evidence",
+        status: "PRE_APPROVED",
+        count: summary?.preApprovedCount ?? 0,
+      },
+      {
+        label: "Evidence Submitted",
+        status: "EVIDENCE_SUBMITTED",
+        count: summary?.evidenceSubmittedCount ?? 0,
+      },
+      {
+        label: "Approved",
+        status: "APPROVED",
+        count: summary?.approvedCount ?? 0,
+      },
+      {
+        label: "Rejected",
+        status: "REJECTED",
+        count: summary?.rejectedCount ?? 0,
+      },
+    ]
+
   return (
     <div className="mx-auto max-w-5xl">
       <h1 className="text-2xl font-semibold text-slate-900">
@@ -147,12 +177,6 @@ export default function ChairDashboardPage() {
                 className="h-8 w-8"
               />
             </div>
-
-            <button
-              className="mt-5 text-sm font-medium text-sky-800 hover:underline"
-            >
-              View All
-            </button>
           </div>
         ))}
       </div>
@@ -160,62 +184,45 @@ export default function ChairDashboardPage() {
 
         <div className="border-b px-5 py-4">
           <h2 className="text-xl font-semibold text-slate-900">
-            Review Queue
+            Requests
           </h2>
 
-          <div className="mt-5 flex gap-8 text-sm">
-            <button
-              type="button"
-              onClick={() => selectQueueStatus("PENDING")}
-              className={
-                queueStatus === "PENDING"
-                  ? "border-b-2 border-sky-600 pb-2 font-medium text-sky-700"
-                  : "pb-2 text-slate-500"
-              }
+          <div className="mt-5 overflow-x-auto">
+            <div
+              role="group"
+              aria-label="Request status"
+              className="flex min-w-max gap-8 text-sm"
             >
-              Pre-Review (Pending)
+              {tabs.map((tab) => {
+                const isSelected = tab.status === queueStatus
 
-              <span
-                className={
-                  queueStatus === "PENDING"
-                    ? "ml-2 rounded-full bg-sky-100 px-2 py-0.5 text-xs"
-                    : "ml-2 rounded-full bg-slate-100 px-2 py-0.5 text-xs"
-                }
-              >
-                {summary?.pendingCount ?? 0}
-              </span>
-            </button>
+                return (
+                  <button
+                    key={tab.status}
+                    type="button"
+                    aria-pressed={isSelected}
+                    onClick={() => selectQueueStatus(tab.status)}
+                    className={
+                      isSelected
+                        ? "border-b-2 border-sky-600 pb-2 font-medium text-sky-700"
+                        : "pb-2 text-slate-500 hover:text-slate-700"
+                    }
+                  >
+                    {tab.label}
 
-            <button
-              type="button"
-              onClick={() => selectQueueStatus("EVIDENCE_SUBMITTED")}
-              className={
-                queueStatus === "EVIDENCE_SUBMITTED"
-                  ? "border-b-2 border-sky-600 pb-2 font-medium text-sky-700"
-                  : "pb-2 text-slate-500"
-              }
-            >
-              Evidence Submitted
-
-              <span
-                className={
-                  queueStatus === "EVIDENCE_SUBMITTED"
-                    ? "ml-2 rounded-full bg-sky-100 px-2 py-0.5 text-xs"
-                    : "ml-2 rounded-full bg-slate-100 px-2 py-0.5 text-xs"
-                }
-              >
-                {summary?.evidenceSubmittedCount ?? 0}
-              </span>
-            </button>
-
-            <button
-              type="button"
-              disabled
-              className="cursor-not-allowed pb-2 text-slate-400"
-              title="Overdue filtering is not implemented yet."
-            >
-              Overdue
-            </button>
+                    <span
+                      className={
+                        isSelected
+                          ? "ml-2 rounded-full bg-sky-100 px-2 py-0.5 text-xs"
+                          : "ml-2 rounded-full bg-slate-100 px-2 py-0.5 text-xs"
+                      }
+                    >
+                      {tab.count}
+                    </span>
+                  </button>
+                )
+              })}
+            </div>
           </div>
         </div>
 
@@ -235,60 +242,72 @@ export default function ChairDashboardPage() {
 
 
             <tbody>
-              {queue.map((request) => (
-                <tr
-                  key={request.requestId}
-                  className="border-t"
-                >
-
-                  <td className="whitespace-nowrap py-4 text-center">
-                    <p className="font-medium text-slate-900">
-                      {request.studentName}
-                    </p>
-                    <p className="text-xs text-slate-500">
-                      {request.studentEmail}
-                    </p>
+              {queueLoading ? (
+                <tr>
+                  <td colSpan={6} className="px-5 py-10 text-center text-slate-500">
+                    Loading requests...
                   </td>
-
-                  <td className="whitespace-nowrap py-4 text-center">
-                    {formatCourse(request)}
-                  </td>
-
-
-                  <td className="whitespace-nowrap py-4 text-center">
-                    {request.categoryName}
-                  </td>
-
-
-                  <td className="whitespace-nowrap py-4 text-center">
-                    {formatDate(request.createdAt)}
-                  </td>
-
-                  <td className="whitespace-nowrap py-4 text-center">
-                    {formatPoints(request.defaultPoints)}
-                  </td>
-
-
-                  <td className="whitespace-nowrap py-4 text-center">
-                    <button
-                      onClick={() => navigate(routes.chair.reviewPage(request.requestId))}
-                      className="rounded bg-sky-700 px-2 py-2 text-xs font-light text-white hover:bg-sky-800"
-                    >
-                      Review &rarr;
-                    </button>
-                  </td>
-
                 </tr>
-              ))}
+              ) : queue.length === 0 ? (
+                <tr>
+                  <td colSpan={6} className="px-5 py-10 text-center text-slate-500">
+                    No requests found for this status.
+                  </td>
+                </tr>
+              ) : (
+                queue.map((request) => {
+                  const requiresReview =
+                    request.status === "PENDING" ||
+                    request.status === "EVIDENCE_SUBMITTED"
+
+                  return (
+                    <tr
+                      key={request.requestId}
+                      className="border-t"
+                    >
+
+                      <td className="whitespace-nowrap py-4 text-center">
+                        <p className="font-medium text-slate-900">
+                          {request.studentName}
+                        </p>
+                        <p className="text-xs text-slate-500">
+                          {request.studentEmail}
+                        </p>
+                      </td>
+
+                      <td className="whitespace-nowrap py-4 text-center">
+                        {formatCourse(request)}
+                      </td>
+
+
+                      <td className="whitespace-nowrap py-4 text-center">
+                        {request.categoryName}
+                      </td>
+
+
+                      <td className="whitespace-nowrap py-4 text-center">
+                        {formatDate(request.createdAt)}
+                      </td>
+
+                      <td className="whitespace-nowrap py-4 text-center">
+                        {formatPoints(request.awardedPoints ?? request.defaultPoints)}
+                      </td>
+
+                      <td className="whitespace-nowrap py-4 text-center">
+                        <button
+                          onClick={() => navigate(routes.chair.reviewPage(request.requestId))}
+                          className="rounded bg-sky-700 px-2 py-2 text-xs font-light text-white hover:bg-sky-800"
+                        >
+                          {requiresReview ? "Review →" : "View Details →"}
+                        </button>
+                      </td>
+
+                    </tr>
+                  )
+                })
+              )}
             </tbody>
           </table>
-        </div>
-
-
-        <div className="border-t px-5 py-3 text-right">
-          <button className="text-sm font-medium text-sky-700 hover:underline">
-            View all pending &rarr;
-          </button>
         </div>
       </div>
     </div>
