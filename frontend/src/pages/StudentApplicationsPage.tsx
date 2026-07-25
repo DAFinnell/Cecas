@@ -7,11 +7,9 @@ import type {
   StudentPointsSummary,
   StudentRequestSummary,
 } from '../types/extraCredit.types'
-import type { UserProfileResponse } from '../types/user.types'
 import { formatCourse, formatDate, formatTerm, formatPoints, formatStatus, getStatusBadgeClass} from '../util/format.util'
 
 type LoadState = {
-  profile: UserProfileResponse | null
   points: StudentPointsSummary | null
   requests: StudentRequestSummary[]
 }
@@ -19,7 +17,6 @@ type LoadState = {
 const TOTAL_ALLOWED_POINTS = 50
 
 const emptyState: LoadState = {
-  profile: null,
   points: null,
   requests: [],
 }
@@ -98,14 +95,10 @@ export default function StudentApplicationsPage() {
       setError('')
 
       try {
-        const [profile, requests] = await Promise.all([
-          userService.getUserProfile(),
-          extraCreditRequestService.getStudentRequests(),
-        ])
+        const requests = await extraCreditRequestService.getStudentRequests()
 
         if (active) {
           setData({
-            profile,
             points: null,
             requests,
           })
@@ -219,11 +212,6 @@ export default function StudentApplicationsPage() {
     return items
   }, [data.requests, selectedTerm, statusFilter, searchTerm, sortBy])
 
-  const profileName =
-    data.profile?.fullName ||
-    data.profile?.email ||
-    'Student'
-
   const earned = data.points?.issued ?? 0
   const pending = data.points?.pending ?? 0
   const available =
@@ -269,30 +257,6 @@ export default function StudentApplicationsPage() {
           >
             New Application
           </Link>
-        </div>
-
-        <div className="mt-8 rounded-xl border border-slate-200 bg-slate-50 p-5">
-          <p className="text-sm font-medium text-slate-500">Student</p>
-
-          <div className="mt-2 flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
-            <div>
-              <p className="text-xl font-semibold text-slate-950">
-                Hello, {profileName}
-              </p>
-
-              {data.profile?.email && (
-                <p className="text-sm text-slate-600">
-                  {data.profile.email}
-                </p>
-              )}
-            </div>
-
-            {data.profile?.role && (
-              <span className="mt-3 inline-flex w-fit rounded-full bg-slate-200 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-slate-700 sm:mt-0">
-                {data.profile.role}
-              </span>
-            )}
-          </div>
         </div>
       </div>
 
