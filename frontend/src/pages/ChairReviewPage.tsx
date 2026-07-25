@@ -338,7 +338,7 @@ export default function ChairReviewPage() {
               return 2;
             case "APPROVED":
             case "REJECTED":
-              return 3;
+              return steps.length;
             default:
               return 0;
           }
