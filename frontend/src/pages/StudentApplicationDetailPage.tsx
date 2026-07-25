@@ -120,7 +120,7 @@ export default function StudentApplicationDetailPage() {
           <div>
             <p className="text-sm text-slate-500">Points</p>
             <p className="text-xl font-medium">
-              {request.defaultPoints}
+              {request.awardedPoints ?? request.defaultPoints}
             </p>
           </div>
 

@@ -402,7 +402,7 @@ export default function StudentApplicationsPage() {
           <div className="p-8 text-center text-sm text-slate-600">
             Loading applications...
           </div>
-        ) : sortedRequests.length === 0 ? (
+        ) : data.requests.length === 0 ? (
           <div className="p-8 text-center">
             <p className="text-base font-medium text-slate-900">
               No applications yet

@@ -195,7 +195,7 @@ export default function StudentPage() {
                       </span>
                     </td>
                     <td className="whitespace-nowrap py-4 text-center">
-                      {formatPoints(req.defaultPoints)}
+                      {formatPoints(req.awardedPoints ?? req.defaultPoints)}
                     </td>
                     <td className="whitespace-nowrap py-4 text-center">
                       {formatDate(req.updatedAt)}
