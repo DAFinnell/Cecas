@@ -433,11 +433,6 @@ export default function NewExtraCreditRequestPage() {
                 ? 'Blocked: this request would exceed the 50 point cap.'
                 : 'Ready: this request is within the 50 point cap.'}
           </div>
-
-          <div className="rounded-2xl bg-slate-50 p-4 text-sm text-slate-600">
-            <p className="font-semibold text-slate-800">Status flag</p>
-            <p className="mt-1">Submitted requests are saved as Pending for review.</p>
-          </div>
         </aside>
       </div>
     </section>
