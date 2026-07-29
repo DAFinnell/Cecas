@@ -1,6 +1,7 @@
-import { useState, type FormEvent } from 'react'
+import { useState, type SubmitEvent } from 'react' // Swapped out deprecated FormEven
 import authService from '../services/AuthService'
 import { useNavigate } from 'react-router-dom';
+import { parseApiError } from '../utils/errorUtils';
 
 export function useRegister() {
   const [fullName, setFullName] = useState('')
@@ -12,13 +13,18 @@ export function useRegister() {
 
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
+
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({})
+
   const navigate = useNavigate()
 
 
-  async function handleSubmit(e: FormEvent<HTMLFormElement>) {
+  async function handleSubmit(e: SubmitEvent<HTMLFormElement>) {
     e.preventDefault()
 
+    // Reset all error displays when a user resubmits the form
     setError('')
+    setFieldErrors({})
 
     if (password !== confirmPassword) {
       setError('Passwords do not match.')
@@ -41,7 +47,10 @@ export function useRegister() {
       })
 
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Not able to register.')
+      const parsedError = await parseApiError(err)
+      
+      setError(parsedError.message)
+      setFieldErrors(parsedError.fieldErrors)
     } finally {
       setLoading(false)
     }
@@ -56,6 +65,7 @@ export function useRegister() {
     studentId,
     loading,
     error,
+    fieldErrors,
     setFullName,
     setEmail,
     setPassword,

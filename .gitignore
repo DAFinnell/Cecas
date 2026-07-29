@@ -630,3 +630,4 @@ cython_debug/
 # Proactive ignore of npm-cache for safety
 .npm-cache/
 frontend/.npm-cache/
+docker-compose.override.yml

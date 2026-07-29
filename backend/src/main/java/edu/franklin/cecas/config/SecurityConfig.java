@@ -43,25 +43,36 @@ public class SecurityConfig {
             SecurityContextRepository securityContextRepository) throws Exception {
 
         http
-                .csrf(csrf -> csrf.spa())
-                .securityContext(sc -> sc.securityContextRepository(securityContextRepository))
-                .sessionManagement(sm -> sm
-                        .sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED)
-                        .sessionFixation(sf -> sf.migrateSession()) // rotate session on auth
-                )
-                .authenticationProvider(authenticationProvider())
-                .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/actuator/health", "/api/hello", "/api/auth/**").permitAll()
-                        .anyRequest().authenticated())
-                .logout(logout -> logout
-                        .logoutUrl("/api/auth/logout")
-                        .invalidateHttpSession(true)
-                        .deleteCookies("CECASSESSION") // must match application.properties
-                        .addLogoutHandler(new HeaderWriterLogoutHandler(
-                                new ClearSiteDataHeaderWriter(ClearSiteDataHeaderWriter.Directive.COOKIES)))
-                        .logoutSuccessHandler(new HttpStatusReturningLogoutSuccessHandler(HttpStatus.NO_CONTENT))
-                        .permitAll())
-                .httpBasic(httpBasic -> httpBasic.disable());
+            .csrf(csrf -> csrf.spa())
+            .securityContext(sc -> sc
+                .securityContextRepository(securityContextRepository)
+            )
+            .sessionManagement(sm -> sm
+                .sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED)
+                .sessionFixation(sf -> sf.migrateSession())
+            )
+            .exceptionHandling(ex -> ex
+                .authenticationEntryPoint((request, response, exception) -> {
+                    response.sendError(HttpStatus.UNAUTHORIZED.value());
+                })
+            )
+            .authorizeHttpRequests(auth -> auth
+                .requestMatchers(
+                    "/actuator/health",
+                    "/api/hello",
+                    "/api/auth/**"
+                ).permitAll()
+                .anyRequest().authenticated()
+            )
+            .logout(logout -> logout
+                .logoutUrl("/api/auth/logout")
+                .invalidateHttpSession(true)
+                .deleteCookies("CECASSESSION") // must match application.properties
+                .addLogoutHandler(new HeaderWriterLogoutHandler(
+                    new ClearSiteDataHeaderWriter(ClearSiteDataHeaderWriter.Directive.COOKIES)))
+                .logoutSuccessHandler(new HttpStatusReturningLogoutSuccessHandler(HttpStatus.NO_CONTENT))
+                .permitAll())
+            .httpBasic(httpBasic -> httpBasic.disable());
 
         return http.build();
     }

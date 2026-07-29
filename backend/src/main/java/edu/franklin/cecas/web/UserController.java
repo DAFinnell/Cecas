@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import edu.franklin.cecas.dto.ChangePasswordRequest;
@@ -65,8 +66,8 @@ public class UserController {
      */
     @PreAuthorize("hasRole('STUDENT')")
     @GetMapping("/me/points")
-    public StudentPointsDTO getStudentPoints(@AuthenticationPrincipal UserDetails userDetails) {
-         return userService.getStudentPoints(userDetails.getUsername());
+    public StudentPointsDTO getStudentPoints(@AuthenticationPrincipal UserDetails userDetails, @RequestParam String term) {
+         return userService.getStudentPoints(userDetails.getUsername(), term);
     }
 
     /**
@@ -107,15 +108,15 @@ public class UserController {
 
     @GetMapping("/{studentId}/points")
     @PreAuthorize("hasRole('CHAIR')")
-    public StudentPointsDTO getStudentPoints(@PathVariable Integer studentId) {
-        return pointAllocationService.getStudentPoints(studentId);
+    public StudentPointsDTO getStudentPoints(@PathVariable Integer studentId, @RequestParam String term) {
+        return pointAllocationService.getStudentPoints(studentId, term);
     }
 
     @PostMapping("/points/validate")
     @PreAuthorize("hasRole('CHAIR')")
     public ResponseEntity<?> validatePointAllocation(@RequestBody ValidatePointsRequest request) {
         try {
-            pointAllocationService.validatePointAllocation(request.getStudentId(), request.getRequestedPoints());
+            pointAllocationService.validateAwardAllowed(request.getStudentId(), request.getTerm(), request.getRequestedPoints());
             return ResponseEntity.ok().build();
         } catch (PointCapExceededException ex) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of("message", ex.getMessage()));

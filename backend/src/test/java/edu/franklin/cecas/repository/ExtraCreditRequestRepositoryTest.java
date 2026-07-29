@@ -1,5 +1,7 @@
 package edu.franklin.cecas.repository;
 
+import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -202,6 +204,74 @@ public class ExtraCreditRequestRepositoryTest {
         assertThat(result.get(0).getStatus()).isEqualTo(ExtraCreditRequestStatus.EVIDENCE_SUBMITTED);
     }
 
-    // @Test
-    // public void testFindByChair_IdAndStatus()
+
+    @Test
+    public void testFindByCourse_CourseIdInAndStatusOrderByUpdatedAtDesc() {
+        Course course = createTestCourse();
+        courseRepository.save(course);
+
+        User student = createTestStudent();
+        userRepository.save(student);
+
+        Category category = createTestCategory();
+        categoryRepository.save(category);
+        LocalDateTime now = LocalDateTime.now().truncatedTo(ChronoUnit.SECONDS);
+        ExtraCreditRequest request1 = new ExtraCreditRequest();
+        request1.setDescription("Test request 1");
+        request1.setStudent(student);
+        request1.setCourse(course);
+        request1.setCategory(category);
+        request1.setStatus(ExtraCreditRequestStatus.PENDING);
+        request1.setUpdatedAt(now.minusHours(1));
+        extraCreditRequestRepository.save(request1);
+
+        ExtraCreditRequest request2 = new ExtraCreditRequest();
+        request2.setDescription("Test request 2");
+        request2.setStudent(student);
+        request2.setCourse(course);
+        request2.setCategory(category);
+        request2.setStatus(ExtraCreditRequestStatus.PENDING);
+        request2.setUpdatedAt(now);
+        extraCreditRequestRepository.save(request2);
+
+        List<ExtraCreditRequest> result = extraCreditRequestRepository
+                .findByCourse_CourseIdInAndStatusOrderByUpdatedAtDesc(
+                        List.of(course.getCourseId()), ExtraCreditRequestStatus.PENDING);
+
+        assertThat(result).hasSize(2);
+        assertThat(result.get(0).getUpdatedAt()).isAfterOrEqualTo(result.get(1).getUpdatedAt().truncatedTo(ChronoUnit.SECONDS));
+    }
+
+    @Test
+    public void testCountByCourse_CourseIdInAndStatus() {
+        Course course = createTestCourse();
+        courseRepository.save(course);
+
+        User student = createTestStudent();
+        userRepository.save(student);
+
+        Category category = createTestCategory();
+        categoryRepository.save(category);
+
+        ExtraCreditRequest request1 = new ExtraCreditRequest();
+        request1.setDescription("Test request 1");
+        request1.setStudent(student);
+        request1.setCourse(course);
+        request1.setCategory(category);
+        request1.setStatus(ExtraCreditRequestStatus.PENDING);
+        extraCreditRequestRepository.save(request1);
+
+        ExtraCreditRequest request2 = new ExtraCreditRequest();
+        request2.setDescription("Test request 2");
+        request2.setStudent(student);
+        request2.setCourse(course);
+        request2.setCategory(category);
+        request2.setStatus(ExtraCreditRequestStatus.PENDING);
+        extraCreditRequestRepository.save(request2);
+
+        long count = extraCreditRequestRepository
+                .countByCourse_CourseIdInAndStatus(List.of(course.getCourseId()), ExtraCreditRequestStatus.PENDING);
+
+        assertThat(count).isEqualTo(2);
+    }
 }

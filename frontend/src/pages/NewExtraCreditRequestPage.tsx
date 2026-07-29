@@ -1,20 +1,20 @@
-﻿import { type FormEvent, useEffect, useMemo, useState } from 'react'
+import { type FormEvent, useEffect, useMemo, useState } from 'react'
 import extraCreditRequestService from '../services/ExtraCreditRequestService'
 import type { CategoryOption, CourseOption, StudentPointsSummary } from '../types/extraCredit.types'
 import { useNavigate } from 'react-router-dom'
+import { routes } from '../app/routes'
 
 const POINT_CAP = 50
 const MIN_DESCRIPTION_LENGTH = 15
-
-function formatCourse(course: CourseOption) {
-  return `${course.courseCode} | ${course.section} | ${course.term}`
-}
+const MAX_DESCRIPTION_LENGTH = 1000
 
 export default function NewExtraCreditRequestPage() {
   const navigate = useNavigate()
   const [courses, setCourses] = useState<CourseOption[]>([])
+  const [selectedTerm, setSelectedTerm] = useState('')
+  const [selectedCourseCode, setSelectedCourseCode] = useState('')
+  const [selectedSection, setSelectedSection] = useState('')
   const [categories, setCategories] = useState<CategoryOption[]>([])
-  const [courseId, setCourseId] = useState('')
   const [categoryId, setCategoryId] = useState('')
   const [description, setDescription] = useState('')
   const [pointsSummary, setPointsSummary] = useState<StudentPointsSummary>({
@@ -29,9 +29,33 @@ export default function NewExtraCreditRequestPage() {
   const [successMessage, setSuccessMessage] = useState<string | null>(null)
 
   const selectedCourse = useMemo(
-    () => courses.find((course) => course.courseId === Number(courseId)),
-    [courses, courseId],
+    () =>
+      courses.find(
+        (course) =>
+          course.term === selectedTerm &&
+          course.courseCode === selectedCourseCode &&
+          course.section === selectedSection,
+      ),
+    [courses, selectedTerm, selectedCourseCode, selectedSection],
   )
+
+  const uniqueTerms = useMemo(() => {
+    return Array.from(new Set(courses.map((c) => c.term)))
+  }, [courses])
+
+  const uniqueCourseCodes = useMemo(() => {
+    if (!selectedTerm) return []
+    const filtered = courses.filter((c) => c.term === selectedTerm)
+    return Array.from(new Set(filtered.map((c) => c.courseCode)))
+  }, [courses, selectedTerm])
+
+  const uniqueSections = useMemo(() => {
+    if (!selectedTerm || !selectedCourseCode) return []
+    const filtered = courses.filter(
+      (c) => c.term === selectedTerm && c.courseCode === selectedCourseCode,
+    )
+    return Array.from(new Set(filtered.map((c) => c.section)))
+  }, [courses, selectedTerm, selectedCourseCode])
 
   const selectedCategory = useMemo(
     () => categories.find((category) => category.categoryId === Number(categoryId)),
@@ -47,11 +71,14 @@ export default function NewExtraCreditRequestPage() {
   const exceedsPointCap = projectedTotal > POINT_CAP
   const descriptionTooShort =
     trimmedDescription.length > 0 && trimmedDescription.length < MIN_DESCRIPTION_LENGTH
+  const descriptionTooLong = trimmedDescription.length > MAX_DESCRIPTION_LENGTH
+  const descriptionInvalid = descriptionTooShort || descriptionTooLong
   const canSubmit =
     !isSubmitting &&
     Boolean(selectedCourse) &&
     Boolean(selectedCategory) &&
     trimmedDescription.length >= MIN_DESCRIPTION_LENGTH &&
+    trimmedDescription.length <= MAX_DESCRIPTION_LENGTH &&
     !exceedsPointCap
 
   useEffect(() => {
@@ -62,17 +89,15 @@ export default function NewExtraCreditRequestPage() {
         setIsLoading(true)
         setLoadError(null)
 
-        const [courseOptions, categoryOptions, pointSummary] = await Promise.all([
+        const [courseOptions, categoryOptions] = await Promise.all([
           extraCreditRequestService.getCourses(),
           extraCreditRequestService.getCategories(),
-          extraCreditRequestService.getPointSummary(),
         ])
 
         if (!isActive) return
 
         setCourses(courseOptions)
         setCategories(categoryOptions)
-        setPointsSummary(pointSummary)
       } catch (error) {
         if (isActive) {
           setLoadError(error instanceof Error ? error.message : 'Unable to load request form data.')
@@ -91,9 +116,38 @@ export default function NewExtraCreditRequestPage() {
     }
   }, [])
 
-  async function refreshPointSummary() {
-    setPointsSummary(await extraCreditRequestService.getPointSummary())
-  }
+  useEffect(() => {
+    let isActive = true
+
+    async function loadPointSummaryForSelectedCourse() {
+      if (!selectedTerm || !selectedCourseCode || !selectedSection || !selectedCourse) {
+        setPointsSummary({
+          issued: 0,
+          pending: 0,
+          available: POINT_CAP,
+        })
+        return
+      }
+
+      try {
+        const pointSummary = await extraCreditRequestService.getPointSummary(selectedCourse.term)
+
+        if (isActive) {
+          setPointsSummary(pointSummary)
+        }
+      } catch (error) {
+        if (isActive) {
+          setSubmitError(error instanceof Error ? error.message : 'Unable to load point summary.')
+        }
+      }
+    }
+
+    void loadPointSummaryForSelectedCourse()
+
+    return () => {
+      isActive = false
+    }
+  }, [selectedCourse, selectedTerm, selectedCourseCode, selectedSection])
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
@@ -105,8 +159,13 @@ export default function NewExtraCreditRequestPage() {
       return
     }
 
-    if (trimmedDescription.length < MIN_DESCRIPTION_LENGTH) {
-      setSubmitError('Enter a more complete request description before submitting.')
+    if (
+      trimmedDescription.length < MIN_DESCRIPTION_LENGTH ||
+      trimmedDescription.length > MAX_DESCRIPTION_LENGTH
+    ) {
+      setSubmitError(
+        `Description must be between ${MIN_DESCRIPTION_LENGTH} and ${MAX_DESCRIPTION_LENGTH} characters.`,
+      )
       return
     }
 
@@ -125,11 +184,12 @@ export default function NewExtraCreditRequestPage() {
       })
 
       setSuccessMessage(`Request #${createdRequest.id} was submitted with Pending status.`)
-      setCourseId('')
       setCategoryId('')
       setDescription('')
-      await refreshPointSummary()
-      navigate('/student-dashboard', { replace: true})
+      setSelectedTerm('')
+      setSelectedCourseCode('')
+      setSelectedSection('')
+      navigate(routes.student.dashboard, { replace: true })
     } catch (error) {
       setSubmitError(error instanceof Error ? error.message : 'Unable to submit request.')
     } finally {
@@ -140,9 +200,7 @@ export default function NewExtraCreditRequestPage() {
   return (
     <section className="space-y-8">
       <div className="rounded-3xl bg-white p-8 shadow-sm ring-1 ring-slate-200">
-        <p className="text-sm font-medium uppercase tracking-[0.2em] text-sky-700">
-          Student workflow
-        </p>
+        
         <h1 className="mt-3 text-3xl font-semibold tracking-tight text-slate-950 sm:text-4xl">
           New Extra Credit Request
         </h1>
@@ -164,30 +222,67 @@ export default function NewExtraCreditRequestPage() {
           className="space-y-6 rounded-3xl bg-white p-8 shadow-sm ring-1 ring-slate-200"
         >
           <div className="grid gap-5 md:grid-cols-2">
-            <label className="space-y-2">
-              <span className="text-sm font-medium text-slate-700">
-                Course / Section / Term
-              </span>
+            <label className="space-y-2 block">
+              <span className="text-sm font-medium text-slate-700">Term</span>
               <select
-                value={courseId}
+                value={selectedTerm}
                 onChange={(event) => {
-                  setCourseId(event.target.value)
+                  setSelectedTerm(event.target.value)
+                  setSelectedCourseCode('')
+                  setSelectedSection('')
                   setSubmitError(null)
                   setSuccessMessage(null)
                 }}
                 disabled={isLoading}
                 className="w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm shadow-sm focus:border-sky-500 focus:outline-none focus:ring-2 focus:ring-sky-100 disabled:bg-slate-100"
               >
-                <option value="">Select course</option>
-                {courses.map((course) => (
-                  <option key={course.courseId} value={course.courseId}>
-                    {formatCourse(course)}
-                  </option>
+                <option value="">Select term</option>
+                {uniqueTerms.map((term) => (
+                  <option key={term} value={term}>{term}</option>
                 ))}
               </select>
             </label>
 
-            <label className="space-y-2">
+            <label className="space-y-2 block">
+              <span className="text-sm font-medium text-slate-700">Course Code</span>
+              <select
+                value={selectedCourseCode}
+                onChange={(event) => {
+                  setSelectedCourseCode(event.target.value)
+                  setSelectedSection('')
+                  setSubmitError(null)
+                  setSuccessMessage(null)
+                }}
+                disabled={isLoading || !selectedTerm}
+                className="w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm shadow-sm focus:border-sky-500 focus:outline-none focus:ring-2 focus:ring-sky-100 disabled:bg-slate-100"
+              >
+                <option value="">Select course code</option>
+                {uniqueCourseCodes.map((code) => (
+                  <option key={code} value={code}>{code}</option>
+                ))}
+              </select>
+            </label>
+
+            <label className="space-y-2 block">
+              <span className="text-sm font-medium text-slate-700">Section</span>
+              <select
+                value={selectedSection}
+                onChange={(event) => {
+                  setSelectedSection(event.target.value)
+                  setSubmitError(null)
+                  setSuccessMessage(null)
+                }}
+                disabled={isLoading || !selectedCourseCode} // Dependent disable rule
+                className="w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm shadow-sm focus:border-sky-500 focus:outline-none focus:ring-2 focus:ring-sky-100 disabled:bg-slate-100"
+              >
+                <option value="">Select section</option>
+                {uniqueSections.map((section) => (
+                  <option key={section} value={section}>{section}</option>
+                ))}
+              </select>
+            </label>
+
+            <label className="space-y-2 block">
               <span className="text-sm font-medium text-slate-700">Category</span>
               <select
                 value={categoryId}
@@ -239,12 +334,18 @@ export default function NewExtraCreditRequestPage() {
                 setSuccessMessage(null)
               }}
               rows={7}
-              maxLength={1000}
+              maxLength={MAX_DESCRIPTION_LENGTH}
+              aria-describedby="request-description-help"
+              aria-invalid={descriptionInvalid}
               placeholder="Describe the activity, when it occurred, and why it should qualify for extra credit."
               className="w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm shadow-sm focus:border-sky-500 focus:outline-none focus:ring-2 focus:ring-sky-100"
             />
-            <span className={`text-xs ${descriptionTooShort ? 'text-amber-700' : 'text-slate-500'}`}>
-              {description.length}/1000 characters. Minimum {MIN_DESCRIPTION_LENGTH} characters required.
+            <span
+              id="request-description-help"
+              className={`text-xs ${descriptionInvalid ? 'text-rose-700' : 'text-slate-500'}`}
+            >
+              {trimmedDescription.length}/{MAX_DESCRIPTION_LENGTH} characters. Description must be
+              between {MIN_DESCRIPTION_LENGTH} and {MAX_DESCRIPTION_LENGTH} characters.
             </span>
           </label>
 
@@ -272,11 +373,13 @@ export default function NewExtraCreditRequestPage() {
             <button
               type="button"
               onClick={() => {
-                setCourseId('')
                 setCategoryId('')
                 setDescription('')
                 setSubmitError(null)
                 setSuccessMessage(null)
+                setSelectedTerm('')
+                setSelectedCourseCode('')
+                setSelectedSection('')
               }}
               className="rounded-md border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
             >
@@ -319,22 +422,16 @@ export default function NewExtraCreditRequestPage() {
           </dl>
 
           <div
-            className={`rounded-2xl p-4 text-sm ${
-              exceedsPointCap
-                ? 'bg-rose-50 text-rose-800 ring-1 ring-rose-200'
-                : 'bg-emerald-50 text-emerald-800 ring-1 ring-emerald-200'
-            }`}
+            className={`rounded-2xl p-4 text-sm ${exceedsPointCap
+              ? 'bg-rose-50 text-rose-800 ring-1 ring-rose-200'
+              : 'bg-emerald-50 text-emerald-800 ring-1 ring-emerald-200'
+              }`}
           >
             {isLoading
               ? 'Loading point totals...'
               : exceedsPointCap
                 ? 'Blocked: this request would exceed the 50 point cap.'
                 : 'Ready: this request is within the 50 point cap.'}
-          </div>
-
-          <div className="rounded-2xl bg-slate-50 p-4 text-sm text-slate-600">
-            <p className="font-semibold text-slate-800">Status flag</p>
-            <p className="mt-1">Submitted requests are saved as Pending for review.</p>
           </div>
         </aside>
       </div>

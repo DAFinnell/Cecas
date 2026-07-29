@@ -9,16 +9,24 @@ import org.springframework.security.access.AccessDeniedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.multipart.MaxUploadSizeExceededException;
 
+import edu.franklin.cecas.exception.ChairNotAssignedException;
 import edu.franklin.cecas.exception.EmailAlreadyExistsException;
-import edu.franklin.cecas.exception.InvalidExtraCreditRequestException;
+import edu.franklin.cecas.exception.EvidenceUploadException;
+import edu.franklin.cecas.exception.ExtraCreditRequestNotFoundException;
 import edu.franklin.cecas.exception.InvalidCredentialsException;
+import edu.franklin.cecas.exception.InvalidExtraCreditRequestException;
 import edu.franklin.cecas.exception.InvalidPasswordException;
+import edu.franklin.cecas.exception.InvalidStateTransitionException;
 import edu.franklin.cecas.exception.PasswordChangeNotRequiredException;
 import edu.franklin.cecas.exception.PasswordMismatchException;
 import edu.franklin.cecas.exception.PointCapExceededException;
 import edu.franklin.cecas.exception.RegistrationNotAllowedException;
+import edu.franklin.cecas.exception.ResourceNotFoundException;
+import edu.franklin.cecas.exception.StudentNotFoundException;
 import edu.franklin.cecas.exception.UnauthorizedRoleException;
+import edu.franklin.cecas.exception.UserNotFoundException;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
@@ -71,6 +79,15 @@ public class GlobalExceptionHandler {
         problem.setTitle("Forbidden");
         problem.setDetail("You do not have permission to access this resource.");
         problem.setProperty("errorCode", "ACCESS_DENIED");
+        return problem;
+    }
+
+    @ExceptionHandler(ChairNotAssignedException.class)
+    public ProblemDetail handleChairNotAssigned(ChairNotAssignedException ex) {
+        ProblemDetail problem = ProblemDetail.forStatus(HttpStatus.FORBIDDEN);
+        problem.setTitle("Chair not assigned");
+        problem.setDetail(ex.getMessage());
+        problem.setProperty("errorCode", "CHAIR_NOT_ASSIGNED");
         return problem;
     }
 
@@ -128,10 +145,69 @@ public class GlobalExceptionHandler {
         return problem;
     }
 
-    /*
-     * Generic exception handler to catch any unhandled exceptions and return a
-     * standardized error response.
-     */
+    @ExceptionHandler(ResourceNotFoundException.class)
+    public ProblemDetail handleResourceNotFound(ResourceNotFoundException ex) {
+        ProblemDetail problem = ProblemDetail.forStatus(HttpStatus.NOT_FOUND);
+        problem.setTitle("Not Found");
+        problem.setDetail(ex.getMessage());
+        problem.setProperty("errorCode", "RESOURCE_NOT_FOUND");
+        return problem;
+    }
+
+    @ExceptionHandler(UserNotFoundException.class)
+    public ProblemDetail handleUserNotFound(UserNotFoundException ex) {
+        ProblemDetail problem = ProblemDetail.forStatus(HttpStatus.NOT_FOUND);
+        problem.setTitle("User Not Found");
+        problem.setDetail(ex.getMessage());
+        problem.setProperty("errorCode", "USER_NOT_FOUND");
+        return problem;
+    }
+
+    @ExceptionHandler(InvalidStateTransitionException.class)
+    public ProblemDetail handleInvalidTransition(InvalidStateTransitionException ex) {
+        ProblemDetail problem = ProblemDetail.forStatus(HttpStatus.CONFLICT);
+        problem.setTitle("Invalid state transition");
+        problem.setDetail(ex.getMessage());
+        problem.setProperty("errorCode", "INVALID_TRANSITION");
+        return problem;
+    }
+
+    @ExceptionHandler(StudentNotFoundException.class)
+    public ProblemDetail handleStudentNotFoundException(StudentNotFoundException ex) {
+        ProblemDetail problem = ProblemDetail.forStatus(HttpStatus.NOT_FOUND);
+        problem.setTitle("Student Not Found");
+        problem.setDetail(ex.getMessage());
+        problem.setProperty("errorCode", "STUDENT_NOT_FOUND");
+        return problem;
+    }
+
+    @ExceptionHandler(ExtraCreditRequestNotFoundException.class)
+    public ProblemDetail handleExtraCreditRequestNotFoundException(ExtraCreditRequestNotFoundException ex) {
+        ProblemDetail problem = ProblemDetail.forStatus(HttpStatus.NOT_FOUND);
+        problem.setTitle("Extra Credit Request Not Found");
+        problem.setDetail(ex.getMessage());
+        problem.setProperty("errorCode", "EXTRA_CREDIT_REQUEST_NOT_FOUND");
+        return problem;
+    }
+
+    @ExceptionHandler(EvidenceUploadException.class)
+    public ProblemDetail handleEvidenceUploadException(EvidenceUploadException ex) {
+        ProblemDetail problem = ProblemDetail.forStatus(HttpStatus.BAD_REQUEST);
+        problem.setTitle("Invalid Evidence Upload");
+        problem.setDetail(ex.getMessage());
+        problem.setProperty("errorCode", "EVIDENCE_UPLOAD_INVALID");
+        return problem;
+    }
+
+    @ExceptionHandler(MaxUploadSizeExceededException.class)
+    public ProblemDetail handleMaxUploadSize(MaxUploadSizeExceededException ex) {
+        ProblemDetail problem = ProblemDetail.forStatus(HttpStatus.BAD_REQUEST);
+        problem.setTitle("Invalid evidence upload");
+        problem.setDetail("Evidence file must be 10 MB or smaller.");
+        problem.setProperty("errorCode", "EVIDENCE_UPLOAD_TOO_LARGE");
+        return problem;
+    }
+
     @ExceptionHandler(Exception.class)
     public ProblemDetail handleGenericException(Exception ex) {
         ProblemDetail problem = ProblemDetail.forStatus(HttpStatus.INTERNAL_SERVER_ERROR);

@@ -39,22 +39,22 @@ class UserPointsControllerTest {
     @Test
     @WithMockUser(username = "student@test.com", roles = { "STUDENT" })
     void getStudentPointsReturnsCurrentStudentPointSummary() throws Exception {
-        when(userService.getStudentPoints("student@test.com"))
+        when(userService.getStudentPoints("student@test.com", "26/FA"))
                 .thenReturn(new StudentPointsDTO(10, 15, 25));
 
-        mockMvc.perform(get("/api/users/me/points"))
+        mockMvc.perform(get("/api/users/me/points").param("term", "26/FA"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.issued").value(10))
                 .andExpect(jsonPath("$.pending").value(15))
                 .andExpect(jsonPath("$.available").value(25));
 
-        verify(userService).getStudentPoints("student@test.com");
+        verify(userService).getStudentPoints("student@test.com", "26/FA");
     }
 
     @Test
     @WithMockUser(username = "chair@test.com", roles = { "CHAIR" })
     void getStudentPointsRejectsChairUsers() throws Exception {
-        mockMvc.perform(get("/api/users/me/points"))
+        mockMvc.perform(get("/api/users/me/points").param("term", "26/FA"))
                 .andExpect(status().isForbidden());
     }
 }

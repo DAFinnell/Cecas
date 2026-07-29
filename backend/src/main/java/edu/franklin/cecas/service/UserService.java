@@ -56,7 +56,7 @@ public class UserService {
                 .orElseThrow(() -> new RuntimeException("User not found"));
     }
 
-    public StudentPointsDTO getStudentPoints(String email) {
+    public StudentPointsDTO getStudentPoints(String email, String term) {
         User user = userRepository.findByEmailIgnoreCase(email)
                 .orElseThrow(() -> new UsernameNotFoundException("User not found with email: " + email));
 
@@ -64,7 +64,7 @@ public class UserService {
             throw new UnauthorizedRoleException("Only students have an extra credit point summary");
         }
 
-        return pointAllocationService.getStudentPoints(user.getId());
+        return pointAllocationService.getStudentPoints(user.getId(), term);
     }
 
     /**

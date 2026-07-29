@@ -1,29 +1,32 @@
 package edu.franklin.cecas.service;
 
+import java.util.List;
+
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import java.util.List;
 
 import edu.franklin.cecas.domain.ExtraCreditRequest;
 import edu.franklin.cecas.domain.ExtraCreditRequestStatus;
 import edu.franklin.cecas.dto.StudentPointsDTO;
 import edu.franklin.cecas.exception.PointCapExceededException;
 import edu.franklin.cecas.repository.ExtraCreditRequestRepository;
+import edu.franklin.cecas.config.ExtraCreditProperties;
 
 @Service
 public class PointAllocationService {
-    
-    private static final int MAX_POINTS = 50;
-    
-    private final ExtraCreditRequestRepository requestRepository;
 
-    public PointAllocationService(ExtraCreditRequestRepository requestRepository) {
+    private final ExtraCreditRequestRepository requestRepository;
+    private final ExtraCreditProperties extraCreditProperties;
+
+    public PointAllocationService(ExtraCreditRequestRepository requestRepository,
+            ExtraCreditProperties extraCreditProperties) {
         this.requestRepository = requestRepository;
+        this.extraCreditProperties = extraCreditProperties;
     }
 
-    public int getUsedPoints(Integer studentId) {
-        List<ExtraCreditRequest> approvedRequests =
-                requestRepository.findByStudent_IdAndStatus(studentId, ExtraCreditRequestStatus.APPROVED);
+    public int getUsedPoints(Integer studentId, String term) {
+        List<ExtraCreditRequest> approvedRequests = requestRepository.findByStudent_IdAndCourse_TermAndStatus(studentId,
+                term, ExtraCreditRequestStatus.APPROVED);
 
         int usedPoints = 0;
 
@@ -36,13 +39,14 @@ public class PointAllocationService {
         return usedPoints;
     }
 
-    public int getRemainingPoints(Integer studentId) {
-        return MAX_POINTS - getUsedPoints(studentId);
+    public int getRemainingPoints(Integer studentId, String term) {
+        return extraCreditProperties.cap() - getUsedPoints(studentId, term);
     }
 
-    public int getPendingPoints(Integer studentId) {
-        List<ExtraCreditRequest> pendingRequests =
-                requestRepository.findByStudent_IdAndStatus(studentId, ExtraCreditRequestStatus.PENDING);
+    public int getPendingPoints(Integer studentId, String term) {
+        List<ExtraCreditRequest> pendingRequests = requestRepository.findByStudent_IdAndCourse_TermAndStatusIn(
+                studentId, term, List.of(ExtraCreditRequestStatus.PENDING, ExtraCreditRequestStatus.PRE_APPROVED,
+                        ExtraCreditRequestStatus.EVIDENCE_SUBMITTED));
 
         int pendingPoints = 0;
 
@@ -53,35 +57,36 @@ public class PointAllocationService {
         return pendingPoints;
     }
 
-    public StudentPointsDTO getStudentPoints(Integer studentId) {
-        int issued = getUsedPoints(studentId);
-        int pending = getPendingPoints(studentId);
-        int available = Math.max(MAX_POINTS - issued - pending, 0);
+    public StudentPointsDTO getStudentPoints(Integer studentId, String term) {
+        int issued = getUsedPoints(studentId, term);
+        int pending = getPendingPoints(studentId, term);
+        int available = Math.max(extraCreditProperties.cap() - issued - pending, 0);
 
         return new StudentPointsDTO(issued, pending, available);
     }
 
-    public boolean canAwardPoints(Integer studentId, int requestedPoints) {
-        return getUsedPoints(studentId) + requestedPoints <= MAX_POINTS;
+    public boolean canAwardPoints(Integer studentId, String term, int requestedPoints) {
+        return getUsedPoints(studentId, term) + requestedPoints <= extraCreditProperties.cap();
     }
 
-    public boolean canSubmitPendingRequest(Integer studentId, int requestedPoints) {
-        return getUsedPoints(studentId) + getPendingPoints(studentId) + requestedPoints <= MAX_POINTS;
+    public boolean canSubmitPendingRequest(Integer studentId, String term, int requestedPoints) {
+        return getUsedPoints(studentId, term) + getPendingPoints(studentId, term)
+                + requestedPoints <= extraCreditProperties.cap();
     }
 
     @Transactional
-    public void validatePointAllocation(Integer studentId, int requestedPoints) {
-        int usedPoints = getUsedPoints(studentId);
-
-        if (usedPoints + requestedPoints > MAX_POINTS) {
-            throw new PointCapExceededException("Student exceeds 50 point maximum.");
+    public void validatePendingRequestAllowed(Integer studentId, String term, int requestedPoints) {
+        if (!canSubmitPendingRequest(studentId, term, requestedPoints)) {
+            throw new PointCapExceededException(
+                    "This request would exceed the " + extraCreditProperties.cap() + " point maximum.");
         }
     }
 
     @Transactional
-    public void validatePendingRequestAllowed(Integer studentId, int requestedPoints) {
-        if (!canSubmitPendingRequest(studentId, requestedPoints)) {
-            throw new PointCapExceededException("This request would exceed the 50 point maximum.");
+    public void validateAwardAllowed(Integer studentId, String term, int requestedPoints) {
+        if (!canAwardPoints(studentId, term, requestedPoints)) {
+            throw new PointCapExceededException(
+                    "This award would exceed the " + extraCreditProperties.cap() + " point maximum.");
         }
     }
 

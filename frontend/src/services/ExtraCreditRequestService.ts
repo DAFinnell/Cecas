@@ -3,8 +3,9 @@ import type {
   CategoryOption,
   CourseOption,
   CreateExtraCreditRequestPayload,
-  ExtraCreditRequestResponse,
   StudentPointsSummary,
+  StudentRequestDetail,
+  StudentRequestSummary,
 } from '../types/extraCredit.types'
 
 async function readErrorMessage(response: Response): Promise<string> {
@@ -71,12 +72,40 @@ class ExtraCreditRequestService {
     return fetchJson<CategoryOption[]>('/api/lookup/categories')
   }
 
-  getPointSummary(): Promise<StudentPointsSummary> {
-    return fetchJson<StudentPointsSummary>('/api/users/me/points')
+  getPointSummary(term: string): Promise<StudentPointsSummary> {
+    return fetchJson<StudentPointsSummary>(
+      `/api/users/me/points?term=${encodeURIComponent(term)}`
+    )
   }
 
-  createRequest(payload: CreateExtraCreditRequestPayload): Promise<ExtraCreditRequestResponse> {
-    return postJson<ExtraCreditRequestResponse>('/api/extra-credit-requests', payload)
+  getStudentRequests(): Promise<StudentRequestSummary[]> {
+    return fetchJson<StudentRequestSummary[]>('/api/extra-credit-requests')
+  }
+
+  getStudentRequestDetail(requestId: number): Promise<StudentRequestDetail> {
+    return fetchJson<StudentRequestDetail>(
+      `/api/extra-credit-requests/${requestId}`
+    )
+  }
+
+  createRequest(payload: CreateExtraCreditRequestPayload): Promise<StudentRequestDetail> {
+    return postJson<StudentRequestDetail>('/api/extra-credit-requests', payload)
+  }
+
+  uploadEvidence(requestId: number, file: File): Promise<void> {
+    const formData = new FormData()
+    formData.append('evidence', file)
+
+    return csrfService
+      .fetch(`/api/extra-credit-requests/${requestId}/evidence`, {
+        method: 'POST',
+        body: formData,
+      })
+      .then(async (response) => {
+        if (!response.ok) {
+          throw new Error(await readErrorMessage(response))
+        }
+      })
   }
 }
 

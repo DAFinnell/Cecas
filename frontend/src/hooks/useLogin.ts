@@ -1,7 +1,9 @@
-import { useState } from 'react'
+import { useState, type SubmitEvent } from 'react' // Swapped out deprecated FormEvent
 import { useNavigate } from 'react-router-dom'
 import authService from '../services/AuthService'
 import { useLocation } from 'react-router-dom'
+import { parseApiError } from '../utils/errorUtils'
+import { routes } from '../app/routes'
 
 export function useLogin() {
   const navigate = useNavigate()
@@ -16,7 +18,9 @@ export function useLogin() {
   const [error, setError] = useState('')
   const [success, setSuccess] = useState(false)
 
-  async function handleSubmit(e: React.FormEvent) {
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({})
+
+  async function handleSubmit(e: SubmitEvent<HTMLFormElement>) {
     e.preventDefault()
     setError('')
     setSuccess(false)
@@ -46,22 +50,15 @@ export function useLogin() {
       await new Promise((resolve) => setTimeout(resolve, 500)) // allow success state to render before redirecting
 
       if (user.role === 'CHAIR') {
-        if (user.mustChangePassword) {
-
-          navigate('/chair/force-change-password')
-        } else {
-          navigate('/chair')
-        }
+        navigate(user.mustChangePassword ? routes.chair.forceChangePassword : routes.chair.dashboard)
       } else {
-        navigate('/student-dashboard')
+        navigate(routes.student.dashboard)
       }
 
     } catch (err) {
-      if (err instanceof Error) {
-        setError(err.message)
-      } else {
-        setError('Unable to sign in.')
-      }
+      const parsedError = await parseApiError(err)
+      setError(parsedError.message)
+      setFieldErrors(parsedError.fieldErrors)
     } finally {
       setLoading(false)
     }
@@ -72,6 +69,7 @@ export function useLogin() {
     password,
     loading,
     error,
+    fieldErrors,
     success,
     setEmail,
     setPassword,

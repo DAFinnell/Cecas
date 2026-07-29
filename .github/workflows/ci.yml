@@ -38,13 +38,11 @@ jobs:
           set -euo pipefail
           ./mvnw -B clean package -DskipTests
 
-      - name: Upload backend JAR artifact
-        if: success()
+      - name: Upload backend JAR
         uses: actions/upload-artifact@v4
         with:
           name: backend-jar
           path: backend/target/*.jar
-          retention-days: 7
 
   build-frontend:
     name: Frontend CI
@@ -74,14 +72,12 @@ jobs:
         run: |
           set -euo pipefail
           npm run build --if-present
-
-      - name: Upload frontend dist artifact
-        if: success()
+          
+      - name: Upload frontend dist
         uses: actions/upload-artifact@v4
         with:
           name: frontend-dist
           path: frontend/dist
-          retention-days: 7
 
   docker-deploy:
     name: Validate Docker Compose
@@ -119,20 +115,9 @@ jobs:
             echo "No env example file found; failing"
             exit 1
           fi
-          
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
 
       - name: Ensure docker compose available
         run: docker compose version
-
-      - name: Inspect artifacts
-        run: |
-          set -euo pipefail
-          echo "backend/target contents:"
-          ls -la backend/target || true
-          echo "frontend/dist contents:"
-          ls -la frontend/dist || true
 
       - name: Validate docker-compose config
         run: |

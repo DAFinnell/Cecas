@@ -1,8 +1,15 @@
-import { Route, Routes } from 'react-router-dom'
+import { Navigate, Route, Routes } from 'react-router-dom'
 import AppLayout from './app/AppLayout'
+import RequireChairPasswordChange from './app/RequireChairPasswordChange'
 import RequireRole from './app/RequireRole'
-import ChairPage from './pages/ChairPage'
+import { routePath, routes } from './app/routes'
+import CsrfInitializer from './components/CsrfInitializer'
+import { useCurrentUser } from './hooks/useCurrentUser'
+import AboutPage from './pages/AboutPage'
+import ChairPage from './pages/ChairDashboardPage'
+import ContactPage from './pages/ContactPage'
 import DebugPage from './pages/DebugPage'
+import ForceChangePasswordPage from './pages/ForceChangePasswordPage'
 import HomePage from './pages/HomePage'
 import HowItWorksPage from './pages/HowItWorksPage'
 import LoginPage from './pages/LoginPage'
@@ -11,43 +18,86 @@ import NotFoundPage from './pages/NotFoundPage'
 import PrivacyPolicyPage from './pages/PrivacyPolicyPage'
 import RegisterPage from './pages/RegisterPage'
 import StudentPage from './pages/StudentPage'
-import CsrfInitializer from './components/CsrfInitializer'
-import ContactPage from './pages/ContactPage'
-import AboutPage from './pages/AboutPage'
-import ForceChangePasswordPage from './pages/ForceChangePasswordPage'
-import RequireChairPasswordChange from './app/RequireChairPasswordChange'
+import StudentApplicationDetailPage from './pages/StudentApplicationDetailPage'
+import StudentApplicationsPage from './pages/StudentApplicationsPage'
+import ChairReviewPage from './pages/ChairReviewPage'
+import EvidenceUploadPage from './pages/EvidenceUploadPage'
+
+function RootPage() {
+  const { user, loading } = useCurrentUser()
+
+  if (loading) {
+    return <p className="text-sm text-slate-600">Loading...</p>
+  }
+
+  if (user.authenticated && user.role === 'STUDENT') {
+    return <Navigate to={routes.student.dashboard} replace />
+  }
+
+  if (user.authenticated && user.role === 'CHAIR') {
+    return (
+      <Navigate
+        to={user.mustChangePassword ? routes.chair.forceChangePassword : routes.chair.dashboard}
+        replace
+      />
+    )
+  }
+
+  return <HomePage />
+}
 
 export default function App() {
   return (
     <>
       <CsrfInitializer />
+
       <Routes>
-        <Route path="/" element={<AppLayout />}>
-          <Route index element={<HomePage />} />
+        <Route path={routes.home} element={<AppLayout />}>
+          <Route index element={<RootPage />} />
           <Route path="contact" element={<ContactPage />} />
           <Route path="about" element={<AboutPage />} />
-          <Route path="login" element={<LoginPage />} />
-          <Route path="register" element={<RegisterPage />} />
+          <Route path={routePath(routes.login)} element={<LoginPage />} />
+          <Route path={routePath(routes.register)} element={<RegisterPage />} />
           <Route path="privacy-policy" element={<PrivacyPolicyPage />} />
-          <Route path="how-it-works" element={<HowItWorksPage />} />
+          <Route path={routePath(routes.howItWorks)} element={<HowItWorksPage />} />
 
           <Route element={<RequireRole allowedRoles={['STUDENT']} />}>
-            <Route path="student-dashboard" element={<StudentPage />} />
-            <Route path="create-request" element={<NewExtraCreditRequestPage />} />
+            <Route path={routePath(routes.student.dashboard)} element={<StudentPage />} />
+
+            <Route
+              path={routePath(routes.student.applications)}
+              element={<StudentApplicationsPage />}
+            />
+            <Route
+              path={routePath(routes.student.newRequest)}
+              element={<NewExtraCreditRequestPage />}
+            />
+            <Route
+              path={routePath("/student/requests/:requestId")}
+              element={<StudentApplicationDetailPage />}
+            />
+            <Route
+              path={routePath("/student/requests/:requestId/evidence")}
+              element={<EvidenceUploadPage />}
+            />
+
           </Route>
 
           <Route element={<RequireRole allowedRoles={['CHAIR']} />}>
-
             <Route element={<RequireChairPasswordChange />}>
-              <Route path="chair" element={<ChairPage />} />
+              <Route path={routePath(routes.chair.dashboard)} element={<ChairPage />} />
+              <Route
+                path={routePath("/chair/review/:requestId")}
+                element={<ChairReviewPage />}
+              />
             </Route>
 
             <Route
-              path="chair/force-change-password"
+              path={routePath(routes.chair.forceChangePassword)}
               element={<ForceChangePasswordPage />}
             />
           </Route>
-          <Route path="logout" element={<HomePage />} /> 
+
           <Route path="debug" element={<DebugPage />} />
           <Route path="*" element={<NotFoundPage />} />
         </Route>

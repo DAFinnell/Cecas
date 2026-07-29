@@ -16,6 +16,6 @@ RUN apt-get update \
     && rm -rf /var/lib/apt/lists/*
 
 COPY --from=build /app/target/*.jar app.jar
-
+COPY --from=build /app/src/main/resources/seed /app/seed
 EXPOSE 8080
 ENTRYPOINT ["java", "-jar", "app.jar"]

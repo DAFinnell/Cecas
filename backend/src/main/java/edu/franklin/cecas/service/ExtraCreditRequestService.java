@@ -13,8 +13,10 @@ import edu.franklin.cecas.domain.ExtraCreditRequestStatus;
 import edu.franklin.cecas.domain.User;
 import edu.franklin.cecas.domain.UserRole;
 import edu.franklin.cecas.dto.ExtraCreditRequestCreateDTO;
-import edu.franklin.cecas.dto.ExtraCreditResponseDTO;
+import edu.franklin.cecas.dto.StudentRequestDetailDTO;
+import edu.franklin.cecas.dto.StudentRequestSummaryDTO;
 import edu.franklin.cecas.exception.InvalidExtraCreditRequestException;
+import edu.franklin.cecas.exception.StudentNotFoundException;
 import edu.franklin.cecas.exception.UnauthorizedRoleException;
 import edu.franklin.cecas.repository.CategoryRepository;
 import edu.franklin.cecas.repository.CourseRepository;
@@ -44,24 +46,28 @@ public class ExtraCreditRequestService {
         this.pointAllocationService = pointAllocationService;
     }
 
-    // Create and persist a new Extra Credit Request.
     @Transactional
-    public ExtraCreditResponseDTO createRequest(String studentEmail, ExtraCreditRequestCreateDTO dto) {
+    public StudentRequestDetailDTO createRequest(String studentEmail, ExtraCreditRequestCreateDTO dto) {
         Course course = courseRepository.findById(dto.getCourseId())
-                .orElseThrow(() -> new InvalidExtraCreditRequestException("Course not found with ID: " + dto.getCourseId()));
+                .orElseThrow(() -> new InvalidExtraCreditRequestException(
+                        "Course not found with ID: " + dto.getCourseId()));
 
         Category category = categoryRepository.findById(dto.getCategoryId())
-                .orElseThrow(() -> new InvalidExtraCreditRequestException("Category not found with ID: " + dto.getCategoryId()));
+                .orElseThrow(() -> new InvalidExtraCreditRequestException(
+                        "Category not found with ID: " + dto.getCategoryId()));
 
         User student = userRepository.findByEmailIgnoreCase(studentEmail)
-                .orElseThrow(() -> new RuntimeException("Student not found with Email: " + studentEmail));
+                .orElseThrow(() -> new StudentNotFoundException("Student not found with Email: " + studentEmail));
+
+        userRepository.findByIdForUpdate(student.getId())
+                .orElseThrow(() -> new RuntimeException("Student not found"));
 
         if (student.getRole() != UserRole.STUDENT) {
             throw new UnauthorizedRoleException("Unauthorized: User is not a student");
         }
 
         int requestedPoints = category.getDefaultPoints() == null ? 0 : category.getDefaultPoints();
-        pointAllocationService.validatePendingRequestAllowed(student.getId(), requestedPoints);
+        pointAllocationService.validatePendingRequestAllowed(student.getId(), course.getTerm(), requestedPoints);
 
         ExtraCreditRequest request = new ExtraCreditRequest();
         request.setCourse(course);
@@ -71,16 +77,26 @@ public class ExtraCreditRequestService {
         request.setStatus(ExtraCreditRequestStatus.PENDING);
 
         ExtraCreditRequest savedRequest = requestRepository.save(request);
-        return new ExtraCreditResponseDTO(savedRequest);
+        return new StudentRequestDetailDTO(savedRequest);
     }
 
-    // Get a list of all requests for a student
-    public List<ExtraCreditResponseDTO> getRequestsForStudent(String studentEmail) {
+    public List<StudentRequestSummaryDTO> getRequestsForStudent(String studentEmail) {
         User student = userRepository.findByEmailIgnoreCase(studentEmail)
                 .orElseThrow(() -> new UsernameNotFoundException("Student not found with Email: " + studentEmail));
 
         return requestRepository.findByStudent_Id(student.getId()).stream()
-                .map(ExtraCreditResponseDTO::new)
+                .map(StudentRequestSummaryDTO::new)
                 .collect(Collectors.toList());
+    }
+
+    public StudentRequestDetailDTO getRequestForStudent(String studentEmail, Integer requestId) {
+        User student = userRepository.findByEmailIgnoreCase(studentEmail)
+                .orElseThrow(() -> new UsernameNotFoundException("Student not found with Email: " + studentEmail));
+
+        ExtraCreditRequest request = requestRepository
+                .findByIdAndStudent_Id(requestId, student.getId())
+                .orElseThrow(() -> new InvalidExtraCreditRequestException("Extra credit request not found."));
+
+        return new StudentRequestDetailDTO(request);
     }
 }

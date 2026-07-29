@@ -15,7 +15,8 @@ import edu.franklin.cecas.domain.ExtraCreditRequestStatus;
 import edu.franklin.cecas.domain.User;
 import edu.franklin.cecas.domain.UserRole;
 import edu.franklin.cecas.dto.ExtraCreditRequestCreateDTO;
-import edu.franklin.cecas.dto.ExtraCreditResponseDTO;
+import edu.franklin.cecas.dto.StudentRequestDetailDTO;
+import edu.franklin.cecas.dto.StudentRequestSummaryDTO;
 import edu.franklin.cecas.repository.CategoryRepository;
 import edu.franklin.cecas.repository.CourseRepository;
 import edu.franklin.cecas.repository.ExtraCreditRequestRepository;
@@ -24,7 +25,7 @@ import edu.franklin.cecas.support.MySqlServiceTest;
 
 @MySqlServiceTest
 public class ExtraCreditRequestServiceTest {
-    
+
     @Autowired
     private UserRepository userRepository;
 
@@ -35,10 +36,10 @@ public class ExtraCreditRequestServiceTest {
     private CategoryRepository categoryRepository;
 
     @Autowired
-    private ExtraCreditRequestService extraCreditRequestService;
+    private ExtraCreditRequestRepository extraCreditRequestRepository;
 
     @Autowired
-    private ExtraCreditRequestRepository extraCreditRequestRepository;
+    private ExtraCreditRequestService extraCreditRequestService;
 
     private User createTestStudent(String name, String email, Integer studentId) {
         User user = new User();
@@ -46,7 +47,7 @@ public class ExtraCreditRequestServiceTest {
         user.setFullName(name);
         user.setEmail(email);
         user.setPassword("password");
-        user.setStudentId(studentId); //Generates a unique ID, without it the testing rewrites it with the new student for testing A and B students
+        user.setStudentId(studentId);
         user.setProgram("Computer Science");
         user.setIsActive(true);
         user.setMustChangePassword(false);
@@ -57,10 +58,10 @@ public class ExtraCreditRequestServiceTest {
 
     private Course createTestCourse() {
         Course course = new Course();
-        
-        course.setCourseCode("COMP-201");
-        course.setSection("B01");
-        course.setTerm("Summer 2026");
+
+        course.setCourseCode("COMP-110");
+        course.setTerm("26/FA");
+        course.setSection("H1WW");
 
         return courseRepository.save(course);
     }
@@ -68,33 +69,51 @@ public class ExtraCreditRequestServiceTest {
     private Category createTestCategory() {
         Category category = new Category();
 
-        category.setCategoryName("Homework");
-        category.setDefaultPoints(10);
-        category.setDescription("Standard homework assignment category");
+        category.setCategoryName("Seminar Attendance");
+        category.setDescription("Approved attendance at an academic or professional seminar");
+        category.setDefaultPoints(5);
 
         return categoryRepository.save(category);
     }
 
+    /**
+     * Tests that a student can create an extra credit request successfully.
+     */
     @Test
     void TestCreateRequestSuccesfully() {
-        User student = createTestStudent("Test Student", "student@test.com", 1001);
+        User student = createTestStudent("Derek Test", "derek@derek.com", 1001);
         Course course = createTestCourse();
         Category category = createTestCategory();
 
         ExtraCreditRequestCreateDTO dto = new ExtraCreditRequestCreateDTO();
         dto.setCourseId(course.getCourseId());
         dto.setCategoryId(category.getCategoryId());
-        dto.setDescription("I completed the extra assignment");
+        dto.setDescription("I attended an approved academic seminar");
 
-        ExtraCreditResponseDTO response = extraCreditRequestService.createRequest(student.getEmail(), dto);
+        StudentRequestDetailDTO response = extraCreditRequestService.createRequest(student.getEmail(), dto);
 
         assertNotNull(response);
+        assertNotNull(response.getId());
+        assertEquals("COMP-110", response.getCourseCode());
+        assertEquals("26/FA", response.getTerm());
+        assertEquals("H1WW", response.getSection());
+        assertEquals("Seminar Attendance", response.getCategoryName());
+        assertEquals("Approved attendance at an academic or professional seminar", response.getCategoryDescription());
+        assertEquals("I attended an approved academic seminar", response.getDescription());
         assertEquals(ExtraCreditRequestStatus.PENDING, response.getStatus());
+        assertEquals(5, response.getDefaultPoints());
+
+        var savedRequest = extraCreditRequestRepository.findById(response.getId()).orElseThrow();
+        assertEquals(ExtraCreditRequestStatus.PENDING, savedRequest.getStatus());
+        assertEquals("I attended an approved academic seminar", savedRequest.getDescription());
     }
 
+    /**
+     * Tests that an extra credit request cannot be created by a user that is not a student.
+     */
     @Test
     void testCreateRequestThrowsWhenUserIsNotAStudent() {
-        User faculty = createTestStudent("Test Faculty", "faculty@test.com", 1001);
+        User faculty = createTestStudent("Derek Chair", "derek-chair@derek.com", 1001);
         faculty.setRole(UserRole.CHAIR);
         userRepository.save(faculty);
 
@@ -106,16 +125,18 @@ public class ExtraCreditRequestServiceTest {
         dto.setCategoryId(category.getCategoryId());
         dto.setDescription("Attempt by non-student");
 
-        RuntimeException ex = assertThrows(RuntimeException.class, () -> 
-            extraCreditRequestService.createRequest(faculty.getEmail(), dto)
-        );
+        RuntimeException ex = assertThrows(RuntimeException.class,
+                () -> extraCreditRequestService.createRequest(faculty.getEmail(), dto));
 
         assertEquals("Unauthorized: User is not a student", ex.getMessage());
     }
 
+    /**
+     * Tests that a student's request list only returns their own applications.
+     */
     @Test
     void testGetRequestsForStudentReturnsOnlyTheirRequests() {
-        User studentA = createTestStudent("Student A", "studentA@test.com", 2001);
+        User studentA = createTestStudent("Derek Test", "derek-list@derek.com", 2001);
         User studentB = createTestStudent("Student B", "studentB@test.com", 2002);
         Course course = createTestCourse();
         Category category = createTestCategory();
@@ -123,25 +144,20 @@ public class ExtraCreditRequestServiceTest {
         ExtraCreditRequestCreateDTO dto = new ExtraCreditRequestCreateDTO();
         dto.setCourseId(course.getCourseId());
         dto.setCategoryId(category.getCategoryId());
-        dto.setDescription("Student A Request");
+        dto.setDescription("Derek attended a seminar");
 
-        // I want to test that the list created is for one student and one student alone
         extraCreditRequestService.createRequest(studentA.getEmail(), dto);
 
-        System.out.println("==================================================");
-        var allRequests = extraCreditRequestRepository.findAll();
-        System.out.println("DEBUG: Total requests in DB: " + allRequests.size());
-        if (!allRequests.isEmpty()) {
-            System.out.println("DEBUG: Raw Request Data: " + allRequests.get(0).toString());
-        }
-        System.out.println("==================================================");
-
-        // Student A: should populate
-        List<ExtraCreditResponseDTO> requestsA = extraCreditRequestService.getRequestsForStudent(studentA.getEmail());
+        List<StudentRequestSummaryDTO> requestsA = extraCreditRequestService.getRequestsForStudent(studentA.getEmail());
         assertEquals(1, requestsA.size());
+        assertEquals("COMP-110", requestsA.get(0).getCourseCode());
+        assertEquals("26/FA", requestsA.get(0).getTerm());
+        assertEquals("H1WW", requestsA.get(0).getSection());
+        assertEquals("Seminar Attendance", requestsA.get(0).getCategoryName());
+        assertEquals(ExtraCreditRequestStatus.PENDING, requestsA.get(0).getStatus());
+        assertEquals(5, requestsA.get(0).getDefaultPoints());
 
-        // Student B: should return empty
-        List<ExtraCreditResponseDTO> requestsB = extraCreditRequestService.getRequestsForStudent(studentB.getEmail());
+        List<StudentRequestSummaryDTO> requestsB = extraCreditRequestService.getRequestsForStudent(studentB.getEmail());
         assertTrue(requestsB.isEmpty());
     }
 
@@ -150,24 +166,81 @@ public class ExtraCreditRequestServiceTest {
      */
     @Test
     public void testGetRequestsForStudentWorksWhenBusinessStudentIdIsNull() {
-        User studentA = createTestStudent("Student A", "studentA-null@test.com", null);
-    User studentB = createTestStudent("Student B", "studentB-null@test.com", null);
-    Course course = createTestCourse();
-    Category category = createTestCategory();
+        User studentA = createTestStudent("Derek Test", "derek-null@derek.com", null);
+        User studentB = createTestStudent("Student B", "studentB-null@test.com", null);
+        Course course = createTestCourse();
+        Category category = createTestCategory();
 
-    ExtraCreditRequestCreateDTO dto = new ExtraCreditRequestCreateDTO();
-    dto.setCourseId(course.getCourseId());
-    dto.setCategoryId(category.getCategoryId());
-    dto.setDescription("Student A Null-ID Request");
+        ExtraCreditRequestCreateDTO dto = new ExtraCreditRequestCreateDTO();
+        dto.setCourseId(course.getCourseId());
+        dto.setCategoryId(category.getCategoryId());
+        dto.setDescription("Derek attended a seminar without a business student ID");
 
-    extraCreditRequestService.createRequest(studentA.getEmail(), dto);
+        extraCreditRequestService.createRequest(studentA.getEmail(), dto);
 
-    List<ExtraCreditResponseDTO> requestsA =
-            extraCreditRequestService.getRequestsForStudent(studentA.getEmail());
-    assertEquals(1, requestsA.size());
+        List<StudentRequestSummaryDTO> requestsA =
+                extraCreditRequestService.getRequestsForStudent(studentA.getEmail());
+        assertEquals(1, requestsA.size());
 
-    List<ExtraCreditResponseDTO> requestsB =
-            extraCreditRequestService.getRequestsForStudent(studentB.getEmail());
-    assertTrue(requestsB.isEmpty());
+        List<StudentRequestSummaryDTO> requestsB =
+                extraCreditRequestService.getRequestsForStudent(studentB.getEmail());
+        assertTrue(requestsB.isEmpty());
+    }
+
+    /**
+     * Verifies the foreign key relationship between ExtraCreditRequest and Course is enforced.
+     */
+    @Test
+    public void testCreateRequestPersistsCourseRelationship() {
+        User student = createTestStudent("Derek Finnell", "derek-course@derek.com", 5001);
+        Course course = createTestCourse();
+        Category category = createTestCategory();
+
+        ExtraCreditRequestCreateDTO dto = new ExtraCreditRequestCreateDTO();
+        dto.setCourseId(course.getCourseId());
+        dto.setCategoryId(category.getCategoryId());
+        dto.setDescription("Testing that the selected course is saved on the request.");
+
+        StudentRequestDetailDTO response = extraCreditRequestService.createRequest(student.getEmail(), dto);
+
+        assertNotNull(response.getId());
+
+        var savedRequest = extraCreditRequestRepository.findById(response.getId()).orElseThrow();
+
+        assertNotNull(savedRequest.getCourse());
+        assertEquals(course.getCourseId(), savedRequest.getCourse().getCourseId());
+        assertEquals("COMP-110", savedRequest.getCourse().getCourseCode());
+        assertEquals("26/FA", savedRequest.getCourse().getTerm());
+        assertEquals("H1WW", savedRequest.getCourse().getSection());
+    }
+
+    /**
+     * Verifies that the selected category and default points are returned in the response dto.
+     */
+    @Test
+    public void testCreateRequestReturnsSelectedCategoryAndDefaultPoints() {
+        User student = createTestStudent("Category Student", "category@test.com", 6001);
+        Course course = createTestCourse();
+        Category category = createTestCategory();
+
+        ExtraCreditRequestCreateDTO dto = new ExtraCreditRequestCreateDTO();
+        dto.setCourseId(course.getCourseId());
+        dto.setCategoryId(category.getCategoryId());
+        dto.setDescription("Testing that the selected category data is returned.");
+
+        StudentRequestDetailDTO response = extraCreditRequestService.createRequest(student.getEmail(), dto);
+
+        assertNotNull(response);
+        assertEquals("Seminar Attendance", response.getCategoryName());
+        assertEquals("Approved attendance at an academic or professional seminar", response.getCategoryDescription());
+        assertEquals(5, response.getDefaultPoints());
+        assertEquals(ExtraCreditRequestStatus.PENDING, response.getStatus());
+
+        var savedRequest = extraCreditRequestRepository.findById(response.getId()).orElseThrow();
+
+        assertNotNull(savedRequest.getCategory());
+        assertEquals(category.getCategoryId(), savedRequest.getCategory().getCategoryId());
+        assertEquals("Seminar Attendance", savedRequest.getCategory().getCategoryName());
+        assertEquals(5, savedRequest.getCategory().getDefaultPoints());
     }
 }

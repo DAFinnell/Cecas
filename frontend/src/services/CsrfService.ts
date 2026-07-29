@@ -29,11 +29,19 @@ class CsrfService {
       }
     }
 
-    return fetch(input, {
+    const res = await fetch(input, {
       ...init,
       credentials: 'include',
       headers,
-    });
+    })
+
+      try {
+      if (res.status === 401) {
+        window.dispatchEvent(new Event('session-expired'));
+      } 
+    } catch {}
+
+    return res;
   }
 }
 
