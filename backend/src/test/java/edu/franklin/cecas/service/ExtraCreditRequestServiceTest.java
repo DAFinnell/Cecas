@@ -1,8 +1,11 @@
 package edu.franklin.cecas.service;
 
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -11,12 +14,15 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import edu.franklin.cecas.domain.Category;
 import edu.franklin.cecas.domain.Course;
+import edu.franklin.cecas.domain.ExtraCreditRequest;
 import edu.franklin.cecas.domain.ExtraCreditRequestStatus;
 import edu.franklin.cecas.domain.User;
 import edu.franklin.cecas.domain.UserRole;
 import edu.franklin.cecas.dto.ExtraCreditRequestCreateDTO;
 import edu.franklin.cecas.dto.StudentRequestDetailDTO;
 import edu.franklin.cecas.dto.StudentRequestSummaryDTO;
+import edu.franklin.cecas.dto.StudentPointsDTO;
+import edu.franklin.cecas.exception.PointCapExceededException;
 import edu.franklin.cecas.repository.CategoryRepository;
 import edu.franklin.cecas.repository.CourseRepository;
 import edu.franklin.cecas.repository.ExtraCreditRequestRepository;
@@ -40,6 +46,9 @@ public class ExtraCreditRequestServiceTest {
 
     @Autowired
     private ExtraCreditRequestService extraCreditRequestService;
+
+    @Autowired
+    private PointAllocationService pointAllocationService;
 
     private User createTestStudent(String name, String email, Integer studentId) {
         User user = new User();
@@ -74,6 +83,44 @@ public class ExtraCreditRequestServiceTest {
         category.setDefaultPoints(5);
 
         return categoryRepository.save(category);
+    }
+
+    private Course createTestCourse(String courseCode, String term, String section) {
+        Course course = new Course();
+
+        course.setCourseCode(courseCode);
+        course.setTerm(term);
+        course.setSection(section);
+
+        return courseRepository.save(course);
+    }
+
+    private Category createTestCategory(String name, int defaultPoints) {
+        Category category = new Category();
+
+        category.setCategoryName(name);
+        category.setDescription("Extra credit category created for Derek's service test");
+        category.setDefaultPoints(defaultPoints);
+
+        return categoryRepository.save(category);
+    }
+
+    private ExtraCreditRequest saveRequest(
+            User student,
+            Course course,
+            Category category,
+            ExtraCreditRequestStatus status,
+            Integer awardedPoints) {
+        ExtraCreditRequest request = new ExtraCreditRequest();
+
+        request.setStudent(student);
+        request.setCourse(course);
+        request.setCategory(category);
+        request.setDescription("Derek completed an activity for this extra credit request.");
+        request.setStatus(status);
+        request.setAwardedPoints(awardedPoints);
+
+        return extraCreditRequestRepository.save(request);
     }
 
     /**
@@ -242,5 +289,133 @@ public class ExtraCreditRequestServiceTest {
         assertEquals(category.getCategoryId(), savedRequest.getCategory().getCategoryId());
         assertEquals("Seminar Attendance", savedRequest.getCategory().getCategoryName());
         assertEquals(5, savedRequest.getCategory().getDefaultPoints());
+    }
+
+    /**
+     * Verifies that a pre-approved request tells the student service that
+     * evidence can be uploaded when no evidence file has been saved yet.
+     */
+    @Test
+    void testPreApprovedRequestMakesEvidenceUploadAvailable() {
+        User student = createTestStudent("Derek Finnell", "derek@derek.com", 7001);
+        Course course = createTestCourse();
+        Category category = createTestCategory();
+        ExtraCreditRequest request = saveRequest(
+                student,
+                course,
+                category,
+                ExtraCreditRequestStatus.PRE_APPROVED,
+                null);
+
+        StudentRequestDetailDTO response = extraCreditRequestService.getRequestForStudent(
+                student.getEmail(),
+                request.getId());
+
+        assertEquals(ExtraCreditRequestStatus.PRE_APPROVED, response.getStatus());
+        assertTrue(response.isEvidenceUploadAvailable());
+        assertFalse(response.isEvidenceFileUploaded());
+    }
+
+    /**
+     * Verifies that the student request list returns each current workflow
+     * status, including a rejected request that must remain clearly identified.
+     */
+    @Test
+    void testGetRequestsForStudentReturnsTrackedStatuses() {
+        User student = createTestStudent("Derek Finnell", "derek.status@derek.com", 7002);
+        Category category = createTestCategory("Status Test Category", 5);
+
+        saveRequest(student, createTestCourse("COMP-210", "26/FA", "H1WW"),
+                category, ExtraCreditRequestStatus.PENDING, null);
+        saveRequest(student, createTestCourse("COMP-220", "26/FA", "H2WW"),
+                category, ExtraCreditRequestStatus.PRE_APPROVED, null);
+        ExtraCreditRequest submitted = saveRequest(
+                student,
+                createTestCourse("COMP-230", "26/FA", "H3WW"),
+                category,
+                ExtraCreditRequestStatus.EVIDENCE_SUBMITTED,
+                null);
+        submitted.setEvidenceFilePath("evidence/request-" + submitted.getId() + "/proof.pdf");
+        extraCreditRequestRepository.save(submitted);
+        saveRequest(student, createTestCourse("COMP-240", "26/FA", "H4WW"),
+                category, ExtraCreditRequestStatus.REJECTED, null);
+
+        Set<ExtraCreditRequestStatus> statuses = extraCreditRequestService
+                .getRequestsForStudent(student.getEmail())
+                .stream()
+                .map(StudentRequestSummaryDTO::getStatus)
+                .collect(Collectors.toSet());
+
+        assertEquals(Set.of(
+                ExtraCreditRequestStatus.PENDING,
+                ExtraCreditRequestStatus.PRE_APPROVED,
+                ExtraCreditRequestStatus.EVIDENCE_SUBMITTED,
+                ExtraCreditRequestStatus.REJECTED), statuses);
+    }
+
+    /**
+     * Verifies that approved and in-process points are both counted before a
+     * student submits another request that would exceed the semester cap.
+     */
+    @Test
+    void testCreateRequestRejectsWhenApprovedAndPendingPointsExceedCap() {
+        User student = createTestStudent("Derek Finnell", "derek.cap@derek.com", 7003);
+        Category approvedCategory = createTestCategory("Approved Activity", 30);
+        Category pendingCategory = createTestCategory("Pending Activity", 15);
+        Category requestedCategory = createTestCategory("Requested Activity", 10);
+
+        saveRequest(student, createTestCourse("COMP-310", "26/FA", "Q1WW"),
+                approvedCategory, ExtraCreditRequestStatus.APPROVED, 30);
+        saveRequest(student, createTestCourse("COMP-320", "26/FA", "Q2WW"),
+                pendingCategory, ExtraCreditRequestStatus.PENDING, null);
+        Course requestedCourse = createTestCourse("COMP-330", "26/FA", "Q3WW");
+
+        StudentPointsDTO points = pointAllocationService.getStudentPoints(student.getId(), "26/FA");
+        assertEquals(30, points.getIssued());
+        assertEquals(15, points.getPending());
+        assertEquals(5, points.getAvailable());
+
+        ExtraCreditRequestCreateDTO dto = new ExtraCreditRequestCreateDTO();
+        dto.setCourseId(requestedCourse.getCourseId());
+        dto.setCategoryId(requestedCategory.getCategoryId());
+        dto.setDescription("Derek is requesting points that do not fit under the cap.");
+
+        assertThrows(
+                PointCapExceededException.class,
+                () -> extraCreditRequestService.createRequest(student.getEmail(), dto));
+        assertEquals(2, extraCreditRequestRepository.findByStudent_Id(student.getId()).size());
+    }
+
+    /**
+     * Verifies that approved points from different courses share one semester
+     * cap and leave no room for another request after the student reaches 50.
+     */
+    @Test
+    void testPointCapIsSharedAcrossCoursesInTheSameTerm() {
+        User student = createTestStudent("Derek Finnell", "derek.term@derek.com", 7004);
+        Category firstCategory = createTestCategory("First Approved Activity", 20);
+        Category secondCategory = createTestCategory("Second Approved Activity", 30);
+        Category requestedCategory = createTestCategory("Additional Activity", 5);
+
+        saveRequest(student, createTestCourse("COMP-410", "26/FA", "F1WW"),
+                firstCategory, ExtraCreditRequestStatus.APPROVED, 20);
+        saveRequest(student, createTestCourse("COMP-420", "26/FA", "F2WW"),
+                secondCategory, ExtraCreditRequestStatus.APPROVED, 30);
+        Course requestedCourse = createTestCourse("COMP-430", "26/FA", "F3WW");
+
+        StudentPointsDTO points = pointAllocationService.getStudentPoints(student.getId(), "26/FA");
+        assertEquals(50, points.getIssued());
+        assertEquals(0, points.getPending());
+        assertEquals(0, points.getAvailable());
+
+        ExtraCreditRequestCreateDTO dto = new ExtraCreditRequestCreateDTO();
+        dto.setCourseId(requestedCourse.getCourseId());
+        dto.setCategoryId(requestedCategory.getCategoryId());
+        dto.setDescription("Derek is attempting another request after reaching 50 points.");
+
+        assertThrows(
+                PointCapExceededException.class,
+                () -> extraCreditRequestService.createRequest(student.getEmail(), dto));
+        assertEquals(2, extraCreditRequestRepository.findByStudent_Id(student.getId()).size());
     }
 }

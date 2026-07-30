@@ -27,6 +27,7 @@ import edu.franklin.cecas.domain.ExtraCreditRequestStatus;
 import edu.franklin.cecas.domain.User;
 import edu.franklin.cecas.domain.UserRole;
 import edu.franklin.cecas.dto.StudentRequestDetailDTO;
+import edu.franklin.cecas.exception.EvidenceUploadException;
 import edu.franklin.cecas.exception.InvalidStateTransitionException;
 import edu.franklin.cecas.exception.StudentNotFoundException;
 import edu.franklin.cecas.repository.UserRepository;
@@ -154,5 +155,26 @@ public class EvidenceSubmissionServiceTest {
 
         verify(evidenceStorageService).deleteIfExists("evidence/request-42/test.pdf");
         verify(stateMachineService).submitEvidenceRequest(eq(42), eq(student), anyString());
+    }
+
+    /**
+     * Verifies that invalid evidence is rejected before the request state
+     * machine runs, leaving the pre-approved request unchanged.
+     */
+    @Test
+    void testInvalidEvidenceDoesNotChangeRequestStatus() {
+        User student = createStudent();
+        MockMultipartFile file = createFile();
+
+        when(userRepository.findByEmailIgnoreCase("derek@derek.com")).thenReturn(Optional.of(student));
+        when(evidenceStorageService.saveEvidence(42, file))
+                .thenThrow(new EvidenceUploadException("Evidence file must be a PDF, JPG, or PNG."));
+
+        assertThrows(
+                EvidenceUploadException.class,
+                () -> evidenceSubmissionService.submitEvidence("derek@derek.com", 42, file));
+
+        verifyNoInteractions(stateMachineService);
+        verify(evidenceStorageService, never()).deleteIfExists(anyString());
     }
 }
