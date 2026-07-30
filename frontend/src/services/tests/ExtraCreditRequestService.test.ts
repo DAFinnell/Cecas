@@ -106,6 +106,31 @@ describe('ExtraCreditRequestService', () => {
     expect(result[0]).not.toHaveProperty('studentId')
   })
 
+  it('preserves each tracked student request status', async () => {
+    const requests = [
+      { id: 1, status: 'PENDING' },
+      { id: 2, status: 'PRE_APPROVED' },
+      { id: 3, status: 'EVIDENCE_SUBMITTED' },
+      { id: 4, status: 'REJECTED' },
+    ]
+
+    vi.mocked(csrfService.fetch).mockResolvedValue(
+      new Response(JSON.stringify(requests), {
+        status: 200,
+        headers: { 'Content-Type': 'application/json' },
+      }),
+    )
+
+    const result = await extraCreditRequestService.getStudentRequests()
+
+    expect(result.map((request) => request.status)).toEqual([
+      'PENDING',
+      'PRE_APPROVED',
+      'EVIDENCE_SUBMITTED',
+      'REJECTED',
+    ])
+  })
+
   it('creates student requests as flattened details', async () => {
     const payload = {
       courseId: 1,
@@ -193,5 +218,48 @@ describe('ExtraCreditRequestService', () => {
         description: 'I attended an approved academic seminar',
       }),
     ).rejects.toThrow('Failed to create request')
+  })
+
+  it('uploads student evidence as multipart form data', async () => {
+    const file = new File(['%PDF-1.7 test'], 'derek-proof.pdf', {
+      type: 'application/pdf',
+    })
+
+    vi.mocked(csrfService.fetch).mockResolvedValue(
+      new Response(null, { status: 200 }),
+    )
+
+    await extraCreditRequestService.uploadEvidence(42, file)
+
+    expect(csrfService.fetch).toHaveBeenCalledWith(
+      '/api/extra-credit-requests/42/evidence',
+      expect.objectContaining({
+        method: 'POST',
+        body: expect.any(FormData),
+      }),
+    )
+
+    const [, options] = vi.mocked(csrfService.fetch).mock.calls[0]
+    const body = options?.body as FormData
+    expect(body.get('evidence')).toBe(file)
+  })
+
+  it('surfaces backend validation messages when evidence upload fails', async () => {
+    const file = new File(['not really a pdf'], 'derek-proof.pdf', {
+      type: 'application/pdf',
+    })
+
+    vi.mocked(csrfService.fetch).mockResolvedValue(
+      new Response(JSON.stringify({
+        detail: 'Evidence file must be a PDF, JPG, or PNG.',
+      }), {
+        status: 400,
+        headers: { 'Content-Type': 'application/json' },
+      }),
+    )
+
+    await expect(
+      extraCreditRequestService.uploadEvidence(42, file),
+    ).rejects.toThrow('Evidence file must be a PDF, JPG, or PNG.')
   })
 })
