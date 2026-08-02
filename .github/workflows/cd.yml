@@ -67,7 +67,7 @@ jobs:
 
       - name: Build and push frontend image
         run: |
-          docker build -t $FRONTEND_IMAGE:${IMAGE_TAG} -f frontend/Dockerfile ./frontend
+          docker build -t $FRONTEND_IMAGE:${IMAGE_TAG} -f frontend/Dockerfile.prod ./frontend
           docker tag $FRONTEND_IMAGE:${IMAGE_TAG} $FRONTEND_IMAGE:latest
           docker push $FRONTEND_IMAGE:${IMAGE_TAG}
           docker push $FRONTEND_IMAGE:latest
@@ -102,23 +102,23 @@ jobs:
             ssh -i ~/.ssh/deploy_key -o StrictHostKeyChecking=yes ${EC2_USER}@${EC2_HOST} "docker login --username AWS --password-stdin '${ECR_REGISTRY}'"
 
           ssh -i ~/.ssh/deploy_key -o StrictHostKeyChecking=yes ${EC2_USER}@${EC2_HOST} <<EOF
-set -euo pipefail
+          set -euo pipefail
 
-cat > /home/${EC2_USER}/.env <<ENVFILE
-BACKEND_IMAGE=${BACKEND_IMAGE}:${IMAGE_TAG}
-FRONTEND_IMAGE=${FRONTEND_IMAGE}:${IMAGE_TAG}
+          cat > /home/${EC2_USER}/.env <<ENVFILE
+          BACKEND_IMAGE=${BACKEND_IMAGE}:${IMAGE_TAG}
+          FRONTEND_IMAGE=${FRONTEND_IMAGE}:${IMAGE_TAG}
 
-DB_HOST=${DB_HOST}
-DB_NAME=${DB_NAME}
-DB_USER=${DB_USER}
-DB_PASSWORD=${DB_PASSWORD}
+          DB_HOST=${DB_HOST}
+          DB_NAME=${DB_NAME}
+          DB_USER=${DB_USER}
+          DB_PASSWORD=${DB_PASSWORD}
 
-SPRING_PROFILES_ACTIVE=prod
-APP_SEED_ENABLED=false
-SESSION_COOKIE_SECURE=false
-ENVFILE
+          SPRING_PROFILES_ACTIVE=prod
+          APP_SEED_ENABLED=false
+          SESSION_COOKIE_SECURE=false
+          ENVFILE
 
-cd /home/${EC2_USER}
-docker compose -f docker-compose.prod.yml pull
-docker compose -f docker-compose.prod.yml up -d --remove-orphans
-EOF
+          cd /home/${EC2_USER}
+          docker compose -f docker-compose.prod.yml pull
+          docker compose -f docker-compose.prod.yml up -d --remove-orphans
+          EOF

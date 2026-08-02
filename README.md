@@ -10,7 +10,7 @@ Project details follow.
  Canvas Extra Credit Automation System (CECAS)
 
 ### Project Description  
-The CECAS is a web application that allows students to apply for extra credit based on specific academic activities (such as seminars, competitions, and certifications). Program chairs can review, approve, or deny applications and provide feedback. This system replaces the manual, email-based process and provides an audit trail for each application's progress from submission to completion.
+CECAS is a web application that allows students to apply for extra credit based on eligible academic activities such as seminars, competitions, and certifications. Program chairs can review, approve, or reject applications and provide feedback. The system replaces the manual email-based process with centralized request, status, evidence, feedback, and point tracking from submission through final review.
 
 ## Team
 
@@ -36,7 +36,9 @@ Alec Johnson
 
 ## Tech Stack
 ### Frontend
-- React + TypeScript + React
+- React with TypeScript
+- Vite for local development and production builds
+- Nginx for serving the production frontend and proxying API requests
 
 ### Backend
 - Spring Boot
@@ -44,11 +46,19 @@ Alec Johnson
 ### Database
 - MySQL + Flyway for schema migrations
 
-### Email
+### Local Email Testing
 - Mailpit
 
 ### Styling
-- TailwindCSS
+- Tailwind CSS
+
+## Public Deployment
+
+The CECAS demo application is deployed on an Amazon Web Services EC2 instance.
+
+- Application: [http://3.18.107.16/](http://3.18.107.16/)
+
+The deployment is intended only for course evaluation and demonstration. It is currently served over HTTP and should not be used with real credentials or sensitive information. Do not use the same password as your bank app, for example.
 
 ## Prerequisites
 
@@ -66,21 +76,20 @@ Alec Johnson
 
 Details on how to set up the project follow.
 
-This project will use Docker Compose to run:
-- MySQL for the database
+Docker Compose runs the following services:
+
+- React frontend
+- Spring Boot backend
+- MySQL database
 - Mailpit for local email testing
 
 ### First Time Setup
-1. Clone the repository using either ssh or https depending on how you use git.
+1. Clone the repository and check out the final release.
 
 ```bash
-git clone <https://github.com/2026-Summer-Franklin-CS-Practicum/2026_Summer_Team5_Repo.git>
-
-# enter project directory
+git clone https://github.com/2026-Summer-Franklin-CS-Practicum/2026_Summer_Team5_Repo.git
 cd 2026_Summer_Team5_Repo
-
-# switch to the develop branch
-git checkout develop
+git checkout v1.0.0
 ```
 
 2. Create local environment file from the example.
@@ -89,14 +98,16 @@ git checkout develop
 cp .env.example .env
 ```
 
-3. Build the project
+3. Build and start the application
 
 ```bash
 docker compose up --build -d
 ```
 
-4. View App
-Access the UI at: http://localhost:5173
+4. Open the application and supporting services
+- Application: http://localhost:5173
+- Backend health check: http://localhost:8080/actuator/health
+- Mailpit: http://localhost:8025
 
 ### Using Docker
 
