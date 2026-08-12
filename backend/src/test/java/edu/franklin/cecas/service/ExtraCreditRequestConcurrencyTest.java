@@ -10,7 +10,6 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -101,7 +100,6 @@ class ExtraCreditRequestConcurrencyTest {
      * bypass the semester point cap when only one request still fits.
      */
     @Test
-    @Disabled("Actual defect - pessimistic lock was not enough and concurrent submissions can bypass semester point cap.")
     void testConcurrentSubmissionsCannotBypassPointCap() throws Exception {
         User student = new User();
         student.setFullName("Derek Finnell");
