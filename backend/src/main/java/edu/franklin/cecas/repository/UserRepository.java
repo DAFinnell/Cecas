@@ -28,6 +28,6 @@ public interface UserRepository extends JpaRepository<User, Integer> {
     Optional<User> findByIdForUpdate(Integer id);
 
     @Lock(LockModeType.PESSIMISTIC_WRITE)
-    @Query("SELECT u FROM User u WHERE LOWER(u.email) = LOWER(:email)")
+    @Query("SELECT u FROM User u WHERE u.email = :email")
     Optional<User> findByEmailIgnoreCaseForUpdate(String email);
 }
