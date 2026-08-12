@@ -48,6 +48,9 @@ public class ExtraCreditRequestService {
 
     @Transactional
     public StudentRequestDetailDTO createRequest(String studentEmail, ExtraCreditRequestCreateDTO dto) {
+        User student = userRepository.findByEmailIgnoreCaseForUpdate(studentEmail)
+                .orElseThrow(() -> new StudentNotFoundException("Student not found with Email: " + studentEmail));
+
         Course course = courseRepository.findById(dto.getCourseId())
                 .orElseThrow(() -> new InvalidExtraCreditRequestException(
                         "Course not found with ID: " + dto.getCourseId()));
@@ -55,12 +58,6 @@ public class ExtraCreditRequestService {
         Category category = categoryRepository.findById(dto.getCategoryId())
                 .orElseThrow(() -> new InvalidExtraCreditRequestException(
                         "Category not found with ID: " + dto.getCategoryId()));
-
-        User student = userRepository.findByEmailIgnoreCase(studentEmail)
-                .orElseThrow(() -> new StudentNotFoundException("Student not found with Email: " + studentEmail));
-
-        userRepository.findByIdForUpdate(student.getId())
-                .orElseThrow(() -> new RuntimeException("Student not found"));
 
         if (student.getRole() != UserRole.STUDENT) {
             throw new UnauthorizedRoleException("Unauthorized: User is not a student");

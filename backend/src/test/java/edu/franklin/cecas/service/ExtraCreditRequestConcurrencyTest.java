@@ -101,7 +101,6 @@ class ExtraCreditRequestConcurrencyTest {
      * bypass the semester point cap when only one request still fits.
      */
     @Test
-    @Disabled("Actual defect - pessimistic lock was not enough and concurrent submissions can bypass semester point cap.")
     void testConcurrentSubmissionsCannotBypassPointCap() throws Exception {
         User student = new User();
         student.setFullName("Derek Finnell");
