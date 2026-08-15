@@ -1,4 +1,4 @@
-﻿import { NavLink, useNavigate } from 'react-router-dom'
+﻿import { Link, NavLink, useNavigate } from 'react-router-dom'
 import { useCurrentUser } from '../hooks/useCurrentUser'
 import CreateNewRequestIcon from '../assets/CreateNewRequest.svg'
 import HomeIcon from '../assets/Home.svg'
@@ -36,6 +36,7 @@ export default function Navbar() {
   const [loggingOut, setLoggingOut] = useState(false)
   const [profile, setProfile] = useState<UserProfileResponse | null>(null)
   const [profileOpen, setProfileOpen] = useState(false)
+  const [mobileOpen, setMobileOpen] = useState(false)
   const visibleItems = navItems.filter((item) => {
     if (!item.roles) {
       return true
@@ -85,29 +86,42 @@ export default function Navbar() {
 
   return (
     <header className="border-b border-slate-200 bg-white shadow-sm">
-      <div className="mx-auto flex h-24 max-w-7xl items-center lg:px-20">
+      <div className="mx-auto flex h-16 lg:h-24 max-w-7xl items-center px-4 lg:px-20">
         {/* Brand */}
-        <div className="flex min-w-0 flex-1 items-center gap-3">
+        <Link
+          to={routes.home}
+          className="flex min-w-0 flex-1 items-center gap-3 rounded-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-600 focus-visible:ring-offset-2">
           <img
             src={capLogo}
-            alt="CECAS logo"
-            className="h-14 w-auto"
+            alt=""
+            className="h-10 w-auto shrink-0 lg:h-14"
           />
 
-          <div className="leading-tight">
+          <div className="min-w-0 leading-tight">
             <p className=" text-sm font-semibold uppercase tracking-[0.2em] text-sky-700">
               CECAS
             </p>
-            <h1 className="text-2xl font-semibold tracking-tight leading-tight">
+            <p className="hidden lg:block text-2xl font-semibold tracking-tight leading-tight">
               Canvas Extra Credit
               <br />
               Automation System
-            </h1>
+            </p>
           </div>
-        </div>
+        </Link>
+
+        <button
+          type="button"
+          onClick={() => setMobileOpen((previous) => !previous)}
+          aria-expanded={mobileOpen}
+          aria-controls="mobile-navigation"
+          aria-label={mobileOpen ? 'Close navigation' : 'Open navigation'}
+          className='ml-3 inline-flex h-11 min-w-11 shrink-0 items-center justify-center rounded-md border border-slate-300 bg-white px-3 text-sm font-medium text-slate-700 transition-colors hover:bg-slate-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-600 focus-visible:ring-offset-2 lg:hidden'
+        >
+          {mobileOpen ? 'Close' : 'Menu'}
+        </button>
 
         <div
-          className={`flex flex-1 items-center min-w-0 ${isAuthenticated
+          className={`hidden lg:flex flex-1 items-center min-w-0 ${isAuthenticated
             ? "justify-end gap-6"
             : "justify-end"
             }`}
