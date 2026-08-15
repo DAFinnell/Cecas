@@ -30,6 +30,8 @@ export default function Navbar() {
   const { user } = useCurrentUser()
   const isAuthenticated = !!user?.authenticated
   const role = user?.role
+  const isChairPasswordChangeRequired =
+    role === 'CHAIR' && user?.mustChangePassword === true
   const navigate = useNavigate()
   const [loggingOut, setLoggingOut] = useState(false)
   const [profile, setProfile] = useState<UserProfileResponse | null>(null)
@@ -38,46 +40,51 @@ export default function Navbar() {
     if (!item.roles) {
       return true
     }
+
     if (item.roles.includes('ANONYMOUS')) {
       return !isAuthenticated
+    }
+
+    if (isChairPasswordChangeRequired) {
+      return false
     }
     return isAuthenticated && role && item.roles.includes(role)
   })
 
-useEffect(() => {
-  if (role === "CHAIR" || role === "STUDENT") {
-    UserService.getUserProfile()
-      .then((data) => setProfile(data))
-      .catch(() => setProfile(null))
-  }
-}, [role])
+  useEffect(() => {
+    if (role === "CHAIR" || role === "STUDENT") {
+      UserService.getUserProfile()
+        .then((data) => setProfile(data))
+        .catch(() => setProfile(null))
+    }
+  }, [role])
 
-useEffect(() => {
-  const onAuthChanged = () => {
-    setProfile(null)
-    setProfileOpen(false)
-    UserService.getUserProfile()
-      .then((data) => setProfile(data))
-      .catch(() => setProfile(null))
-  }
+  useEffect(() => {
+    const onAuthChanged = () => {
+      setProfile(null)
+      setProfileOpen(false)
+      UserService.getUserProfile()
+        .then((data) => setProfile(data))
+        .catch(() => setProfile(null))
+    }
 
-  const onSessionExpired = () => {
-    // clear UI and do a hard redirect to fully reset app state (this clears any cached state in memory, including auth state)
-    setProfile(null)
-    setProfileOpen(false)
-    window.location.href = routes.login
-  }
+    const onSessionExpired = () => {
+      // clear UI and do a hard redirect to fully reset app state (this clears any cached state in memory, including auth state)
+      setProfile(null)
+      setProfileOpen(false)
+      window.location.href = routes.login
+    }
 
-  window.addEventListener('auth-changed', onAuthChanged)
-  window.addEventListener('session-expired', onSessionExpired)
-  return () => {
-    window.removeEventListener('auth-changed', onAuthChanged)
-    window.removeEventListener('session-expired', onSessionExpired)
-  }
-}, [isAuthenticated, navigate])
+    window.addEventListener('auth-changed', onAuthChanged)
+    window.addEventListener('session-expired', onSessionExpired)
+    return () => {
+      window.removeEventListener('auth-changed', onAuthChanged)
+      window.removeEventListener('session-expired', onSessionExpired)
+    }
+  }, [isAuthenticated, navigate])
 
   return (
-      <header className="border-b border-slate-200 bg-white shadow-sm">
+    <header className="border-b border-slate-200 bg-white shadow-sm">
       <div className="mx-auto flex h-24 max-w-7xl items-center lg:px-20">
         {/* Brand */}
         <div className="flex min-w-0 flex-1 items-center gap-3">
@@ -92,21 +99,20 @@ useEffect(() => {
               CECAS
             </p>
             <h1 className="text-2xl font-semibold tracking-tight leading-tight">
-            Canvas Extra Credit
-            <br />
-            Automation System
-          </h1>
+              Canvas Extra Credit
+              <br />
+              Automation System
+            </h1>
           </div>
         </div>
 
-      <div
-        className={`flex flex-1 items-center min-w-0 ${
-          isAuthenticated
+        <div
+          className={`flex flex-1 items-center min-w-0 ${isAuthenticated
             ? "justify-end gap-6"
             : "justify-end"
-        }`}
-      >
-        <nav aria-label="Main navigation" className="flex items-center gap-2 whitespace-nowrap shrink-0">
+            }`}
+        >
+          <nav aria-label="Main navigation" className="flex items-center gap-2 whitespace-nowrap shrink-0">
             {visibleItems.map((item) => {
 
               return (
@@ -115,12 +121,10 @@ useEffect(() => {
                   to={item.to}
                   end={item.end}
                   className={({ isActive }) =>
-                    `rounded-md px-3 py-2 text-sm font-medium transition ${
-                      !visibleItems
-                        ? "invisible pointer-events-none"
-                        : isActive
-                        ? "bg-sky-100 text-sky-800"
-                        : "text-slate-700 hover:bg-slate-100 hover:text-slate-950"
+                    `rounded-md px-3 py-2 text-sm font-medium transition
+                      ${isActive
+                      ? "bg-sky-100 text-sky-800"
+                      : "text-slate-700 hover:bg-slate-100 hover:text-slate-950"
                     }`
                   }
                 >
@@ -138,56 +142,56 @@ useEffect(() => {
           </nav>
 
           {isAuthenticated &&
-              user?.mustChangePassword === false &&
-              profile?.fullName && (
-                <div className="relative flex items-center gap-3 ml-4">
-                  <div className="text-right">
-                    <p className="text-sm font-medium text-slate-900">
-                      {profile.fullName}
-                    </p>
-                    <p className="text-xs text-slate-500">
-                      {role === "CHAIR" ? "Program Chair" : "Student"}
-                    </p>
-                  </div>
-
-                  {/* Profile Dropdown */}
-                  <div className="relative">
-                    <button
-                      aria-expanded={profileOpen}
-                      onClick={() => setProfileOpen((prev) => !prev)}
-                      className="flex h-10 w-10 items-center justify-center rounded-full bg-slate-200 text-sm font-medium text-slate-700 hover:bg-slate-300"
-                    >
-                      {profile.fullName
-                        .split(" ")
-                        .map((name) => name[0])
-                        .slice(0, 2)
-                        .join("")
-                        .toUpperCase()}
-                    </button>
-
-                    {profileOpen && (
-                      <div className="absolute right-0 mt-2 w-40 rounded-md border border-slate-200 bg-white shadow-lg">
-                        <button
-                          onClick={async () => {
-                            if (loggingOut) return
-
-                            try {
-                              setLoggingOut(true)
-                              await authService.logout()
-                              navigate(routes.home)
-                            } finally {
-                              setLoggingOut(false)
-                            }
-                          }}
-                          disabled={loggingOut}
-                          className="w-full px-4 py-2 text-left text-sm text-slate-700 hover:bg-slate-100"
-                        >
-                          {loggingOut ? "Logging out..." : "Logout"}
-                        </button>
-                      </div>
-                    )}
-                  </div>
+            user?.mustChangePassword === false &&
+            profile?.fullName && (
+              <div className="relative flex items-center gap-3 ml-4">
+                <div className="text-right">
+                  <p className="text-sm font-medium text-slate-900">
+                    {profile.fullName}
+                  </p>
+                  <p className="text-xs text-slate-500">
+                    {role === "CHAIR" ? "Program Chair" : "Student"}
+                  </p>
                 </div>
+
+                {/* Profile Dropdown */}
+                <div className="relative">
+                  <button
+                    aria-expanded={profileOpen}
+                    onClick={() => setProfileOpen((prev) => !prev)}
+                    className="flex h-10 w-10 items-center justify-center rounded-full bg-slate-200 text-sm font-medium text-slate-700 hover:bg-slate-300"
+                  >
+                    {profile.fullName
+                      .split(" ")
+                      .map((name) => name[0])
+                      .slice(0, 2)
+                      .join("")
+                      .toUpperCase()}
+                  </button>
+
+                  {profileOpen && (
+                    <div className="absolute right-0 mt-2 w-40 rounded-md border border-slate-200 bg-white shadow-lg">
+                      <button
+                        onClick={async () => {
+                          if (loggingOut) return
+
+                          try {
+                            setLoggingOut(true)
+                            await authService.logout()
+                            navigate(routes.home)
+                          } finally {
+                            setLoggingOut(false)
+                          }
+                        }}
+                        disabled={loggingOut}
+                        className="w-full px-4 py-2 text-left text-sm text-slate-700 hover:bg-slate-100"
+                      >
+                        {loggingOut ? "Logging out..." : "Logout"}
+                      </button>
+                    </div>
+                  )}
+                </div>
+              </div>
             )}
         </div>
       </div>
