@@ -26,6 +26,19 @@ const navItems = [
   { to: routes.student.newRequest, label: 'Create New Request', end: true, roles: ['STUDENT'], icon: CreateNewRequestIcon }
 ]
 
+function getInitials(value: string) {
+  const initials = value
+    .trim()
+    .split(/\s+/)
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((part) => part.charAt(0))
+    .join('')
+    .toUpperCase()
+
+  return initials || 'U'
+}
+
 export default function Navbar() {
   const { user } = useCurrentUser()
   const isAuthenticated = !!user?.authenticated
@@ -34,6 +47,7 @@ export default function Navbar() {
     role === 'CHAIR' && user?.mustChangePassword === true
   const navigate = useNavigate()
   const [loggingOut, setLoggingOut] = useState(false)
+  const [logoutError, setLogoutError] = useState<string | null>(null)
   const [profile, setProfile] = useState<UserProfileResponse | null>(null)
   const [profileOpen, setProfileOpen] = useState(false)
   const [mobileOpen, setMobileOpen] = useState(false)
@@ -51,6 +65,17 @@ export default function Navbar() {
     }
     return isAuthenticated && role && item.roles.includes(role)
   })
+  const roleLabel =
+    role === 'CHAIR'
+      ? 'Program Chair'
+      : role === 'STUDENT'
+        ? 'Student'
+        : 'Account'
+  const accountName =
+    profile?.fullName?.trim() ||
+    user?.email?.trim() ||
+    roleLabel
+  const accountInitials = getInitials(accountName)
 
   useEffect(() => {
     if (role === "CHAIR" || role === "STUDENT") {
@@ -83,6 +108,26 @@ export default function Navbar() {
       window.removeEventListener('session-expired', onSessionExpired)
     }
   }, [isAuthenticated, navigate])
+
+  const handleLogout = async () => {
+    if (loggingOut) {
+      return
+    }
+
+    setLogoutError(null)
+    setLoggingOut(true)
+
+    try {
+      await authService.logout()
+      setMobileOpen(false)
+      setProfileOpen(false)
+      navigate(routes.home, { replace: true })
+    } catch {
+      setLogoutError('Unable to log out. Please try again.')
+    } finally {
+      setLoggingOut(false)
+    }
+  }
 
   return (
     <header className="border-b border-slate-200 bg-white shadow-sm">
@@ -156,58 +201,67 @@ export default function Navbar() {
             })}
           </nav>
 
-          {isAuthenticated &&
-            user?.mustChangePassword === false &&
-            profile?.fullName && (
-              <div className="relative flex items-center gap-3 ml-4">
-                <div className="text-right">
-                  <p className="text-sm font-medium text-slate-900">
-                    {profile.fullName}
-                  </p>
-                  <p className="text-xs text-slate-500">
-                    {role === "CHAIR" ? "Program Chair" : "Student"}
-                  </p>
-                </div>
-
-                {/* Profile Dropdown */}
-                <div className="relative">
-                  <button
-                    aria-expanded={profileOpen}
-                    onClick={() => setProfileOpen((prev) => !prev)}
-                    className="flex h-10 w-10 items-center justify-center rounded-full bg-slate-200 text-sm font-medium text-slate-700 hover:bg-slate-300"
-                  >
-                    {profile.fullName
-                      .split(" ")
-                      .map((name) => name[0])
-                      .slice(0, 2)
-                      .join("")
-                      .toUpperCase()}
-                  </button>
-
-                  {profileOpen && (
-                    <div className="absolute right-0 mt-2 w-40 rounded-md border border-slate-200 bg-white shadow-lg">
-                      <button
-                        onClick={async () => {
-                          if (loggingOut) return
-
-                          try {
-                            setLoggingOut(true)
-                            await authService.logout()
-                            navigate(routes.home)
-                          } finally {
-                            setLoggingOut(false)
-                          }
-                        }}
-                        disabled={loggingOut}
-                        className="w-full px-4 py-2 text-left text-sm text-slate-700 hover:bg-slate-100"
-                      >
-                        {loggingOut ? "Logging out..." : "Logout"}
-                      </button>
-                    </div>
-                  )}
-                </div>
+          {isAuthenticated && (
+            <div className="relative flex items-center gap-3 ml-4">
+              <div className="hidden min-w-0 max-w-48 text-right xl:block">
+                <p className="truncate text-sm font-medium text-slate-900">
+                  {accountName}
+                </p>
+                <p className="text-xs text-slate-500">
+                  {roleLabel}
+                </p>
               </div>
-            )}
+
+              {/* Account Dropdown */}
+              <div className="relative">
+                <button
+                  type="button"
+                  aria-controls="desktop-account-panel"
+                  aria-label={
+                    profileOpen
+                      ? `Close account options for ${accountName}`
+                      : `Open account options for ${accountName}`
+                  }
+                  aria-expanded={profileOpen}
+                  onClick={() => setProfileOpen((prev) => !prev)}
+                  className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-slate-200 text-sm font-medium text-slate-700 hover:bg-slate-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-600 focus-visible:ring-offset-2"
+                >
+                  {accountInitials}
+                </button>
+
+                {profileOpen && (
+                  <div
+                    id="desktop-account-panel"
+                    className="absolute right-0 z-20 mt-2 w-56 rounded-md border border-slate-200 bg-white shadow-lg xl:w-48"
+                  >
+                    <div className="border-b border-slate-200 px-4 py-3 xl:hidden">
+                      <p className="break-words text-sm font-medium text-slate-900">
+                        {accountName}
+                      </p>
+
+                      <p className="text-xs text-slate-500">
+                        {roleLabel}
+                      </p>
+                    </div>
+
+                    <button
+                      type="button"
+                      onClick={handleLogout}
+                      disabled={loggingOut}
+                      className="w-full px-4 py-3 text-left text-sm font-medium text-slate-700 hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-600 focus-visible:ring-inset"
+                    >
+                      {loggingOut ? "Logging out..." : "Logout"}
+                    </button>
+                    {logoutError && (
+                      <p role="alert" className="px-4 pb-3 text-sm text-red-700">
+                        {logoutError}
+                      </p>
+                    )}
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
         </div>
       </div>
       {mobileOpen && (
@@ -218,30 +272,57 @@ export default function Navbar() {
         >
           <div className="mx-auto flex max-w-7xl flex-col gap-1 px-4 py-3">
             {visibleItems.map((item) => (
-            <NavLink
-              key={item.to}
-              to={item.to}
-              end={item.end}
-              onClick={() => setMobileOpen(false)}
-              className={({ isActive }) =>
-                `flex items-center gap-3 rounded-md px-3 py-3 text-base font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-600 focus-visible:ring-offset-2 ${
-                  isActive
+              <NavLink
+                key={item.to}
+                to={item.to}
+                end={item.end}
+                onClick={() => setMobileOpen(false)}
+                className={({ isActive }) =>
+                  `flex items-center gap-3 rounded-md px-3 py-3 text-base font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-600 focus-visible:ring-offset-2 ${isActive
                     ? 'bg-sky-100 text-sky-800'
                     : 'text-slate-700 hover:bg-slate-100 hover:text-slate-950'
-                }`
-              }
-            >
-              {item.icon && (
-                <img
-                  src={item.icon}
-                  alt=""
-                  className="h-5 w-5 shrink-0"
-                />
-              )}
+                  }`
+                }
+              >
+                {item.icon && (
+                  <img
+                    src={item.icon}
+                    alt=""
+                    className="h-5 w-5 shrink-0"
+                  />
+                )}
 
-              <span>{item.label}</span>
-            </NavLink>
+                <span>{item.label}</span>
+              </NavLink>
             ))}
+            {isAuthenticated && (
+              <div className="mt-3 border-t border-slate-200 pt-3">
+                <div className="px-3 py-2">
+                  <p className="break-words text-sm font-medium text-slate-900">
+                    {accountName}
+                  </p>
+
+                  <p className="text-xs text-slate-500">
+                    {roleLabel}
+                  </p>
+                </div>
+
+                <button
+                  type="button"
+                  onClick={handleLogout}
+                  disabled={loggingOut}
+                  className="w-full rounded-md px-3 py-3 text-left text-base font-medium text-slate-700 hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-600 focus-visible:ring-offset-2"
+                >
+                  {loggingOut ? 'Logging out...' : 'Logout'}
+                </button>
+
+                {logoutError && (
+                  <p role="alert" className="px-3 pt-2 text-sm text-red-700">
+                    {logoutError}
+                  </p>
+                )}
+              </div>
+            )}
           </div>
         </nav>
       )}
