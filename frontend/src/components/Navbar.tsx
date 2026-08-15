@@ -90,6 +90,7 @@ export default function Navbar() {
         {/* Brand */}
         <Link
           to={routes.home}
+          onClick={() => setMobileOpen(false)}
           className="flex min-w-0 flex-1 items-center gap-3 rounded-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-600 focus-visible:ring-offset-2">
           <img
             src={capLogo}
@@ -209,6 +210,41 @@ export default function Navbar() {
             )}
         </div>
       </div>
+      {mobileOpen && (
+        <nav
+          id="mobile-navigation"
+          aria-label="Mobile navigation"
+          className="border-t border-slate-200 bg-white lg:hidden"
+        >
+          <div className="mx-auto flex max-w-7xl flex-col gap-1 px-4 py-3">
+            {visibleItems.map((item) => (
+            <NavLink
+              key={item.to}
+              to={item.to}
+              end={item.end}
+              onClick={() => setMobileOpen(false)}
+              className={({ isActive }) =>
+                `flex items-center gap-3 rounded-md px-3 py-3 text-base font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-600 focus-visible:ring-offset-2 ${
+                  isActive
+                    ? 'bg-sky-100 text-sky-800'
+                    : 'text-slate-700 hover:bg-slate-100 hover:text-slate-950'
+                }`
+              }
+            >
+              {item.icon && (
+                <img
+                  src={item.icon}
+                  alt=""
+                  className="h-5 w-5 shrink-0"
+                />
+              )}
+
+              <span>{item.label}</span>
+            </NavLink>
+            ))}
+          </div>
+        </nav>
+      )}
     </header>
   )
 }
