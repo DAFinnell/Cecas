@@ -10,7 +10,7 @@ import HowItWorksIcon from '../assets/HowItWorks.svg'
 import authService from '../services/AuthService'
 import capLogo from '../assets/cap.svg'
 import { routes } from '../app/routes'
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import type { UserProfileResponse } from '../types/user.types'
 import UserService from '../services/UserService'
 
@@ -76,6 +76,13 @@ export default function Navbar() {
     user?.email?.trim() ||
     roleLabel
   const accountInitials = getInitials(accountName)
+  const closeDisclosures = () => {
+    setMobileOpen(false)
+    setProfileOpen(false)
+  }
+
+  const mobileButtonRef = useRef<HTMLButtonElement>(null)
+  const accountButtonRef = useRef<HTMLButtonElement>(null)
 
   useEffect(() => {
     if (role === "CHAIR" || role === "STUDENT") {
@@ -89,6 +96,7 @@ export default function Navbar() {
     const onAuthChanged = () => {
       setProfile(null)
       setProfileOpen(false)
+      setMobileOpen(false)
       UserService.getUserProfile()
         .then((data) => setProfile(data))
         .catch(() => setProfile(null))
@@ -98,6 +106,7 @@ export default function Navbar() {
       // clear UI and do a hard redirect to fully reset app state (this clears any cached state in memory, including auth state)
       setProfile(null)
       setProfileOpen(false)
+      setMobileOpen(false)
       window.location.href = routes.login
     }
 
@@ -109,6 +118,56 @@ export default function Navbar() {
     }
   }, [isAuthenticated, navigate])
 
+  useEffect(() => {
+    if (!mobileOpen && !profileOpen) {
+      return
+    }
+
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key !== 'Escape') {
+        return
+      }
+
+      event.preventDefault()
+
+      if (mobileOpen) {
+        setMobileOpen(false)
+        mobileButtonRef.current?.focus()
+        return
+      }
+
+      if (profileOpen) {
+        setProfileOpen(false)
+        accountButtonRef.current?.focus()
+        return
+      }
+    }
+
+    document.addEventListener('keydown', handleKeyDown)
+
+    return () => {
+      document.removeEventListener('keydown', handleKeyDown)
+    }
+  }, [mobileOpen, profileOpen])
+
+  useEffect(() => {
+    const desktopBreakpoint = window.matchMedia('(min-width: 64rem)')
+
+    const handleBreakpointChange = (event: MediaQueryListEvent) => {
+      if (event.matches) {
+        setMobileOpen(false)
+      } else {
+        setProfileOpen(false)
+      }
+    }
+
+    desktopBreakpoint.addEventListener('change', handleBreakpointChange)
+
+    return () => {
+      desktopBreakpoint.removeEventListener('change', handleBreakpointChange)
+    }
+  }, [])
+
   const handleLogout = async () => {
     if (loggingOut) {
       return
@@ -119,8 +178,7 @@ export default function Navbar() {
 
     try {
       await authService.logout()
-      setMobileOpen(false)
-      setProfileOpen(false)
+      closeDisclosures()
       navigate(routes.home, { replace: true })
     } catch {
       setLogoutError('Unable to log out. Please try again.')
@@ -135,7 +193,7 @@ export default function Navbar() {
         {/* Brand */}
         <Link
           to={routes.home}
-          onClick={() => setMobileOpen(false)}
+          onClick={closeDisclosures}
           className="flex min-w-0 flex-1 items-center gap-3 rounded-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-600 focus-visible:ring-offset-2">
           <img
             src={capLogo}
@@ -156,8 +214,12 @@ export default function Navbar() {
         </Link>
 
         <button
+          ref={mobileButtonRef}
           type="button"
-          onClick={() => setMobileOpen((previous) => !previous)}
+          onClick={() => {
+            setProfileOpen(false)
+            setMobileOpen((previous) => !previous)
+          }}
           aria-expanded={mobileOpen}
           aria-controls="mobile-navigation"
           aria-label={mobileOpen ? 'Close navigation' : 'Open navigation'}
@@ -180,6 +242,7 @@ export default function Navbar() {
                   key={item.to}
                   to={item.to}
                   end={item.end}
+                  onClick={closeDisclosures}
                   className={({ isActive }) =>
                     `rounded-md px-3 py-2 text-sm font-medium transition
                       ${isActive
@@ -215,6 +278,7 @@ export default function Navbar() {
               {/* Account Dropdown */}
               <div className="relative">
                 <button
+                  ref={accountButtonRef}
                   type="button"
                   aria-controls="desktop-account-panel"
                   aria-label={
@@ -223,7 +287,10 @@ export default function Navbar() {
                       : `Open account options for ${accountName}`
                   }
                   aria-expanded={profileOpen}
-                  onClick={() => setProfileOpen((prev) => !prev)}
+                  onClick={() => {
+                    setMobileOpen(false)
+                    setProfileOpen((prev) => !prev)
+                  }}
                   className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-slate-200 text-sm font-medium text-slate-700 hover:bg-slate-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-600 focus-visible:ring-offset-2"
                 >
                   {accountInitials}
@@ -276,7 +343,7 @@ export default function Navbar() {
                 key={item.to}
                 to={item.to}
                 end={item.end}
-                onClick={() => setMobileOpen(false)}
+                onClick={closeDisclosures}
                 className={({ isActive }) =>
                   `flex items-center gap-3 rounded-md px-3 py-3 text-base font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-600 focus-visible:ring-offset-2 ${isActive
                     ? 'bg-sky-100 text-sky-800'
