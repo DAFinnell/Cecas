@@ -67,7 +67,9 @@ export default function NewExtraCreditRequestPage() {
   const pendingPts = Number(pointsSummary?.pending ?? 0)
   const newRequestPoints = Number(selectedCategory?.defaultPoints ?? 0)
   const projectedTotal = issued + pendingPts + newRequestPoints
-  const availablePts = Number(pointsSummary?.available ?? Math.max(0, POINT_CAP - issued - pendingPts))
+  const availablePts = Number(
+    pointsSummary?.available ?? Math.max(0, POINT_CAP - issued - pendingPts),
+  )
   const exceedsPointCap = projectedTotal > POINT_CAP
   const descriptionTooShort =
     trimmedDescription.length > 0 && trimmedDescription.length < MIN_DESCRIPTION_LENGTH
@@ -200,13 +202,12 @@ export default function NewExtraCreditRequestPage() {
   return (
     <section className="space-y-8">
       <div className="rounded-3xl bg-white p-8 shadow-sm ring-1 ring-slate-200">
-        
         <h1 className="mt-3 text-3xl font-semibold tracking-tight text-slate-950 sm:text-4xl">
           New Extra Credit Request
         </h1>
         <p className="mt-4 max-w-3xl text-slate-600">
-          Select your course, choose the extra credit category, and describe the activity.
-          The form checks the 50 point cap before submitting the request with Pending status.
+          Select your course, choose the extra credit category, and describe the activity. The form
+          checks the 50 point cap before submitting the request with Pending status.
         </p>
       </div>
 
@@ -238,7 +239,9 @@ export default function NewExtraCreditRequestPage() {
               >
                 <option value="">Select term</option>
                 {uniqueTerms.map((term) => (
-                  <option key={term} value={term}>{term}</option>
+                  <option key={term} value={term}>
+                    {term}
+                  </option>
                 ))}
               </select>
             </label>
@@ -258,7 +261,9 @@ export default function NewExtraCreditRequestPage() {
               >
                 <option value="">Select course code</option>
                 {uniqueCourseCodes.map((code) => (
-                  <option key={code} value={code}>{code}</option>
+                  <option key={code} value={code}>
+                    {code}
+                  </option>
                 ))}
               </select>
             </label>
@@ -277,7 +282,9 @@ export default function NewExtraCreditRequestPage() {
               >
                 <option value="">Select section</option>
                 {uniqueSections.map((section) => (
-                  <option key={section} value={section}>{section}</option>
+                  <option key={section} value={section}>
+                    {section}
+                  </option>
                 ))}
               </select>
             </label>
@@ -306,12 +313,8 @@ export default function NewExtraCreditRequestPage() {
 
           {selectedCategory ? (
             <div className="rounded-2xl border border-sky-100 bg-sky-50 p-4">
-              <p className="text-sm font-semibold text-sky-950">
-                {selectedCategory.categoryName}
-              </p>
-              <p className="mt-1 text-sm leading-6 text-sky-800">
-                {selectedCategory.description}
-              </p>
+              <p className="text-sm font-semibold text-sky-950">{selectedCategory.categoryName}</p>
+              <p className="mt-1 text-sm leading-6 text-sky-800">{selectedCategory.description}</p>
               <p className="mt-2 text-sm font-medium text-sky-950">
                 Category value: {selectedCategory.defaultPoints} points
               </p>
@@ -323,9 +326,7 @@ export default function NewExtraCreditRequestPage() {
           )}
 
           <label className="block space-y-2">
-            <span className="text-sm font-medium text-slate-700">
-              Request Description
-            </span>
+            <span className="text-sm font-medium text-slate-700">Request Description</span>
             <textarea
               value={description}
               onChange={(event) => {
@@ -393,9 +394,7 @@ export default function NewExtraCreditRequestPage() {
             <p className="text-sm font-medium uppercase tracking-[0.2em] text-sky-700">
               Point cap check
             </p>
-            <h2 className="mt-2 text-xl font-semibold text-slate-950">
-              50 point cap
-            </h2>
+            <h2 className="mt-2 text-xl font-semibold text-slate-950">50 point cap</h2>
           </div>
 
           <dl className="space-y-3 text-sm">
@@ -422,10 +421,11 @@ export default function NewExtraCreditRequestPage() {
           </dl>
 
           <div
-            className={`rounded-2xl p-4 text-sm ${exceedsPointCap
-              ? 'bg-rose-50 text-rose-800 ring-1 ring-rose-200'
-              : 'bg-emerald-50 text-emerald-800 ring-1 ring-emerald-200'
-              }`}
+            className={`rounded-2xl p-4 text-sm ${
+              exceedsPointCap
+                ? 'bg-rose-50 text-rose-800 ring-1 ring-rose-200'
+                : 'bg-emerald-50 text-emerald-800 ring-1 ring-emerald-200'
+            }`}
           >
             {isLoading
               ? 'Loading point totals...'

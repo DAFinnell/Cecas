@@ -1,8 +1,8 @@
 import { Navigate, Outlet } from 'react-router-dom'
 import { useCurrentUser } from '../hooks/useCurrentUser'
 
-export default function RequireChairPasswordChange(){
-    const { user, loading } = useCurrentUser()
+export default function RequireChairPasswordChange() {
+  const { user, loading } = useCurrentUser()
 
   if (loading) {
     return <p className="text-sm text-slate-600">Loading... </p>

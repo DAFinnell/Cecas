@@ -73,23 +73,19 @@ export default function App() {
               element={<NewExtraCreditRequestPage />}
             />
             <Route
-              path={routePath("/student/requests/:requestId")}
+              path={routePath('/student/requests/:requestId')}
               element={<StudentApplicationDetailPage />}
             />
             <Route
-              path={routePath("/student/requests/:requestId/evidence")}
+              path={routePath('/student/requests/:requestId/evidence')}
               element={<EvidenceUploadPage />}
             />
-
           </Route>
 
           <Route element={<RequireRole allowedRoles={['CHAIR']} />}>
             <Route element={<RequireChairPasswordChange />}>
               <Route path={routePath(routes.chair.dashboard)} element={<ChairPage />} />
-              <Route
-                path={routePath("/chair/review/:requestId")}
-                element={<ChairReviewPage />}
-              />
+              <Route path={routePath('/chair/review/:requestId')} element={<ChairReviewPage />} />
             </Route>
 
             <Route

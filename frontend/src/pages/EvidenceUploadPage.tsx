@@ -1,11 +1,11 @@
-import { useEffect, useState, useRef } from "react"
-import {  useNavigate, useParams } from "react-router-dom"
-import type { StudentRequestDetail } from "../types/extraCredit.types"
-import extraCreditRequestService from "../services/ExtraCreditRequestService"
-import { formatCourse, formatStatus } from "../util/format.util"
-import  CameraIcon  from "../assets/Camera.svg"
+import { useEffect, useState, useRef } from 'react'
+import { useNavigate, useParams } from 'react-router-dom'
+import type { StudentRequestDetail } from '../types/extraCredit.types'
+import extraCreditRequestService from '../services/ExtraCreditRequestService'
+import { formatCourse, formatStatus } from '../util/format.util'
+import CameraIcon from '../assets/Camera.svg'
 
-const EVIDENCE_TYPE = ['pdf','jpg','png']
+const EVIDENCE_TYPE = ['pdf', 'jpg', 'png']
 const MAX_BYTES = 10 * 1024 * 1024 // 10 MB
 
 export default function EvidenceUploadPage() {
@@ -16,7 +16,7 @@ export default function EvidenceUploadPage() {
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(true)
-const fileInputRef = useRef<HTMLInputElement | null>(null)
+  const fileInputRef = useRef<HTMLInputElement | null>(null)
 
   useEffect(() => {
     if (!requestId) return
@@ -62,8 +62,8 @@ const fileInputRef = useRef<HTMLInputElement | null>(null)
     const form = new FormData()
     form.append('evidence', file)
     try {
-        setSubmitting(true)
-   await extraCreditRequestService.uploadEvidence(request.id, file)
+      setSubmitting(true)
+      await extraCreditRequestService.uploadEvidence(request.id, file)
       // refresh request to get updated status/feedback from server
       const refreshed = await extraCreditRequestService.getStudentRequestDetail(request.id)
       setRequest(refreshed)
@@ -79,128 +79,99 @@ const fileInputRef = useRef<HTMLInputElement | null>(null)
 
   return (
     <main className="mx-auto max-w-5xl px-6 py-10">
-    <div className="mb-8">
+      <div className="mb-8">
         <button
-            onClick={() => navigate(-1)}
-            className="mb-4 text-medium text-sky-700 hover:underline"
+          onClick={() => navigate(-1)}
+          className="mb-4 text-medium text-sky-700 hover:underline"
         >
-            &larr; Back to My Requests
+          &larr; Back to My Requests
         </button>
 
-        <h1 className="text-3xl font-bold text-slate-900">
-            Upload Evidence
-        </h1>
+        <h1 className="text-3xl font-bold text-slate-900">Upload Evidence</h1>
 
         <p className="mt-2 text-slate-600">
-            Submit supporting documentation for your pre-approved request.
+          Submit supporting documentation for your pre-approved request.
         </p>
-    </div>
+      </div>
       <section className="rounded-xl border p-4 border-slate-200 bg-white shadow-sm">
         <div className="mb-4 border-b pb-2">
-            <h2 className="text-lg   font-semibold">
-                Request Summary
-            </h2>
+          <h2 className="text-lg   font-semibold">Request Summary</h2>
         </div>
         <div className="grid gap-6 md:grid-cols-2">
           <div>
-            <p className="text-xs uppercase tracking-wide text-slate-500">
-                Course
-            </p>
+            <p className="text-xs uppercase tracking-wide text-slate-500">Course</p>
 
-            <p className="font-medium">
-                {formatCourse(request)}
-            </p>
-        </div>
+            <p className="font-medium">{formatCourse(request)}</p>
+          </div>
           <div>
-            <p className="text-xs uppercase tracking-wide text-slate-500">
-                Activity / Category
-            </p>
+            <p className="text-xs uppercase tracking-wide text-slate-500">Activity / Category</p>
+
+            <p className="font-medium">{request.categoryName}</p>
+          </div>
+          <div>
+            <p className="text-xs uppercase tracking-wide text-slate-500">Submitted Description</p>
+
+            <p className="font-medium">{request.description ?? '—'}</p>
+          </div>
+
+          <div>
+            <p className="text-xs uppercase tracking-wide text-slate-500">Current Status</p>
 
             <p className="font-medium">
-                {request.categoryName}
-            </p>
-        </div>
-        <div>
-            <p className="text-xs uppercase tracking-wide text-slate-500">
-                Submitted Description
-            </p>
-
-            <p className="font-medium">
-                {request.description ?? '—'}
-            </p>
-        </div>
-
-        <div>
-            <p className="text-xs uppercase tracking-wide text-slate-500">
-                Current Status
-            </p>
-
-            <p className="font-medium">
-                <span
-                  className={`inline-flex text-medium font-semibold ${
-                    request.status === 'PRE_APPROVED'
-                      ? 'bg-blue-100 text-blue-800'
-                      : request.status === 'EVIDENCE_SUBMITTED'
+              <span
+                className={`inline-flex text-medium font-semibold ${
+                  request.status === 'PRE_APPROVED'
+                    ? 'bg-blue-100 text-blue-800'
+                    : request.status === 'EVIDENCE_SUBMITTED'
                       ? 'bg-orange-100 text-orange-800'
                       : 'bg-slate-100 text-slate-700'
-                  }`}
-                >
-                  {formatStatus(request.status)}
-                </span>
+                }`}
+              >
+                {formatStatus(request.status)}
+              </span>
             </p>
-        </div>
+          </div>
 
-        <div>
-            <p className="text-xs uppercase tracking-wide text-slate-500">
-                Due Date
-            </p>
+          <div>
+            <p className="text-xs uppercase tracking-wide text-slate-500">Due Date</p>
 
-            <p className="font-medium">
-                {request.dueDate ?? 'No due date'}
-            </p>
-        </div>
+            <p className="font-medium">{request.dueDate ?? 'No due date'}</p>
+          </div>
 
-        {request.chairFeedback && (
+          {request.chairFeedback && (
             <div>
-                <p className="text-xs uppercase tracking-wide text-slate-500">
-                    Chair Feedback
-                </p>
+              <p className="text-xs uppercase tracking-wide text-slate-500">Chair Feedback</p>
 
-                <p className="font-medium">
-                    {request.chairFeedback}
-                </p>
+              <p className="font-medium">{request.chairFeedback}</p>
             </div>
-        )}
-    </div>
-    </section>
+          )}
+        </div>
+      </section>
 
-    {request.status === 'EVIDENCE_SUBMITTED' ? (
-    <div className="mt-6 rounded-xl border border-green-200 bg-green-50 p-6">
-        <h2 className="text-lg font-semibold text-green-900">
-        &#10003; Evidence Uploaded
-        </h2>
+      {request.status === 'EVIDENCE_SUBMITTED' ? (
+        <div className="mt-6 rounded-xl border border-green-200 bg-green-50 p-6">
+          <h2 className="text-lg font-semibold text-green-900">&#10003; Evidence Uploaded</h2>
 
-        <p className="mt-2 text-sm text-green-800">
-        Your supporting documentation has been uploaded successfully and is now
-        awaiting chair review.
-        </p>
+          <p className="mt-2 text-sm text-green-800">
+            Your supporting documentation has been uploaded successfully and is now awaiting chair
+            review.
+          </p>
 
-        <button
-        type="button"
-        onClick={() => navigate(`/student/requests/${request.id}`)}
-        className="mt-4 rounded bg-sky-700 px-4 py-2 text-white hover:bg-sky-800"
-        >
-        Return to Request Details
-        </button>
-    </div>
-        ) : (
-
+          <button
+            type="button"
+            onClick={() => navigate(`/student/requests/${request.id}`)}
+            className="mt-4 rounded bg-sky-700 px-4 py-2 text-white hover:bg-sky-800"
+          >
+            Return to Request Details
+          </button>
+        </div>
+      ) : (
         <form onSubmit={onSubmit} className="space-y-4">
           <div className="text-sm text-slate-700">
             {request.dueDate && <div>Due date applies: {request.dueDate}</div>}
           </div>
 
-        <div>
+          <div>
             {/* hidden native input */}
             <input
               ref={fileInputRef}
@@ -219,7 +190,9 @@ const fileInputRef = useRef<HTMLInputElement | null>(null)
               role="button"
               tabIndex={0}
               onClick={() => fileInputRef.current?.click()}
-              onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') fileInputRef.current?.click() }}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' || e.key === ' ') fileInputRef.current?.click()
+              }}
               onDragOver={(e) => e.preventDefault()}
               onDrop={(e) => {
                 e.preventDefault()
@@ -235,8 +208,12 @@ const fileInputRef = useRef<HTMLInputElement | null>(null)
                 <img src={CameraIcon} alt="Camera Icon" />
               </div>
 
-              <div className="font-medium text-slate-800">Drag & drop a file here, or click to choose</div>
-              <div className="text-xs text-slate-500">Allowed: {EVIDENCE_TYPE.join(', ')} · Max {Math.round(MAX_BYTES / 1024 / 1024)} MB</div>
+              <div className="font-medium text-slate-800">
+                Drag & drop a file here, or click to choose
+              </div>
+              <div className="text-xs text-slate-500">
+                Allowed: {EVIDENCE_TYPE.join(', ')} · Max {Math.round(MAX_BYTES / 1024 / 1024)} MB
+              </div>
 
               {file && (
                 <div className="mt-2 w-full text-left">
@@ -249,11 +226,15 @@ const fileInputRef = useRef<HTMLInputElement | null>(null)
                         onLoad={(ev) => URL.revokeObjectURL((ev.target as HTMLImageElement).src)}
                       />
                     ) : (
-                      <div className="h-12 w-12 flex items-center justify-center rounded bg-slate-100 text-xs text-slate-600 border">File</div>
+                      <div className="h-12 w-12 flex items-center justify-center rounded bg-slate-100 text-xs text-slate-600 border">
+                        File
+                      </div>
                     )}
                     <div className="text-sm text-slate-700">
                       <div className="font-medium">{file.name}</div>
-                      <div className="text-xs text-slate-500">{Math.round(file.size / 1024)} KB</div>
+                      <div className="text-xs text-slate-500">
+                        {Math.round(file.size / 1024)} KB
+                      </div>
                     </div>
                   </div>
                 </div>

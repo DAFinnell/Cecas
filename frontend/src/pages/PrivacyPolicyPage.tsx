@@ -36,19 +36,19 @@ export default function PrivacyPolicyPage() {
           Privacy Policy
         </h1>
         <p className="mt-4 max-w-3xl text-slate-600">
-          This page explains how the Canvas Extra Credit Automation System handles student request information, course-related data, and user responsibilities within the application.
+          This page explains how the Canvas Extra Credit Automation System handles student request
+          information, course-related data, and user responsibilities within the application.
         </p>
       </div>
 
       <div className="space-y-5 rounded-3xl bg-white p-8 shadow-sm ring-1 ring-slate-200">
         {sections.map((section) => (
-          <section key={section.title} className="border-b border-slate-200 pb-5 last:border-b-0 last:pb-0">
-            <h2 className="text-xl font-semibold text-slate-950">
-              {section.title}
-            </h2>
-            <p className="mt-2 leading-7 text-slate-600">
-              {section.body}
-            </p>
+          <section
+            key={section.title}
+            className="border-b border-slate-200 pb-5 last:border-b-0 last:pb-0"
+          >
+            <h2 className="text-xl font-semibold text-slate-950">{section.title}</h2>
+            <p className="mt-2 leading-7 text-slate-600">{section.body}</p>
           </section>
         ))}
       </div>

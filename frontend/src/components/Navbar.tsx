@@ -16,14 +16,44 @@ import UserService from '../services/UserService'
 
 const navItems = [
   { to: routes.home, label: 'Home', end: true, roles: ['ANONYMOUS'], icon: HomeIcon },
-  { to: routes.howItWorks, label: 'How It Works', end: true, roles: ['ANONYMOUS'], icon: HowItWorksIcon },
+  {
+    to: routes.howItWorks,
+    label: 'How It Works',
+    end: true,
+    roles: ['ANONYMOUS'],
+    icon: HowItWorksIcon,
+  },
   { to: routes.login, label: 'Login', end: true, roles: ['ANONYMOUS'], icon: LoginIcon },
   { to: routes.register, label: 'Register', end: true, roles: ['ANONYMOUS'], icon: RegisterIcon },
 
-  { to: routes.student.dashboard, label: 'Dashboard', end: true, roles: ['STUDENT'], icon: DashboardIcon },
-  { to: routes.chair.dashboard, label: 'Dashboard', end: true, roles: ['CHAIR'], icon: DashboardIcon },
-  { to: routes.student.applications, label: 'My Requests', end: true, roles: ['STUDENT'], icon: ListIcon },
-  { to: routes.student.newRequest, label: 'Create New Request', end: true, roles: ['STUDENT'], icon: CreateNewRequestIcon }
+  {
+    to: routes.student.dashboard,
+    label: 'Dashboard',
+    end: true,
+    roles: ['STUDENT'],
+    icon: DashboardIcon,
+  },
+  {
+    to: routes.chair.dashboard,
+    label: 'Dashboard',
+    end: true,
+    roles: ['CHAIR'],
+    icon: DashboardIcon,
+  },
+  {
+    to: routes.student.applications,
+    label: 'My Requests',
+    end: true,
+    roles: ['STUDENT'],
+    icon: ListIcon,
+  },
+  {
+    to: routes.student.newRequest,
+    label: 'Create New Request',
+    end: true,
+    roles: ['STUDENT'],
+    icon: CreateNewRequestIcon,
+  },
 ]
 
 function getInitials(value: string) {
@@ -43,8 +73,7 @@ export default function Navbar() {
   const { user } = useCurrentUser()
   const isAuthenticated = !!user?.authenticated
   const role = user?.role
-  const isChairPasswordChangeRequired =
-    role === 'CHAIR' && user?.mustChangePassword === true
+  const isChairPasswordChangeRequired = role === 'CHAIR' && user?.mustChangePassword === true
   const navigate = useNavigate()
   const [loggingOut, setLoggingOut] = useState(false)
   const [logoutError, setLogoutError] = useState<string | null>(null)
@@ -65,16 +94,8 @@ export default function Navbar() {
     }
     return isAuthenticated && role && item.roles.includes(role)
   })
-  const roleLabel =
-    role === 'CHAIR'
-      ? 'Program Chair'
-      : role === 'STUDENT'
-        ? 'Student'
-        : 'Account'
-  const accountName =
-    profile?.fullName?.trim() ||
-    user?.email?.trim() ||
-    roleLabel
+  const roleLabel = role === 'CHAIR' ? 'Program Chair' : role === 'STUDENT' ? 'Student' : 'Account'
+  const accountName = profile?.fullName?.trim() || user?.email?.trim() || roleLabel
   const accountInitials = getInitials(accountName)
   const closeDisclosures = () => {
     setMobileOpen(false)
@@ -85,7 +106,7 @@ export default function Navbar() {
   const accountButtonRef = useRef<HTMLButtonElement>(null)
 
   useEffect(() => {
-    if (role === "CHAIR" || role === "STUDENT") {
+    if (role === 'CHAIR' || role === 'STUDENT') {
       UserService.getUserProfile()
         .then((data) => setProfile(data))
         .catch(() => setProfile(null))
@@ -194,17 +215,12 @@ export default function Navbar() {
         <Link
           to={routes.home}
           onClick={closeDisclosures}
-          className="flex min-w-0 flex-1 items-center gap-3 rounded-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-600 focus-visible:ring-offset-2">
-          <img
-            src={capLogo}
-            alt=""
-            className="h-10 w-auto shrink-0 lg:h-14"
-          />
+          className="flex min-w-0 flex-1 items-center gap-3 rounded-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-600 focus-visible:ring-offset-2"
+        >
+          <img src={capLogo} alt="" className="h-10 w-auto shrink-0 lg:h-14" />
 
           <div className="min-w-0 leading-tight">
-            <p className=" text-sm font-semibold uppercase tracking-[0.2em] text-sky-700">
-              CECAS
-            </p>
+            <p className=" text-sm font-semibold uppercase tracking-[0.2em] text-sky-700">CECAS</p>
             <p className="hidden lg:block text-2xl font-semibold tracking-tight leading-tight">
               Canvas Extra Credit
               <br />
@@ -223,20 +239,21 @@ export default function Navbar() {
           aria-expanded={mobileOpen}
           aria-controls="mobile-navigation"
           aria-label={mobileOpen ? 'Close navigation' : 'Open navigation'}
-          className='ml-3 inline-flex h-11 min-w-11 shrink-0 items-center justify-center rounded-md border border-slate-300 bg-white px-3 text-sm font-medium text-slate-700 transition-colors hover:bg-slate-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-600 focus-visible:ring-offset-2 lg:hidden'
+          className="ml-3 inline-flex h-11 min-w-11 shrink-0 items-center justify-center rounded-md border border-slate-300 bg-white px-3 text-sm font-medium text-slate-700 transition-colors hover:bg-slate-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-600 focus-visible:ring-offset-2 lg:hidden"
         >
           {mobileOpen ? 'Close' : 'Menu'}
         </button>
 
         <div
-          className={`hidden lg:flex flex-1 items-center min-w-0 ${isAuthenticated
-            ? "justify-end gap-6"
-            : "justify-end"
-            }`}
+          className={`hidden lg:flex flex-1 items-center min-w-0 ${
+            isAuthenticated ? 'justify-end gap-6' : 'justify-end'
+          }`}
         >
-          <nav aria-label="Main navigation" className="flex items-center gap-2 whitespace-nowrap shrink-0">
+          <nav
+            aria-label="Main navigation"
+            className="flex items-center gap-2 whitespace-nowrap shrink-0"
+          >
             {visibleItems.map((item) => {
-
               return (
                 <NavLink
                   key={item.to}
@@ -245,10 +262,11 @@ export default function Navbar() {
                   onClick={closeDisclosures}
                   className={({ isActive }) =>
                     `rounded-md px-3 py-2 text-sm font-medium transition
-                      ${isActive
-                      ? "bg-sky-100 text-sky-800"
-                      : "text-slate-700 hover:bg-slate-100 hover:text-slate-950"
-                    }`
+                      ${
+                        isActive
+                          ? 'bg-sky-100 text-sky-800'
+                          : 'text-slate-700 hover:bg-slate-100 hover:text-slate-950'
+                      }`
                   }
                 >
                   {item.icon && (
@@ -267,12 +285,8 @@ export default function Navbar() {
           {isAuthenticated && (
             <div className="relative flex items-center gap-3 ml-4">
               <div className="hidden min-w-0 max-w-48 text-right xl:block">
-                <p className="truncate text-sm font-medium text-slate-900">
-                  {accountName}
-                </p>
-                <p className="text-xs text-slate-500">
-                  {roleLabel}
-                </p>
+                <p className="truncate text-sm font-medium text-slate-900">{accountName}</p>
+                <p className="text-xs text-slate-500">{roleLabel}</p>
               </div>
 
               {/* Account Dropdown */}
@@ -306,9 +320,7 @@ export default function Navbar() {
                         {accountName}
                       </p>
 
-                      <p className="text-xs text-slate-500">
-                        {roleLabel}
-                      </p>
+                      <p className="text-xs text-slate-500">{roleLabel}</p>
                     </div>
 
                     <button
@@ -317,7 +329,7 @@ export default function Navbar() {
                       disabled={loggingOut}
                       className="w-full px-4 py-3 text-left text-sm font-medium text-slate-700 hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-600 focus-visible:ring-inset"
                     >
-                      {loggingOut ? "Logging out..." : "Logout"}
+                      {loggingOut ? 'Logging out...' : 'Logout'}
                     </button>
                     {logoutError && (
                       <p role="alert" className="px-4 pb-3 text-sm text-red-700">
@@ -345,19 +357,14 @@ export default function Navbar() {
                 end={item.end}
                 onClick={closeDisclosures}
                 className={({ isActive }) =>
-                  `flex items-center gap-3 rounded-md px-3 py-3 text-base font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-600 focus-visible:ring-offset-2 ${isActive
-                    ? 'bg-sky-100 text-sky-800'
-                    : 'text-slate-700 hover:bg-slate-100 hover:text-slate-950'
+                  `flex items-center gap-3 rounded-md px-3 py-3 text-base font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-600 focus-visible:ring-offset-2 ${
+                    isActive
+                      ? 'bg-sky-100 text-sky-800'
+                      : 'text-slate-700 hover:bg-slate-100 hover:text-slate-950'
                   }`
                 }
               >
-                {item.icon && (
-                  <img
-                    src={item.icon}
-                    alt=""
-                    className="h-5 w-5 shrink-0"
-                  />
-                )}
+                {item.icon && <img src={item.icon} alt="" className="h-5 w-5 shrink-0" />}
 
                 <span>{item.label}</span>
               </NavLink>
@@ -365,13 +372,9 @@ export default function Navbar() {
             {isAuthenticated && (
               <div className="mt-3 border-t border-slate-200 pt-3">
                 <div className="px-3 py-2">
-                  <p className="break-words text-sm font-medium text-slate-900">
-                    {accountName}
-                  </p>
+                  <p className="break-words text-sm font-medium text-slate-900">{accountName}</p>
 
-                  <p className="text-xs text-slate-500">
-                    {roleLabel}
-                  </p>
+                  <p className="text-xs text-slate-500">{roleLabel}</p>
                 </div>
 
                 <button

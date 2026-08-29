@@ -160,25 +160,28 @@ describe('ChairReviewRequestService', () => {
   })
 
   it('builds inline and download evidence URLs', () => {
-    expect(chairReviewRequestService.evidenceUrl(42))
-      .toBe('/api/chair/requests/42/evidence')
-    expect(chairReviewRequestService.evidenceUrl(42, true))
-      .toBe('/api/chair/requests/42/evidence?download=true')
+    expect(chairReviewRequestService.evidenceUrl(42)).toBe('/api/chair/requests/42/evidence')
+    expect(chairReviewRequestService.evidenceUrl(42, true)).toBe(
+      '/api/chair/requests/42/evidence?download=true',
+    )
   })
 
   it('surfaces backend error details when an action fails', async () => {
     vi.mocked(csrfService.fetch).mockResolvedValue(
-      new Response(JSON.stringify({
-        detail: 'Approval requires EVIDENCE_SUBMITTED state.',
-      }), {
-        status: 409,
-        headers: { 'Content-Type': 'application/json' },
-      }),
+      new Response(
+        JSON.stringify({
+          detail: 'Approval requires EVIDENCE_SUBMITTED state.',
+        }),
+        {
+          status: 409,
+          headers: { 'Content-Type': 'application/json' },
+        },
+      ),
     )
 
-    await expect(
-      chairReviewRequestService.approve(42, { points: 5 }),
-    ).rejects.toThrow('Approval requires EVIDENCE_SUBMITTED state.')
+    await expect(chairReviewRequestService.approve(42, { points: 5 })).rejects.toThrow(
+      'Approval requires EVIDENCE_SUBMITTED state.',
+    )
   })
 
   it('surfaces backend errors when chair review cannot be loaded', async () => {
@@ -189,8 +192,6 @@ describe('ChairReviewRequestService', () => {
       }),
     )
 
-    await expect(
-      chairReviewRequestService.getRequestForReview(42),
-    ).rejects.toThrow('Not Found')
+    await expect(chairReviewRequestService.getRequestForReview(42)).rejects.toThrow('Not Found')
   })
 })

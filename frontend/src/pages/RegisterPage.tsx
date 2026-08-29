@@ -28,13 +28,9 @@ export default function RegisterPage() {
           error ? 'border-red-500' : 'border-slate-200'
         }`}
       >
-        <h1 className="mb-2 text-center text-3xl font-semibold">
-          Register
-        </h1>
+        <h1 className="mb-2 text-center text-3xl font-semibold">Register</h1>
 
-        <p className="mb-6 text-center text-slate-600">
-          Create your CECAS account.
-        </p>
+        <p className="mb-6 text-center text-slate-600">Create your CECAS account.</p>
 
         <form className="space-y-5" onSubmit={handleSubmit}>
           <div>
@@ -133,10 +129,7 @@ export default function RegisterPage() {
           </div>
 
           <div>
-            <label
-              htmlFor="confirmPassword"
-              className="mb-2 block text-sm font-medium"
-            >
+            <label htmlFor="confirmPassword" className="mb-2 block text-sm font-medium">
               Confirm Password
             </label>
             <input

@@ -15,9 +15,7 @@ describe('ExtraCreditRequestService', () => {
   })
 
   it('fetches course options for the new request form', async () => {
-    const payload = [
-      { courseId: 1, courseCode: 'COMP-110', term: '26/FA', section: 'H1WW' },
-    ]
+    const payload = [{ courseId: 1, courseCode: 'COMP-110', term: '26/FA', section: 'H1WW' }]
 
     vi.mocked(csrfService.fetch).mockResolvedValue(
       new Response(JSON.stringify(payload), {
@@ -182,15 +180,18 @@ describe('ExtraCreditRequestService', () => {
   it('surfaces backend validation messages for invalid request descriptions', async () => {
     vi.mocked(csrfService.init).mockResolvedValue(undefined)
     vi.mocked(csrfService.fetch).mockResolvedValue(
-      new Response(JSON.stringify({
-        title: 'Validation failed',
-        errors: {
-          description: 'description must be between 15 and 1000 characters',
+      new Response(
+        JSON.stringify({
+          title: 'Validation failed',
+          errors: {
+            description: 'description must be between 15 and 1000 characters',
+          },
+        }),
+        {
+          status: 400,
+          headers: { 'Content-Type': 'application/json' },
         },
-      }), {
-        status: 400,
-        headers: { 'Content-Type': 'application/json' },
-      }),
+      ),
     )
 
     await expect(
@@ -225,9 +226,7 @@ describe('ExtraCreditRequestService', () => {
       type: 'application/pdf',
     })
 
-    vi.mocked(csrfService.fetch).mockResolvedValue(
-      new Response(null, { status: 200 }),
-    )
+    vi.mocked(csrfService.fetch).mockResolvedValue(new Response(null, { status: 200 }))
 
     await extraCreditRequestService.uploadEvidence(42, file)
 
@@ -250,16 +249,19 @@ describe('ExtraCreditRequestService', () => {
     })
 
     vi.mocked(csrfService.fetch).mockResolvedValue(
-      new Response(JSON.stringify({
-        detail: 'Evidence file must be a PDF, JPG, or PNG.',
-      }), {
-        status: 400,
-        headers: { 'Content-Type': 'application/json' },
-      }),
+      new Response(
+        JSON.stringify({
+          detail: 'Evidence file must be a PDF, JPG, or PNG.',
+        }),
+        {
+          status: 400,
+          headers: { 'Content-Type': 'application/json' },
+        },
+      ),
     )
 
-    await expect(
-      extraCreditRequestService.uploadEvidence(42, file),
-    ).rejects.toThrow('Evidence file must be a PDF, JPG, or PNG.')
+    await expect(extraCreditRequestService.uploadEvidence(42, file)).rejects.toThrow(
+      'Evidence file must be a PDF, JPG, or PNG.',
+    )
   })
 })

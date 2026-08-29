@@ -1,35 +1,16 @@
 // @vitest-environment jsdom
 import '@testing-library/jest-dom/vitest'
-import {
-  cleanup,
-  render,
-  screen,
-  within,
-} from '@testing-library/react'
-import {
-  MemoryRouter,
-  Route,
-  Routes,
-} from 'react-router-dom'
-import {
-  afterEach,
-  describe,
-  expect,
-  it,
-  vi,
-} from 'vitest'
+import { cleanup, render, screen, within } from '@testing-library/react'
+import { MemoryRouter, Route, Routes } from 'react-router-dom'
+import { afterEach, describe, expect, it, vi } from 'vitest'
 import AppLayout from './AppLayout'
 
 vi.mock('../components/Navbar', () => ({
-  default: () => (
-    <nav aria-label='Test navigation'>
-      Navigation
-    </nav>
-  ),
+  default: () => <nav aria-label="Test navigation">Navigation</nav>,
 }))
 
 vi.mock('../components/Footer', () => ({
-  default: () => <footer>Footer</footer>
+  default: () => <footer>Footer</footer>,
 }))
 
 afterEach(() => {

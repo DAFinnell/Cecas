@@ -3,11 +3,15 @@ import { Link } from 'react-router-dom'
 import { routes } from '../app/routes'
 import extraCreditRequestService from '../services/ExtraCreditRequestService'
 import userService from '../services/UserService'
-import type {
-  StudentPointsSummary,
-  StudentRequestSummary,
-} from '../types/extraCredit.types'
-import { formatCourse, formatDate, formatTerm, formatPoints, formatStatus, getStatusBadgeClass} from '../util/format.util'
+import type { StudentPointsSummary, StudentRequestSummary } from '../types/extraCredit.types'
+import {
+  formatCourse,
+  formatDate,
+  formatTerm,
+  formatPoints,
+  formatStatus,
+  getStatusBadgeClass,
+} from '../util/format.util'
 
 type LoadState = {
   points: StudentPointsSummary | null
@@ -35,35 +39,19 @@ function getSortDate(request: StudentRequestSummary): number {
   return Number.isNaN(time) ? 0 : time
 }
 
-function StatCard({
-  label,
-  value,
-  helpText,
-}: {
-  label: string
-  value: number
-  helpText: string
-}) {
+function StatCard({ label, value, helpText }: { label: string; value: number; helpText: string }) {
   return (
     <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
       <p className="text-sm font-medium text-slate-500">{label}</p>
 
-      <p className="mt-2 text-3xl font-semibold tracking-tight text-slate-950">
-        {value}
-      </p>
+      <p className="mt-2 text-3xl font-semibold tracking-tight text-slate-950">{value}</p>
 
       <p className="mt-2 text-sm text-slate-600">{helpText}</p>
     </div>
   )
 }
 
-function Alert({
-  title,
-  children,
-}: {
-  title: string
-  children: ReactNode
-}) {
+function Alert({ title, children }: { title: string; children: ReactNode }) {
   return (
     <div className="rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-800">
       <p className="font-semibold">{title}</p>
@@ -105,11 +93,7 @@ export default function StudentApplicationsPage() {
         }
       } catch (loadError) {
         if (active) {
-          setError(
-            loadError instanceof Error
-              ? loadError.message
-              : 'Unable to load applications.',
-          )
+          setError(loadError instanceof Error ? loadError.message : 'Unable to load applications.')
         }
       } finally {
         if (active) {
@@ -148,11 +132,7 @@ export default function StudentApplicationsPage() {
         }
       } catch (loadError) {
         if (active) {
-          setError(
-            loadError instanceof Error
-              ? loadError.message
-              : 'Unable to load point summary.',
-          )
+          setError(loadError instanceof Error ? loadError.message : 'Unable to load point summary.')
         }
       }
     }
@@ -165,16 +145,13 @@ export default function StudentApplicationsPage() {
   }, [selectedTerm])
 
   const terms = useMemo(
-    () =>
-      Array.from(
-        new Set(data.requests.map((request) => request.term).filter(Boolean)),
-      ).sort(),
+    () => Array.from(new Set(data.requests.map((request) => request.term).filter(Boolean))).sort(),
     [data.requests],
   )
 
   const sortedRequests = useMemo(() => {
     const items = data.requests.filter((req) => {
-      const matchesTerm = !selectedTerm || req.term ===selectedTerm
+      const matchesTerm = !selectedTerm || req.term === selectedTerm
       const matchesStatus = !statusFilter || req.status === statusFilter
 
       const query = searchTerm.toLowerCase()
@@ -214,9 +191,7 @@ export default function StudentApplicationsPage() {
 
   const earned = data.points?.issued ?? 0
   const pending = data.points?.pending ?? 0
-  const available =
-    data.points?.available ??
-    Math.max(0, TOTAL_ALLOWED_POINTS - earned - pending)
+  const available = data.points?.available ?? Math.max(0, TOTAL_ALLOWED_POINTS - earned - pending)
   const ITEMS_PER_PAGE = 10
   const totalPages = Math.max(1, Math.ceil(sortedRequests.length / ITEMS_PER_PAGE))
   const paginatedRequests = useMemo(() => {
@@ -240,14 +215,13 @@ export default function StudentApplicationsPage() {
       <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm sm:p-8">
         <div className="flex flex-col gap-6 md:flex-row md:items-start md:justify-between">
           <div>
-
             <h1 className="mt-2 text-3xl font-semibold tracking-tight text-slate-950">
               My Applications
             </h1>
 
             <p className="mt-3 max-w-2xl text-slate-600">
-              Review your extra credit request history, check point totals, and
-              start a new application when you are ready.
+              Review your extra credit request history, check point totals, and start a new
+              application when you are ready.
             </p>
           </div>
 
@@ -348,23 +322,11 @@ export default function StudentApplicationsPage() {
 
       {selectedTerm ? (
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          <StatCard
-            label="Earned"
-            value={earned}
-            helpText="Points already awarded"
-          />
+          <StatCard label="Earned" value={earned} helpText="Points already awarded" />
 
-          <StatCard
-            label="Pending/Pre-Approved"
-            value={pending}
-            helpText="Points under review"
-          />
+          <StatCard label="Pending/Pre-Approved" value={pending} helpText="Points under review" />
 
-          <StatCard
-            label="Available"
-            value={available}
-            helpText="Points still available"
-          />
+          <StatCard label="Available" value={available} helpText="Points still available" />
 
           <StatCard
             label="Total Allowed"
@@ -381,9 +343,7 @@ export default function StudentApplicationsPage() {
       <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
         <div className="flex flex-col gap-3 border-b border-slate-200 p-5 sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <h2 className="text-xl font-semibold text-slate-950">
-              Application History
-            </h2>
+            <h2 className="text-xl font-semibold text-slate-950">Application History</h2>
 
             <p className="mt-1 text-sm text-slate-600">
               {sortDescriptions[sortBy] || 'Custom application order.'}
@@ -399,14 +359,10 @@ export default function StudentApplicationsPage() {
         </div>
 
         {loading ? (
-          <div className="p-8 text-center text-sm text-slate-600">
-            Loading applications...
-          </div>
+          <div className="p-8 text-center text-sm text-slate-600">Loading applications...</div>
         ) : data.requests.length === 0 ? (
           <div className="p-8 text-center">
-            <p className="text-base font-medium text-slate-900">
-              No applications yet
-            </p>
+            <p className="text-base font-medium text-slate-900">No applications yet</p>
 
             <p className="mt-2 text-sm text-slate-600">
               Create a new request to begin tracking your extra credit activity.
@@ -422,7 +378,9 @@ export default function StudentApplicationsPage() {
         ) : sortedRequests.length === 0 ? (
           <div className="p-8 text-center text-sm text-slate-600">
             <p className="text-base font-medium text-slate-900">No matching requests found</p>
-            <p className="mt-2">Try adjusting your active status filters, terms, or search keywords.</p>
+            <p className="mt-2">
+              Try adjusting your active status filters, terms, or search keywords.
+            </p>
           </div>
         ) : (
           <div className="overflow-x-auto">
@@ -430,9 +388,7 @@ export default function StudentApplicationsPage() {
               <thead className="bg-slate-50 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">
                 <tr>
                   <th className="whitespace-nowrap px-5 py-3 text-center">Course</th>
-                  <th className="whitespace-nowrap px-5 py-3 text-center">
-                    Activity / Category
-                  </th>
+                  <th className="whitespace-nowrap px-5 py-3 text-center">Activity / Category</th>
                   <th className="whitespace-nowrap px-5 py-3 text-center">Status</th>
                   <th className="whitespace-nowrap px-5 py-3 text-center">Points</th>
                   <th className="whitespace-nowrap px-5 py-3 text-center">Last Updated</th>
@@ -448,9 +404,7 @@ export default function StudentApplicationsPage() {
                     </td>
 
                     <td className="whitespace-nowrap py-4 text-center">
-                      <span className="line-clamp-2">
-                        {request.categoryName}
-                      </span>
+                      <span className="line-clamp-2">{request.categoryName}</span>
                     </td>
 
                     <td className="whitespace-nowrap py-4 text-center">

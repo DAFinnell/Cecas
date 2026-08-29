@@ -1,26 +1,9 @@
 // @vitest-environment jsdom
 import '@testing-library/jest-dom/vitest'
-import {
-  act,
-  cleanup,
-  render,
-  screen,
-  waitFor,
-  within,
-} from '@testing-library/react'
+import { act, cleanup, render, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import {
-  MemoryRouter,
-  useLocation,
-} from 'react-router-dom'
-import {
-  afterEach,
-  beforeEach,
-  describe,
-  expect,
-  it,
-  vi,
-} from 'vitest'
+import { MemoryRouter, useLocation } from 'react-router-dom'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import Navbar from './Navbar'
 
 import UserService from '../services/UserService'
@@ -95,9 +78,7 @@ type MatchMediaController = {
 }
 
 function installMatchMediaStub() {
-  let changeListener:
-    | ((event: MediaQueryListEvent) => void)
-    | undefined
+  let changeListener: ((event: MediaQueryListEvent) => void) | undefined
 
   Object.defineProperty(window, 'matchMedia', {
     writable: true,
@@ -106,10 +87,7 @@ function installMatchMediaStub() {
       media: query,
       onchange: null,
       addEventListener: vi.fn(
-        (
-          eventType: string,
-          listener: (event: MediaQueryListEvent) => void,
-        ) => {
+        (eventType: string, listener: (event: MediaQueryListEvent) => void) => {
           if (eventType === 'change') {
             changeListener = listener
           }
@@ -142,11 +120,7 @@ function mockCurrentUser(currentUser: CurrentUserResponse) {
 function LocationProbe() {
   const location = useLocation()
 
-  return (
-    <output aria-label="Current path">
-      {location.pathname}
-    </output>
-  )
+  return <output aria-label="Current path">{location.pathname}</output>
 }
 
 function renderNavbar(initialPath = '/') {
@@ -154,7 +128,7 @@ function renderNavbar(initialPath = '/') {
     <MemoryRouter initialEntries={[initialPath]}>
       <Navbar />
       <LocationProbe />
-    </MemoryRouter>
+    </MemoryRouter>,
   )
 }
 
@@ -220,23 +194,15 @@ describe('Navbar', () => {
 
     expect(mobile.getByRole('link', { name: 'Home' })).toBeInTheDocument()
 
-    expect(
-      mobile.getByRole('link', { name: 'How It Works' }),
-    ).toBeInTheDocument()
+    expect(mobile.getByRole('link', { name: 'How It Works' })).toBeInTheDocument()
 
     expect(mobile.getByRole('link', { name: 'Login' })).toBeInTheDocument()
 
-    expect(
-      mobile.getByRole('link', { name: 'Register' }),
-    ).toBeInTheDocument()
+    expect(mobile.getByRole('link', { name: 'Register' })).toBeInTheDocument()
 
-    expect(
-      mobile.queryByRole('button', { name: 'Logout' }),
-    ).not.toBeInTheDocument()
+    expect(mobile.queryByRole('button', { name: 'Logout' })).not.toBeInTheDocument()
 
-    expect(
-      mobile.queryByRole('link', { name: 'Dashboard' },)
-    ).not.toBeInTheDocument()
+    expect(mobile.queryByRole('link', { name: 'Dashboard' })).not.toBeInTheDocument()
 
     expect(
       screen.getByRole('button', {
@@ -363,9 +329,7 @@ describe('Navbar', () => {
 
     await actor.click(howItWorksLink)
 
-    expect(
-      screen.getByLabelText('Current path'),
-    ).toHaveTextContent('/how-it-works')
+    expect(screen.getByLabelText('Current path')).toHaveTextContent('/how-it-works')
 
     expect(screen.queryByRole('navigation', { name: 'Mobile navigation' })).not.toBeInTheDocument()
 
@@ -397,9 +361,7 @@ describe('Navbar', () => {
 
     await actor.keyboard('{Escape}')
 
-    expect(
-      screen.queryByRole('navigation', { name: 'Mobile navigation' }),
-    ).not.toBeInTheDocument()
+    expect(screen.queryByRole('navigation', { name: 'Mobile navigation' })).not.toBeInTheDocument()
 
     expect(menuButton).toHaveFocus()
     expect(menuButton).toHaveAttribute('aria-expanded', 'false')
@@ -422,9 +384,7 @@ describe('Navbar', () => {
     await actor.click(accountButton)
 
     expect(accountButton).toHaveAttribute('aria-expanded', 'true')
-    expect(accountButton).toHaveAccessibleName(
-      'Close account options for Derek Student',
-    )
+    expect(accountButton).toHaveAccessibleName('Close account options for Derek Student')
 
     const logoutButton = screen.getByRole('button', {
       name: 'Logout',
@@ -444,9 +404,7 @@ describe('Navbar', () => {
     ).not.toBeInTheDocument()
 
     expect(accountButton).toHaveAttribute('aria-expanded', 'false')
-    expect(accountButton).toHaveAccessibleName(
-      'Open account options for Derek Student',
-    )
+    expect(accountButton).toHaveAccessibleName('Open account options for Derek Student')
     expect(accountButton).toHaveFocus()
   })
 
@@ -455,9 +413,7 @@ describe('Navbar', () => {
 
     mockCurrentUser(studentUser)
 
-    vi.mocked(UserService.getUserProfile).mockRejectedValue(
-      new Error('Profile unavailable'),
-    )
+    vi.mocked(UserService.getUserProfile).mockRejectedValue(new Error('Profile unavailable'))
 
     renderNavbar()
 
@@ -565,9 +521,7 @@ describe('Navbar', () => {
 
     vi.mocked(UserService.getUserProfile).mockResolvedValue(studentProfile)
 
-    vi.mocked(authService.logout).mockRejectedValue(
-      new Error('Network unavailable'),
-    )
+    vi.mocked(authService.logout).mockRejectedValue(new Error('Network unavailable'))
 
     renderNavbar()
 

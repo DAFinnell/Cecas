@@ -19,12 +19,7 @@ export type StudentPointsSummary = {
 }
 
 export type ExtraCreditRequestStatus =
-  | 'PENDING'
-  | 'PRE_APPROVED'
-  | 'REJECTED'
-  | 'EVIDENCE_SUBMITTED'
-  | 'CLOSED'
-  | 'APPROVED'
+  'PENDING' | 'PRE_APPROVED' | 'REJECTED' | 'EVIDENCE_SUBMITTED' | 'CLOSED' | 'APPROVED'
 
 export type StudentRequestSummary = {
   id: number
@@ -45,7 +40,6 @@ export type StudentRequestDetail = StudentRequestSummary & {
   description: string
   createdAt: string | null
   chairFeedback: string | null
-
 }
 
 export type CreateExtraCreditRequestPayload = {

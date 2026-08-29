@@ -1,6 +1,6 @@
 import type { StudentPointsSummary } from '../types/extraCredit.types'
-import type { UserProfileResponse } from "../types/user.types";
-import csrfService from './CsrfService';
+import type { UserProfileResponse } from '../types/user.types'
+import csrfService from './CsrfService'
 
 class UserService {
   private readonly USER_BASE = '/api/users'
@@ -12,10 +12,13 @@ class UserService {
   }
 
   async getMyPoints(term: string): Promise<StudentPointsSummary> {
-    const res = await csrfService.fetch(`${this.USER_BASE}/me/points?term=${encodeURIComponent(term)}`, { credentials: 'same-origin' })
+    const res = await csrfService.fetch(
+      `${this.USER_BASE}/me/points?term=${encodeURIComponent(term)}`,
+      { credentials: 'same-origin' },
+    )
     if (!res.ok) throw new Error(`Failed to load points (${res.status})`)
     return res.json()
   }
 }
 
-export default new UserService();
+export default new UserService()
