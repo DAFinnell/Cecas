@@ -87,21 +87,46 @@ const longNameProfile: UserProfileResponse = {
   role: 'STUDENT',
 }
 
+type MatchMediaController = {
+  dispatchChange: (matches: boolean) => void
+}
+
 function installMatchMediaStub() {
+  let changeListener:
+    | ((event: MediaQueryListEvent) => void)
+    | undefined
+
   Object.defineProperty(window, 'matchMedia', {
-    configurable: true,
     writable: true,
     value: vi.fn().mockImplementation((query: string) => ({
       matches: false,
       media: query,
       onchange: null,
+      addEventListener: vi.fn(
+        (
+          eventType: string,
+          listener: (event: MediaQueryListEvent) => void,
+        ) => {
+          if (eventType === 'change') {
+            changeListener = listener
+          }
+        },
+      ),
+      removeEventListener: vi.fn(),
       addListener: vi.fn(),
       removeListener: vi.fn(),
-      addEventListener: vi.fn(),
-      removeEventListener: vi.fn(),
       dispatchEvent: vi.fn(),
     })),
   })
+
+  return {
+    dispatchChange(matches: boolean) {
+      changeListener?.({
+        matches,
+        media: '(min-width: 64rem)',
+      } as MediaQueryListEvent)
+    },
+  }
 }
 
 function mockCurrentUser(currentUser: CurrentUserResponse) {
@@ -119,9 +144,27 @@ function renderNavbar(initialPath = '/') {
   )
 }
 
+function createDeferred<T>() {
+  let resolve!: (value: T | PromiseLike<T>) => void
+  let reject!: (reason?: unknown) => void
+
+  const promise = new Promise<T>((resolvePromise, rejectPromise) => {
+    resolve = resolvePromise
+    reject = rejectPromise
+  })
+
+  return {
+    promise,
+    resolve,
+    reject,
+  }
+}
+
+let matchMediaController: MatchMediaController
+
 beforeEach(() => {
   vi.clearAllMocks()
-  installMatchMediaStub()
+  matchMediaController = installMatchMediaStub()
 
   mockCurrentUser(anonymousUser)
 
@@ -431,5 +474,141 @@ describe('Navbar', () => {
     expect(accountButton).toHaveAccessibleName(
       `Open account options for ${longNameProfile.fullName}`,
     )
+  })
+
+  it('disables logout while pending and closes the menu after success', async () => {
+    const actor = userEvent.setup()
+
+    mockCurrentUser(studentUser)
+
+    vi.mocked(UserService.getUserProfile).mockResolvedValue(studentProfile)
+
+    const logoutRequest = createDeferred<void>()
+
+    vi.mocked(authService.logout).mockReturnValue(logoutRequest.promise)
+
+    renderNavbar()
+
+    await screen.findByRole('button', {
+      name: /open account options for Derek Student/i,
+    })
+
+    const menuButton = screen.getByRole('button', {
+      name: 'Open navigation',
+    })
+    await actor.click(menuButton)
+
+    const mobileNavigation = screen.getByRole('navigation', {
+      name: 'Mobile navigation',
+    })
+
+    const logoutButton = within(mobileNavigation).getByRole('button', {
+      name: 'Logout',
+    })
+
+    await actor.click(logoutButton)
+
+    expect(authService.logout).toHaveBeenCalledTimes(1)
+
+    const pendingLogoutButton = within(mobileNavigation).getByRole('button', {
+      name: 'Logging out...',
+    })
+
+    expect(pendingLogoutButton).toBe(logoutButton)
+    expect(pendingLogoutButton).toBeDisabled()
+
+    expect(mobileNavigation).toBeInTheDocument()
+    expect(menuButton).toHaveAttribute('aria-expanded', 'true')
+
+    await act(async () => {
+      logoutRequest.resolve()
+      await logoutRequest.promise
+    })
+
+    await waitFor(() => {
+      expect(
+        screen.queryByRole('navigation', { name: 'Mobile navigation' }),
+      ).not.toBeInTheDocument()
+    })
+  })
+
+  it('failed logout does not log the user out', async () => {
+    const actor = userEvent.setup()
+
+    mockCurrentUser(studentUser)
+
+    vi.mocked(UserService.getUserProfile).mockResolvedValue(studentProfile)
+
+    vi.mocked(authService.logout).mockRejectedValue(
+      new Error('Network unavailable'),
+    )
+
+    renderNavbar()
+
+    await screen.findByRole('button', {
+      name: /open account options for Derek Student/i,
+    })
+
+    const menuButton = screen.getByRole('button', {
+      name: 'Open navigation',
+    })
+    await actor.click(menuButton)
+
+    const mobileNavigation = screen.getByRole('navigation', {
+      name: 'Mobile navigation',
+    })
+
+    const logoutButton = within(mobileNavigation).getByRole('button', {
+      name: 'Logout',
+    })
+
+    await actor.click(logoutButton)
+
+    const alert = await within(mobileNavigation).findByRole('alert')
+
+    expect(authService.logout).toHaveBeenCalledTimes(1)
+    expect(alert).toHaveTextContent(/unable to log out/i)
+    expect(mobileNavigation).toBeInTheDocument()
+    expect(menuButton).toHaveAttribute('aria-expanded', 'true')
+    expect(logoutButton).toBeInTheDocument()
+    expect(logoutButton).toBeEnabled()
+    expect(logoutButton).toHaveAccessibleName('Logout')
+    expect(
+      within(mobileNavigation).queryByRole('button', {
+        name: 'Logging out...',
+      }),
+    ).not.toBeInTheDocument()
+  })
+
+  it('closes the mobile menu when the viewport enters the desktop breakpoint', async () => {
+    const actor = userEvent.setup()
+
+    renderNavbar()
+
+    const menuButton = screen.getByRole('button', {
+      name: 'Open navigation',
+    })
+    await actor.click(menuButton)
+
+    expect(menuButton).toHaveAttribute('aria-expanded', 'true')
+
+    expect(
+      screen.getByRole('navigation', {
+        name: 'Mobile navigation',
+      }),
+    ).toBeInTheDocument()
+    
+    act(() => {
+      matchMediaController.dispatchChange(true)
+    })
+
+    expect(
+      screen.queryByRole('navigation', {
+        name: 'Mobile navigation',
+      }),
+    ).not.toBeInTheDocument()
+
+    expect(menuButton).toHaveAttribute('aria-expanded', 'false')
+    expect(menuButton).toHaveAccessibleName('Open navigation')
   })
 })
