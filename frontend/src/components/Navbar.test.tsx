@@ -9,7 +9,10 @@ import {
   within,
 } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { MemoryRouter } from 'react-router-dom'
+import {
+  MemoryRouter,
+  useLocation,
+} from 'react-router-dom'
 import {
   afterEach,
   beforeEach,
@@ -136,10 +139,21 @@ function mockCurrentUser(currentUser: CurrentUserResponse) {
   })
 }
 
+function LocationProbe() {
+  const location = useLocation()
+
+  return (
+    <output aria-label="Current path">
+      {location.pathname}
+    </output>
+  )
+}
+
 function renderNavbar(initialPath = '/') {
   return render(
     <MemoryRouter initialEntries={[initialPath]}>
       <Navbar />
+      <LocationProbe />
     </MemoryRouter>
   )
 }
@@ -212,8 +226,16 @@ describe('Navbar', () => {
 
     expect(mobile.getByRole('link', { name: 'Login' })).toBeInTheDocument()
 
+    expect (
+      mobile.getByRole('link', { name: 'Register' }),
+    ).toBeInTheDocument()
+
     expect(
       mobile.queryByRole('button', { name: 'Logout' }),
+    ).not.toBeInTheDocument()
+
+    expect(
+      mobile.queryByRole('link', { name: 'Dashboard' },)
     ).not.toBeInTheDocument()
 
     expect(
@@ -341,6 +363,10 @@ describe('Navbar', () => {
 
     await actor.click(howItWorksLink)
 
+    expect(
+      screen.getByLabelText('Current path'),
+    ).toHaveTextContent('/how-it-works')
+    
     expect(screen.queryByRole('navigation', { name: 'Mobile navigation' })).not.toBeInTheDocument()
 
     expect(menuButton).toHaveAttribute('aria-expanded', 'false')
