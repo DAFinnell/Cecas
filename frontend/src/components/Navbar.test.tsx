@@ -226,7 +226,7 @@ describe('Navbar', () => {
 
     expect(mobile.getByRole('link', { name: 'Login' })).toBeInTheDocument()
 
-    expect (
+    expect(
       mobile.getByRole('link', { name: 'Register' }),
     ).toBeInTheDocument()
 
@@ -366,7 +366,7 @@ describe('Navbar', () => {
     expect(
       screen.getByLabelText('Current path'),
     ).toHaveTextContent('/how-it-works')
-    
+
     expect(screen.queryByRole('navigation', { name: 'Mobile navigation' })).not.toBeInTheDocument()
 
     expect(menuButton).toHaveAttribute('aria-expanded', 'false')
@@ -623,7 +623,7 @@ describe('Navbar', () => {
         name: 'Mobile navigation',
       }),
     ).toBeInTheDocument()
-    
+
     act(() => {
       matchMediaController.dispatchChange(true)
     })
