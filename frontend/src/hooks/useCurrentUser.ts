@@ -30,9 +30,14 @@ export function useCurrentUser() {
     load()
 
     const onAuthChanged = () => {
-      void authService.fetchCurrentUser()
-        .then((resp) => { if (active) setUser(resp) })
-        .catch(() => { if (active) setUser(anonymousUser) })
+      void authService
+        .fetchCurrentUser()
+        .then((resp) => {
+          if (active) setUser(resp)
+        })
+        .catch(() => {
+          if (active) setUser(anonymousUser)
+        })
     }
 
     window.addEventListener('auth-changed', onAuthChanged)

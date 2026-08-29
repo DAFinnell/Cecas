@@ -1,31 +1,29 @@
 class CsrfService {
   getCookie(name: string): string | null {
-    const match = document.cookie
-      .split('; ')
-      .find((row) => row.startsWith(`${name}=`));
+    const match = document.cookie.split('; ').find((row) => row.startsWith(`${name}=`))
 
-    return match ? decodeURIComponent(match.split('=')[1]) : null;
+    return match ? decodeURIComponent(match.split('=')[1]) : null
   }
 
   async init(): Promise<void> {
     const res = await fetch('/api/auth/csrf', {
       credentials: 'include',
-    });
+    })
 
     if (!res.ok) {
-      throw new Error(`Failed to initialize CSRF (${res.status})`);
+      throw new Error(`Failed to initialize CSRF (${res.status})`)
     }
   }
 
   async fetch(input: RequestInfo, init: RequestInit = {}): Promise<Response> {
-    const method = (init.method ?? 'GET').toUpperCase();
-    const headers = new Headers(init.headers ?? {});
+    const method = (init.method ?? 'GET').toUpperCase()
+    const headers = new Headers(init.headers ?? {})
 
     if (!['GET', 'HEAD', 'OPTIONS'].includes(method)) {
-      const csrfToken = this.getCookie('XSRF-TOKEN');
+      const csrfToken = this.getCookie('XSRF-TOKEN')
 
       if (csrfToken) {
-        headers.set('X-XSRF-TOKEN', csrfToken);
+        headers.set('X-XSRF-TOKEN', csrfToken)
       }
     }
 
@@ -35,16 +33,16 @@ class CsrfService {
       headers,
     })
 
-      try {
+    try {
       if (res.status === 401) {
-        window.dispatchEvent(new Event('session-expired'));
-      } 
+        window.dispatchEvent(new Event('session-expired'))
+      }
     } catch {}
 
-    return res;
+    return res
   }
 }
 
-const csrfService = new CsrfService();
+const csrfService = new CsrfService()
 
-export default csrfService;
+export default csrfService

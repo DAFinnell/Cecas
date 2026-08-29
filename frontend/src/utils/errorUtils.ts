@@ -2,54 +2,54 @@
  * Represents the structured RFC 7807 ProblemDetail payload returned by our Java backend.
  */
 export interface ApiProblemDetail {
-    title: string;
-    status: number;
-    detail: string;
-    errorCode?: string;
-    errors?: Record<string, string>;
+  title: string
+  status: number
+  detail: string
+  errorCode?: string
+  errors?: Record<string, string>
 }
 
 /**
  * The standardized error format that our frontend hooks and UI pages will see.
  */
 export interface NormalizedError {
-    message: string;
-    errorCode: string;
-    fieldErrors: Record<string, string>;
+  message: string
+  errorCode: string
+  fieldErrors: Record<string, string>
 }
 
 export async function parseApiError(error: unknown): Promise<NormalizedError> {
   const fallback: NormalizedError = {
     message: 'An unexpected error occurred. Please try again.',
     errorCode: 'UNKNOWN_ERROR',
-    fieldErrors: {}
-  };
+    fieldErrors: {},
+  }
 
   if (error instanceof Response) {
-    const contentType = error.headers.get('content-type') ?? '';
-    const statusAndCode = `HTTP_${error.status}`;
+    const contentType = error.headers.get('content-type') ?? ''
+    const statusAndCode = `HTTP_${error.status}`
 
     if (contentType.includes('application/json')) {
       try {
-        const responseData: ApiProblemDetail = await error.json();
+        const responseData: ApiProblemDetail = await error.json()
         return {
           message: responseData.detail || responseData.title || fallback.message,
           errorCode: responseData.errorCode || statusAndCode,
-          fieldErrors: responseData.errors || {}
-        };
+          fieldErrors: responseData.errors || {},
+        }
       } catch {
         // Fall through if text reading fails
       }
     }
 
     try {
-      const textMessage = await error.text();
+      const textMessage = await error.text()
       if (textMessage && textMessage.trim().length > 0) {
         return {
           message: textMessage,
           errorCode: statusAndCode,
-          fieldErrors: {}
-        };
+          fieldErrors: {},
+        }
       }
     } catch {
       // Fall through if text reading fails
@@ -58,13 +58,13 @@ export async function parseApiError(error: unknown): Promise<NormalizedError> {
     return {
       ...fallback,
       message: `Network request failed with status ${error.status}.`,
-      errorCode: statusAndCode
-    };
+      errorCode: statusAndCode,
+    }
   }
 
   if (error instanceof Error) {
-    return { ...fallback, message: error.message };
+    return { ...fallback, message: error.message }
   }
 
-  return fallback;
+  return fallback
 }

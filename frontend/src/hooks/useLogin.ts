@@ -7,11 +7,9 @@ import { routes } from '../app/routes'
 
 export function useLogin() {
   const navigate = useNavigate()
-  const location = useLocation();
+  const location = useLocation()
 
-  const [email, setEmail] = useState(
-    () => location.state?.email ?? ''
-  );
+  const [email, setEmail] = useState(() => location.state?.email ?? '')
 
   const [password, setPassword] = useState('')
   const [loading, setLoading] = useState(false)
@@ -40,21 +38,21 @@ export function useLogin() {
     setLoading(true)
 
     try {
-
       const user = await authService.login({
         email: normalizedEmail,
-        password
-      });
+        password,
+      })
 
       setSuccess(true)
       await new Promise((resolve) => setTimeout(resolve, 500)) // allow success state to render before redirecting
 
       if (user.role === 'CHAIR') {
-        navigate(user.mustChangePassword ? routes.chair.forceChangePassword : routes.chair.dashboard)
+        navigate(
+          user.mustChangePassword ? routes.chair.forceChangePassword : routes.chair.dashboard,
+        )
       } else {
         navigate(routes.student.dashboard)
       }
-
     } catch (err) {
       const parsedError = await parseApiError(err)
       setError(parsedError.message)

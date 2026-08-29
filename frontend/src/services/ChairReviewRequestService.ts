@@ -4,7 +4,7 @@ import type {
   ChairRejectRequestDTO,
   ChairRequestActionDTO,
   ChairApproveRequestDTO,
-} from "../types/chair.types"
+} from '../types/chair.types'
 
 async function readErrorMessage(response: Response): Promise<string> {
   try {
@@ -36,11 +36,14 @@ async function postJson<T>(url: string, payload?: unknown): Promise<T> {
 
   const opts: RequestInit = {
     method: 'POST',
-    headers: { 'Accept': 'application/json' },
+    headers: { Accept: 'application/json' },
   }
 
   if (payload !== undefined) {
-    opts.headers = { ...(opts.headers as Record<string, string>), 'Content-Type': 'application/json' }
+    opts.headers = {
+      ...(opts.headers as Record<string, string>),
+      'Content-Type': 'application/json',
+    }
     opts.body = JSON.stringify(payload)
   }
 
@@ -52,7 +55,7 @@ async function postJson<T>(url: string, payload?: unknown): Promise<T> {
 }
 
 class ChairReviewRequestService {
-  private readonly BASE = "/api/chair/requests"
+  private readonly BASE = '/api/chair/requests'
 
   getRequestForReview(requestId: number): Promise<ChairReviewDTO> {
     return fetchJson<ChairReviewDTO>(`${this.BASE}/${requestId}/review`)

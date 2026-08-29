@@ -1,39 +1,39 @@
-import { useEffect, useState } from 'react';
-import { Link, useNavigate, useParams } from 'react-router-dom';
+import { useEffect, useState } from 'react'
+import { Link, useNavigate, useParams } from 'react-router-dom'
 
-import { routes } from '../app/routes';
-import extraCreditRequestService from '../services/ExtraCreditRequestService';
-import type { StudentRequestDetail } from '../types/extraCredit.types';
+import { routes } from '../app/routes'
+import extraCreditRequestService from '../services/ExtraCreditRequestService'
+import type { StudentRequestDetail } from '../types/extraCredit.types'
 
 export default function StudentApplicationDetailPage() {
-  const navigate = useNavigate();
-  const { requestId } = useParams();
+  const navigate = useNavigate()
+  const { requestId } = useParams()
 
-  const [request, setRequest] = useState<StudentRequestDetail | null>(null);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [request, setRequest] = useState<StudentRequestDetail | null>(null)
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
     if (!requestId) {
-      setError('missing request id');
-      return;
+      setError('missing request id')
+      return
     }
 
-    setLoading(true);
+    setLoading(true)
 
     extraCreditRequestService
       .getStudentRequestDetail(Number(requestId))
       .then(setRequest)
       .catch((err) => setError(err.message))
-      .finally(() => setLoading(false));
-  }, [requestId]);
+      .finally(() => setLoading(false))
+  }, [requestId])
 
   if (loading) {
     return (
       <main className="mx-auto max-w-6xl px-6 py-10">
         <p>Loading...</p>
       </main>
-    );
+    )
   }
 
   if (error) {
@@ -47,7 +47,7 @@ export default function StudentApplicationDetailPage() {
           {'< '}Back to Applications
         </button>
       </main>
-    );
+    )
   }
 
   if (!request) {
@@ -55,12 +55,11 @@ export default function StudentApplicationDetailPage() {
       <main className="mx-auto max-w-6xl px-6 py-10">
         <p>Request not found.</p>
       </main>
-    );
+    )
   }
 
   return (
     <main className="mx-auto max-w-6xl px-6 py-10">
-
       <button
         onClick={() => navigate(routes.student.dashboard)}
         className="mb-6 cursor-pointer text-sm font-medium text-blue-600 hover:underline"
@@ -83,11 +82,8 @@ export default function StudentApplicationDetailPage() {
       </div>
 
       <section className="mt-8 rounded-3xl bg-white p-10 shadow-sm">
-
         <div className="mb-8 flex items-center justify-between">
-          <h2 className="text-2xl font-semibold">
-            Request Details
-          </h2>
+          <h2 className="text-2xl font-semibold">Request Details</h2>
 
           <span className="rounded-full bg-yellow-100 px-4 py-2 text-sm font-semibold text-yellow-800">
             {request.status}
@@ -95,85 +91,55 @@ export default function StudentApplicationDetailPage() {
         </div>
 
         <div className="grid gap-y-8 gap-x-12 sm:grid-cols-2">
-
           <div>
             <p className="text-sm text-slate-500">Course</p>
-            <p className="text-xl font-medium">
-              {request.courseCode}
-            </p>
+            <p className="text-xl font-medium">{request.courseCode}</p>
           </div>
 
           <div>
             <p className="text-sm text-slate-500">Term</p>
-            <p className="text-xl font-medium">
-              {request.term}
-            </p>
+            <p className="text-xl font-medium">{request.term}</p>
           </div>
 
           <div>
             <p className="text-sm text-slate-500">Section</p>
-            <p className="text-xl font-medium">
-              {request.section}
-            </p>
+            <p className="text-xl font-medium">{request.section}</p>
           </div>
 
           <div>
             <p className="text-sm text-slate-500">Points</p>
-            <p className="text-xl font-medium">
-              {request.awardedPoints ?? request.defaultPoints}
-            </p>
+            <p className="text-xl font-medium">{request.awardedPoints ?? request.defaultPoints}</p>
           </div>
 
           <div className="sm:col-span-2">
-            <p className="text-sm text-slate-500">
-              Category
-            </p>
-            <p className="text-xl font-medium">
-              {request.categoryName}
-            </p>
+            <p className="text-sm text-slate-500">Category</p>
+            <p className="text-xl font-medium">{request.categoryName}</p>
           </div>
 
           <div className="sm:col-span-2">
-            <p className="text-sm text-slate-500">
-              Category Description
-            </p>
-            <p className="leading-7">
-              {request.categoryDescription}
-            </p>
+            <p className="text-sm text-slate-500">Category Description</p>
+            <p className="leading-7">{request.categoryDescription}</p>
           </div>
 
           <div className="sm:col-span-2">
-            <p className="text-sm text-slate-500">
-              Student Description
-            </p>
-            <p className="leading-7">
-              {request.description}
-            </p>
+            <p className="text-sm text-slate-500">Student Description</p>
+            <p className="leading-7">{request.description}</p>
           </div>
 
           <div>
-            <p className="text-sm text-slate-500">
-              Submitted
-            </p>
+            <p className="text-sm text-slate-500">Submitted</p>
             <p>{request.createdAt}</p>
           </div>
 
           <div>
-            <p className="text-sm text-slate-500">
-              Last Updated
-            </p>
+            <p className="text-sm text-slate-500">Last Updated</p>
             <p>{request.updatedAt}</p>
           </div>
 
           <div className="sm:col-span-2">
-            <p className="text-sm text-slate-500">
-              Chair Feedback
-            </p>
+            <p className="text-sm text-slate-500">Chair Feedback</p>
 
-            <p className="leading-7">
-              {request.chairFeedback ??
-                'No feedback has been provided.'}
-            </p>
+            <p className="leading-7">{request.chairFeedback ?? 'No feedback has been provided.'}</p>
           </div>
 
           {request.evidenceUploadAvailable && (
@@ -187,9 +153,7 @@ export default function StudentApplicationDetailPage() {
             </div>
           )}
         </div>
-
       </section>
-
     </main>
-  );
+  )
 }

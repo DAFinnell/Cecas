@@ -1,4 +1,4 @@
-import type { ReactElement } from "react"
+import type { ReactElement } from 'react'
 
 type Step = {
   number: string
@@ -10,53 +10,133 @@ type Step = {
 
 function SubmitActivityIcon() {
   return (
-    <svg viewBox="0 0 48 48" className="h-9 w-9" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-      <path d="M15 7h15l7 7v25a4 4 0 0 1-4 4H15a4 4 0 0 1-4-4V11a4 4 0 0 1 4-4Z" stroke="currentColor" strokeWidth="2.5" strokeLinejoin="round" />
+    <svg
+      viewBox="0 0 48 48"
+      className="h-9 w-9"
+      fill="none"
+      xmlns="http://www.w3.org/2000/svg"
+      aria-hidden="true"
+    >
+      <path
+        d="M15 7h15l7 7v25a4 4 0 0 1-4 4H15a4 4 0 0 1-4-4V11a4 4 0 0 1 4-4Z"
+        stroke="currentColor"
+        strokeWidth="2.5"
+        strokeLinejoin="round"
+      />
       <path d="M30 7v8h7" stroke="currentColor" strokeWidth="2.5" strokeLinejoin="round" />
       <path d="M18 22h10M18 29h8" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" />
       <circle cx="34.5" cy="34.5" r="6.5" fill="white" stroke="currentColor" strokeWidth="2.5" />
-      <path d="M34.5 31v7M31 34.5h7" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" />
+      <path
+        d="M34.5 31v7M31 34.5h7"
+        stroke="currentColor"
+        strokeWidth="2.5"
+        strokeLinecap="round"
+      />
     </svg>
   )
 }
 
 function PreApprovedIcon() {
   return (
-    <svg viewBox="0 0 48 48" className="h-9 w-9" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+    <svg
+      viewBox="0 0 48 48"
+      className="h-9 w-9"
+      fill="none"
+      xmlns="http://www.w3.org/2000/svg"
+      aria-hidden="true"
+    >
       <circle cx="22" cy="15" r="6" stroke="currentColor" strokeWidth="2.5" />
-      <path d="M10 37c0-7 5.4-12 12-12 3.2 0 6 1.1 8 3" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" />
+      <path
+        d="M10 37c0-7 5.4-12 12-12 3.2 0 6 1.1 8 3"
+        stroke="currentColor"
+        strokeWidth="2.5"
+        strokeLinecap="round"
+      />
       <circle cx="34" cy="33" r="7" fill="white" stroke="currentColor" strokeWidth="2.5" />
-      <path d="m30.5 33 2.5 2.5 5-5" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
+      <path
+        d="m30.5 33 2.5 2.5 5-5"
+        stroke="currentColor"
+        strokeWidth="2.5"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
     </svg>
   )
 }
 
 function UploadEvidenceIcon() {
   return (
-    <svg viewBox="0 0 48 48" className="h-9 w-9" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-      <path d="M16 36h20a8 8 0 0 0 1.5-15.9A13 13 0 0 0 12.6 23 6.7 6.7 0 0 0 16 36Z" stroke="currentColor" strokeWidth="2.5" strokeLinejoin="round" />
+    <svg
+      viewBox="0 0 48 48"
+      className="h-9 w-9"
+      fill="none"
+      xmlns="http://www.w3.org/2000/svg"
+      aria-hidden="true"
+    >
+      <path
+        d="M16 36h20a8 8 0 0 0 1.5-15.9A13 13 0 0 0 12.6 23 6.7 6.7 0 0 0 16 36Z"
+        stroke="currentColor"
+        strokeWidth="2.5"
+        strokeLinejoin="round"
+      />
       <path d="M24 34V21" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" />
-      <path d="m18.5 26.5 5.5-5.5 5.5 5.5" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
+      <path
+        d="m18.5 26.5 5.5-5.5 5.5 5.5"
+        stroke="currentColor"
+        strokeWidth="2.5"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
     </svg>
   )
 }
 
 function ReceivePointsIcon() {
   return (
-    <svg viewBox="0 0 48 48" className="h-9 w-9" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-      <path d="M16 8h16v6c0 6-3.6 11-8 11s-8-5-8-11V8Z" stroke="currentColor" strokeWidth="2.5" strokeLinejoin="round" />
-      <path d="M16 12h-5c0 6 2.7 10 7 10M32 12h5c0 6-2.7 10-7 10" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" />
-      <path d="M24 25v9M18 40h12M20 34h8" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" />
+    <svg
+      viewBox="0 0 48 48"
+      className="h-9 w-9"
+      fill="none"
+      xmlns="http://www.w3.org/2000/svg"
+      aria-hidden="true"
+    >
+      <path
+        d="M16 8h16v6c0 6-3.6 11-8 11s-8-5-8-11V8Z"
+        stroke="currentColor"
+        strokeWidth="2.5"
+        strokeLinejoin="round"
+      />
+      <path
+        d="M16 12h-5c0 6 2.7 10 7 10M32 12h5c0 6-2.7 10-7 10"
+        stroke="currentColor"
+        strokeWidth="2.5"
+        strokeLinecap="round"
+      />
+      <path
+        d="M24 25v9M18 40h12M20 34h8"
+        stroke="currentColor"
+        strokeWidth="2.5"
+        strokeLinecap="round"
+      />
     </svg>
   )
 }
 
 function ArrowDivider() {
   return (
-    <div className="hidden h-20 items-center justify-center px-2 text-slate-400 md:flex" aria-hidden="true">
+    <div
+      className="hidden h-20 items-center justify-center px-2 text-slate-400 md:flex"
+      aria-hidden="true"
+    >
       <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" xmlns="http://www.w3.org/2000/svg">
         <path d="M5 12h13" stroke="currentColor" strokeWidth="2.25" strokeLinecap="round" />
-        <path d="m13 7 5 5-5 5" stroke="currentColor" strokeWidth="2.25" strokeLinecap="round" strokeLinejoin="round" />
+        <path
+          d="m13 7 5 5-5 5"
+          stroke="currentColor"
+          strokeWidth="2.25"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        />
       </svg>
     </div>
   )
@@ -106,7 +186,9 @@ export default function HowItWorksPage() {
             {steps.map((step, index) => (
               <div key={step.title} className="contents">
                 <article className="mx-auto flex max-w-[190px] flex-col items-center text-center">
-                  <div className={`flex h-20 w-20 items-center justify-center rounded-full ${step.colorClasses}`}>
+                  <div
+                    className={`flex h-20 w-20 items-center justify-center rounded-full ${step.colorClasses}`}
+                  >
                     {step.icon}
                   </div>
 
@@ -114,9 +196,7 @@ export default function HowItWorksPage() {
                     {step.number} {step.title}
                   </h2>
 
-                  <p className="mt-2 text-sm leading-6 text-slate-700">
-                    {step.description}
-                  </p>
+                  <p className="mt-2 text-sm leading-6 text-slate-700">{step.description}</p>
                 </article>
 
                 {index < steps.length - 1 && <ArrowDivider />}

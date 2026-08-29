@@ -1,48 +1,54 @@
-import { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
-import type { UserProfileResponse, } from "../types/user.types";
+import { useEffect, useState } from 'react'
+import { Link } from 'react-router-dom'
+import type { UserProfileResponse } from '../types/user.types'
 import userService from '../services/UserService'
 import extraCreditRequestService from '../services/ExtraCreditRequestService'
 import type { StudentPointsSummary, StudentRequestSummary } from '../types/extraCredit.types'
-import { routes } from "../app/routes";
-import { formatCourse, formatDate, formatPoints, formatStatus, getStatusBadgeClass } from "../util/format.util";
+import { routes } from '../app/routes'
+import {
+  formatCourse,
+  formatDate,
+  formatPoints,
+  formatStatus,
+  getStatusBadgeClass,
+} from '../util/format.util'
 
 export default function StudentPage() {
-  const [profile, setProfile] = useState<UserProfileResponse | null>(null);
-  const [points, setPoints] = useState<StudentPointsSummary | null>(null);
-  const [requests, setRequests] = useState<StudentRequestSummary[]>([]);
-  const [selectedTerm, setSelectedTerm] = useState<string>('');
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const [profile, setProfile] = useState<UserProfileResponse | null>(null)
+  const [points, setPoints] = useState<StudentPointsSummary | null>(null)
+  const [requests, setRequests] = useState<StudentRequestSummary[]>([])
+  const [selectedTerm, setSelectedTerm] = useState<string>('')
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
-    let active = true;
-    setLoading(true);
+    let active = true
+    setLoading(true)
 
-    (async () => {
+    ;(async () => {
       try {
         // these are async
         const [profile, requests] = await Promise.all([
           userService.getUserProfile().catch(() => null),
           extraCreditRequestService.getStudentRequests().catch(() => []),
-        ]);
+        ])
 
-        if (!active) return;
+        if (!active) return
 
-        if (profile) setProfile(profile);
-        if (requests) setRequests(requests);
+        if (profile) setProfile(profile)
+        if (requests) setRequests(requests)
       } catch (e: any) {
-        if (!active) return;
-        setError(e?.message ?? String(e));
+        if (!active) return
+        setError(e?.message ?? String(e))
       } finally {
-        if (active) setLoading(false);
+        if (active) setLoading(false)
       }
-    })();
+    })()
 
     return () => {
-      active = false;
-    };
-  }, []);
+      active = false
+    }
+  }, [])
 
   useEffect(() => {
     let active = true
@@ -73,18 +79,16 @@ export default function StudentPage() {
     }
   }, [selectedTerm])
 
-  const fullName = profile?.fullName ?? profile?.email ?? "Student";
-  const maxPoints = 50;
-  const earned = points?.issued ?? 0;
-  const pending = points?.pending ?? 0;
-  const available = points?.available ?? Math.max(0, maxPoints - earned - pending);
+  const fullName = profile?.fullName ?? profile?.email ?? 'Student'
+  const maxPoints = 50
+  const earned = points?.issued ?? 0
+  const pending = points?.pending ?? 0
+  const available = points?.available ?? Math.max(0, maxPoints - earned - pending)
   const filteredRequests = selectedTerm
-    ? requests.filter((req) => (req.term === selectedTerm))
-    : requests;
+    ? requests.filter((req) => req.term === selectedTerm)
+    : requests
 
-  const terms = Array.from(
-    new Set(requests.map((req) => req.term).filter(Boolean))
-  ).sort()
+  const terms = Array.from(new Set(requests.map((req) => req.term).filter(Boolean))).sort()
 
   return (
     <main className="mx-auto max-w-6xl">
@@ -169,9 +173,7 @@ export default function StudentPage() {
               <thead className="bg-slate-50 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">
                 <tr>
                   <th className="whitespace-nowrap px-5 py-3 text-center">Course</th>
-                  <th className="whitespace-nowrap px-5 py-3 text-center">
-                    Activity / Category
-                  </th>
+                  <th className="whitespace-nowrap px-5 py-3 text-center">Activity / Category</th>
                   <th className="whitespace-nowrap px-5 py-3 text-center">Status</th>
                   <th className="whitespace-nowrap px-5 py-3 text-center">Points</th>
                   <th className="whitespace-nowrap px-5 py-3 text-center">Last Updated</th>
@@ -181,11 +183,11 @@ export default function StudentPage() {
               <tbody className="divide-y divide-slate-200 bg-white">
                 {filteredRequests.map((req) => (
                   <tr key={req.id}>
-                    <td className="whitespace-nowrap font-medium py-4 text-center">{formatCourse(req)}</td>
+                    <td className="whitespace-nowrap font-medium py-4 text-center">
+                      {formatCourse(req)}
+                    </td>
                     <td className="whitespace-nowrap py-4 text-center">
-                      <span className="line-clamp-2">
-                        {req.categoryName}
-                      </span>
+                      <span className="line-clamp-2">{req.categoryName}</span>
                     </td>
                     <td className="whitespace-nowrap py-4 text-center">
                       <span
@@ -201,9 +203,12 @@ export default function StudentPage() {
                       {formatDate(req.updatedAt)}
                     </td>
                     <td className="whitespace-nowrap px-2 py-4 text-center">
-                      <Link to={routes.student.requestDetail(req.id)}
-                      className="font-semibold text-sky-700 hover:text-sky-900 hover:underline">
-                        View</Link>
+                      <Link
+                        to={routes.student.requestDetail(req.id)}
+                        className="font-semibold text-sky-700 hover:text-sky-900 hover:underline"
+                      >
+                        View
+                      </Link>
                     </td>
                   </tr>
                 ))}
@@ -213,5 +218,5 @@ export default function StudentPage() {
         )}
       </section>
     </main>
-  );
+  )
 }

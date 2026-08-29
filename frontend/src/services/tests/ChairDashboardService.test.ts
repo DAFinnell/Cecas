@@ -31,10 +31,9 @@ describe('ChairDashboardService', () => {
 
     const result = await chairDashboardService.getRequestCountSummary()
 
-    expect(csrfService.fetch).toHaveBeenCalledWith(
-      '/api/chair/dashboard/summary',
-      { credentials: 'same-origin' },
-    )
+    expect(csrfService.fetch).toHaveBeenCalledWith('/api/chair/dashboard/summary', {
+      credentials: 'same-origin',
+    })
     expect(result).toEqual(payload)
   })
 
@@ -48,10 +47,9 @@ describe('ChairDashboardService', () => {
 
     const result = await chairDashboardService.getChairReviewQueue()
 
-    expect(csrfService.fetch).toHaveBeenCalledWith(
-      '/api/chair/dashboard/queue?status=PENDING',
-      { credentials: 'same-origin' },
-    )
+    expect(csrfService.fetch).toHaveBeenCalledWith('/api/chair/dashboard/queue?status=PENDING', {
+      credentials: 'same-origin',
+    })
     expect(result).toEqual([])
   })
 
@@ -90,22 +88,18 @@ describe('ChairDashboardService', () => {
   })
 
   it('throws when the dashboard summary cannot be loaded', async () => {
-    vi.mocked(csrfService.fetch).mockResolvedValue(
-      new Response(null, { status: 500 }),
-    )
+    vi.mocked(csrfService.fetch).mockResolvedValue(new Response(null, { status: 500 }))
 
-    await expect(
-      chairDashboardService.getRequestCountSummary(),
-    ).rejects.toThrow('Failed to load summary (500)')
+    await expect(chairDashboardService.getRequestCountSummary()).rejects.toThrow(
+      'Failed to load summary (500)',
+    )
   })
 
   it('throws when the review queue cannot be loaded', async () => {
-    vi.mocked(csrfService.fetch).mockResolvedValue(
-      new Response(null, { status: 403 }),
-    )
+    vi.mocked(csrfService.fetch).mockResolvedValue(new Response(null, { status: 403 }))
 
-    await expect(
-      chairDashboardService.getChairReviewQueue('EVIDENCE_SUBMITTED'),
-    ).rejects.toThrow('Failed to load review queue (403)')
+    await expect(chairDashboardService.getChairReviewQueue('EVIDENCE_SUBMITTED')).rejects.toThrow(
+      'Failed to load review queue (403)',
+    )
   })
 })

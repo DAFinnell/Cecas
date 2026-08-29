@@ -30,9 +30,9 @@ class AuthService {
     await csrfService.init()
 
     const res = await csrfService.fetch(`${this.AUTH_BASE}/login`, {
-      method: 'POST', 
-      credentials: 'include', 
-      headers: { 'Content-Type': 'application/json' }, 
+      method: 'POST',
+      credentials: 'include',
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(payload),
     })
 
@@ -41,7 +41,7 @@ class AuthService {
     }
 
     const body = (await res.json()) as CurrentUserResponse
-    window.dispatchEvent(new Event('auth-changed'));
+    window.dispatchEvent(new Event('auth-changed'))
     return body
   }
 
@@ -97,7 +97,6 @@ class AuthService {
       throw res
     }
 
-  
     window.dispatchEvent(new Event('auth-changed'))
     return await res.text()
   }

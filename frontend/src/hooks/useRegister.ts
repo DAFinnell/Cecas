@@ -1,7 +1,7 @@
 import { useState, type SubmitEvent } from 'react' // Swapped out deprecated FormEven
 import authService from '../services/AuthService'
-import { useNavigate } from 'react-router-dom';
-import { parseApiError } from '../utils/errorUtils';
+import { useNavigate } from 'react-router-dom'
+import { parseApiError } from '../utils/errorUtils'
 
 export function useRegister() {
   const [fullName, setFullName] = useState('')
@@ -18,7 +18,6 @@ export function useRegister() {
 
   const navigate = useNavigate()
 
-
   async function handleSubmit(e: SubmitEvent<HTMLFormElement>) {
     e.preventDefault()
 
@@ -31,7 +30,7 @@ export function useRegister() {
       return
     }
 
-    setLoading(true);
+    setLoading(true)
 
     try {
       await authService.register({
@@ -45,10 +44,9 @@ export function useRegister() {
       navigate('/login', {
         state: { email },
       })
-
     } catch (err) {
       const parsedError = await parseApiError(err)
-      
+
       setError(parsedError.message)
       setFieldErrors(parsedError.fieldErrors)
     } finally {

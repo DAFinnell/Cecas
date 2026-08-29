@@ -23,13 +23,7 @@ export function formatTerm(term: string): string {
 }
 
 export function formatCourse(request: StudentRequestSummary | ChairDashboardQueueResponse): string {
-  return [
-    request.courseCode,
-    formatTerm(request.term),
-    request.section,
-  ]
-    .filter(Boolean)
-    .join(' · ')
+  return [request.courseCode, formatTerm(request.term), request.section].filter(Boolean).join(' · ')
 }
 
 export function formatDate(value: string | null): string {

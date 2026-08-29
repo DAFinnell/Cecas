@@ -1,32 +1,31 @@
 import React, { useState } from 'react'
 
 export default function ContactPage() {
-    const [name, setName] = useState('')
-    const [email, setEmail] = useState('')
-    const [message, setMessage] = useState('')
+  const [name, setName] = useState('')
+  const [email, setEmail] = useState('')
+  const [message, setMessage] = useState('')
 
-    const handleSubmit = (e: React.SubmitEvent<HTMLFormElement>) => {
-        e.preventDefault()
-        alert(`Thank you for reaching out, ${name}! This form is currently a mockup.`)
-    }
+  const handleSubmit = (e: React.SubmitEvent<HTMLFormElement>) => {
+    e.preventDefault()
+    alert(`Thank you for reaching out, ${name}! This form is currently a mockup.`)
+  }
 
-    return (
-        <div className="min-h-screen bg-slate-50 py-12 px-4 sm:px-6 lg:px-8">
+  return (
+    <div className="min-h-screen bg-slate-50 py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-5xl mx-auto">
-        
         {/* Page Title & Intro text */}
         <div className="text-center mb-12">
           <h1 className="text-4xl font-extrabold tracking-tight text-slate-900 sm:text-5xl">
             Contact Us
           </h1>
           <p className="mt-4 text-lg text-slate-600 max-w-2xl mx-auto">
-            Have questions about your extra credit tracking or need assistance with the system? Our support team is here to help.
+            Have questions about your extra credit tracking or need assistance with the system? Our
+            support team is here to help.
           </p>
         </div>
 
         {/* Two Column Layout Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8 bg-white p-8 rounded-2xl shadow-sm border border-slate-100">
-          
           {/* Left Column: Contact Information Placeholders */}
           <div className="space-y-6 pr-0 md:pr-6 border-b border-slate-100 md:border-b-0 md:border-r border-slate-100 pb-8 md:pb-0">
             <div>
@@ -51,7 +50,9 @@ export default function ContactPage() {
                 <div className="text-xl">🏢</div>
                 <div>
                   <h3 className="text-sm font-semibold text-slate-900">Department</h3>
-                  <p className="text-sm text-slate-600">Computer Science & Information Technology</p>
+                  <p className="text-sm text-slate-600">
+                    Computer Science & Information Technology
+                  </p>
                 </div>
               </div>
 
@@ -70,7 +71,6 @@ export default function ContactPage() {
           <div className="pl-0 md:pl-6">
             <h2 className="text-xl font-bold text-slate-900 mb-4">Send a Message</h2>
             <form onSubmit={handleSubmit} className="space-y-4">
-              
               {/* Name Field */}
               <div>
                 <label htmlFor="name" className="block text-sm font-semibold text-slate-700 mb-1">
@@ -105,7 +105,10 @@ export default function ContactPage() {
 
               {/* Message Field */}
               <div>
-                <label htmlFor="message" className="block text-sm font-semibold text-slate-700 mb-1">
+                <label
+                  htmlFor="message"
+                  className="block text-sm font-semibold text-slate-700 mb-1"
+                >
                   Message Field
                 </label>
                 <textarea
@@ -128,9 +131,8 @@ export default function ContactPage() {
               </button>
             </form>
           </div>
-
         </div>
       </div>
     </div>
-    )
+  )
 }

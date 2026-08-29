@@ -23,41 +23,28 @@ export default function ForceChangePasswordPage() {
 
   // redirect chairs who no longer require a forced password change
   useEffect(() => {
-    if (!currentUserLoading &&
-      user.role === 'CHAIR' &&
-      !user.mustChangePassword
-    ) {
+    if (!currentUserLoading && user.role === 'CHAIR' && !user.mustChangePassword) {
       navigate('/chair', { replace: true })
     }
   }, [currentUserLoading, user, navigate])
 
-
-
   return (
     <div className="mx-auto max-w-md">
       <div
-        className={`rounded-lg bg-white p-8 shadow-sm border-2 transition-colors ${success
-          ? 'border-green-500'
-          : error
-            ? 'border-red-500'
-            : 'border-slate-200'
-          }`}
+        className={`rounded-lg bg-white p-8 shadow-sm border-2 transition-colors ${
+          success ? 'border-green-500' : error ? 'border-red-500' : 'border-slate-200'
+        }`}
       >
-        <h1 className="mb-2 text-center text-3xl font-semibold">
-          Change Temporary Password
-        </h1>
+        <h1 className="mb-2 text-center text-3xl font-semibold">Change Temporary Password</h1>
 
         <p className="mb-6 text-center text-slate-600">
-          Your account is using a temporary password. You must create a new
-          password before continuing.
+          Your account is using a temporary password. You must create a new password before
+          continuing.
         </p>
 
         <form className="space-y-5" onSubmit={handleSubmit}>
           <div>
-            <label
-              htmlFor="currentPassword"
-              className="mb-2 block text-sm font-medium"
-            >
+            <label htmlFor="currentPassword" className="mb-2 block text-sm font-medium">
               Current Password
             </label>
 
@@ -73,10 +60,7 @@ export default function ForceChangePasswordPage() {
           </div>
 
           <div>
-            <label
-              htmlFor="newPassword"
-              className="mb-2 block text-sm font-medium"
-            >
+            <label htmlFor="newPassword" className="mb-2 block text-sm font-medium">
               New Password
             </label>
 
@@ -92,10 +76,7 @@ export default function ForceChangePasswordPage() {
           </div>
 
           <div>
-            <label
-              htmlFor="confirmPassword"
-              className="mb-2 block text-sm font-medium"
-            >
+            <label htmlFor="confirmPassword" className="mb-2 block text-sm font-medium">
               Confirm New Password
             </label>
 

@@ -17,19 +17,13 @@ export default function LoginPage() {
   return (
     <div className="mx-auto max-w-md">
       <div
-                className={`rounded-lg bg-white p-8 shadow-sm border-2 transition-colors ${
-                    success
-                        ? "border-green-500"
-                        : error
-                            ? "border-red-500"
-                            : "border-slate-200"
-                    }`}
-            >
+        className={`rounded-lg bg-white p-8 shadow-sm border-2 transition-colors ${
+          success ? 'border-green-500' : error ? 'border-red-500' : 'border-slate-200'
+        }`}
+      >
         <h1 className="mb-2 text-center text-3xl font-semibold">Login</h1>
 
-        <p className="mb-6 text-center text-slate-600">
-          Sign in to your CECAS account.
-        </p>
+        <p className="mb-6 text-center text-slate-600">Sign in to your CECAS account.</p>
 
         <form className="space-y-5" onSubmit={handleSubmit}>
           <div>
@@ -42,7 +36,9 @@ export default function LoginPage() {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               className={`w-full rounded-md border px-3 py-2 focus:outline-none ${
-                fieldErrors.email ? 'border-red-500 focus:border-red-500' : 'border-slate-300 focus:border-blue-500'
+                fieldErrors.email
+                  ? 'border-red-500 focus:border-red-500'
+                  : 'border-slate-300 focus:border-blue-500'
               }`}
               placeholder="Enter your email"
               required
@@ -62,7 +58,9 @@ export default function LoginPage() {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               className={`w-full rounded-md border px-3 py-2 focus:outline-none ${
-                fieldErrors.password ? 'border-red-500 focus:border-red-500' : 'border-slate-300 focus:border-blue-500'
+                fieldErrors.password
+                  ? 'border-red-500 focus:border-red-500'
+                  : 'border-slate-300 focus:border-blue-500'
               }`}
               placeholder="Enter your password"
               required

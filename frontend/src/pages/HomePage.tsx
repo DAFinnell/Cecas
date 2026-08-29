@@ -7,14 +7,14 @@ export default function HomePage() {
       <div className="overflow-hidden rounded-3xl bg-white shadow-sm ring-1 ring-slate-200">
         <div className="grid gap-8 p-8 lg:grid-cols-[1.1fr_0.9fr] lg:items-center lg:p-10">
           <div className="space-y-6">
-
             <div className="space-y-4">
               <h1 className="max-w-3xl text-4xl font-semibold tracking-tight text-slate-950 sm:text-5xl">
                 Extra credit requests, organized in one place.
               </h1>
 
               <p className="max-w-2xl text-lg leading-8 text-slate-600">
-                CECAS helps students register, log in, and submit extra credit requests while giving program chairs a more organized way to review and manage those requests.
+                CECAS helps students register, log in, and submit extra credit requests while giving
+                program chairs a more organized way to review and manage those requests.
               </p>
             </div>
 
@@ -41,7 +41,6 @@ export default function HomePage() {
               >
                 Program Chair Login &rarr;
               </Link>
-      
             </div>
           </div>
 

@@ -73,9 +73,7 @@ class ExtraCreditRequestService {
   }
 
   getPointSummary(term: string): Promise<StudentPointsSummary> {
-    return fetchJson<StudentPointsSummary>(
-      `/api/users/me/points?term=${encodeURIComponent(term)}`
-    )
+    return fetchJson<StudentPointsSummary>(`/api/users/me/points?term=${encodeURIComponent(term)}`)
   }
 
   getStudentRequests(): Promise<StudentRequestSummary[]> {
@@ -83,9 +81,7 @@ class ExtraCreditRequestService {
   }
 
   getStudentRequestDetail(requestId: number): Promise<StudentRequestDetail> {
-    return fetchJson<StudentRequestDetail>(
-      `/api/extra-credit-requests/${requestId}`
-    )
+    return fetchJson<StudentRequestDetail>(`/api/extra-credit-requests/${requestId}`)
   }
 
   createRequest(payload: CreateExtraCreditRequestPayload): Promise<StudentRequestDetail> {

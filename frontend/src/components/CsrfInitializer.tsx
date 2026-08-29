@@ -1,7 +1,6 @@
 import { useEffect } from 'react'
 import CsrfService from '../services/CsrfService'
 
-  
 export default function CsrfInitializer() {
   useEffect(() => {
     void CsrfService.init().catch((err) => {
@@ -11,4 +10,3 @@ export default function CsrfInitializer() {
 
   return null
 }
-

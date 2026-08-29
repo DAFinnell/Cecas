@@ -13,11 +13,7 @@ export default function AppLayout() {
       </a>
       <Navbar />
 
-      <main
-        id="main-content"
-        tabIndex={-1}
-        className="mx-auto max-w-5xl px-6 py-10"
-      >
+      <main id="main-content" tabIndex={-1} className="mx-auto max-w-5xl px-6 py-10">
         <Outlet />
       </main>
 
