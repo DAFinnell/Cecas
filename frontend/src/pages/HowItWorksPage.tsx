@@ -145,29 +145,32 @@ function ArrowDivider() {
 const steps: Step[] = [
   {
     number: '1.',
-    title: 'Submit Activity',
-    description: 'Choose an activity category and describe your activity.',
+    title: 'Submit a Request',
+    description:
+      'A student chooses a course and activity category, then submits details about the proposed extra credit activity.',
     icon: <SubmitActivityIcon />,
     colorClasses: 'bg-blue-100 text-blue-600',
   },
   {
     number: '2.',
-    title: 'Get Pre-Approved',
-    description: 'Program Chair reviews eligibility of your request.',
+    title: 'Chair Pre-Approval',
+    description:
+      'The assigned program chair reviews eligibility and either pre-approves the request or rejects it with feedback.',
     icon: <PreApprovedIcon />,
     colorClasses: 'bg-emerald-100 text-emerald-600',
   },
   {
     number: '3.',
-    title: 'Upload Evidence',
-    description: 'Upload supporting evidence after pre-approval.',
+    title: 'Submit Evidence',
+    description: 'After pre-approval, the student uploads supporting evidence for final review.',
     icon: <UploadEvidenceIcon />,
     colorClasses: 'bg-violet-100 text-violet-600',
   },
   {
     number: '4.',
-    title: 'Receive Points',
-    description: 'If approved, points are awarded and added to your total.',
+    title: 'Final Decision and Points',
+    description:
+      "The chair approves or rejects the evidence. Approved requests add points to the student's CECAS total.",
     icon: <ReceivePointsIcon />,
     colorClasses: 'bg-amber-100 text-amber-600',
   },
@@ -181,6 +184,11 @@ export default function HowItWorksPage() {
           How It Works
         </h1>
 
+        <p className="mx-auto mt-3 max-w-2xl text-center leading-7 text-slate-600">
+          CECAS follows four stages from the initial student request through the chair's final
+          decision.
+        </p>
+
         <div className="mt-7 rounded-2xl border border-slate-200 bg-white px-6 py-8 sm:px-8">
           <div className="grid gap-y-8 md:grid-cols-[1fr_40px_1fr_40px_1fr_40px_1fr] md:items-start">
             {steps.map((step, index) => (
@@ -192,8 +200,9 @@ export default function HowItWorksPage() {
                     {step.icon}
                   </div>
 
-                  <h2 className="mt-5 whitespace-nowrap text-base font-bold text-slate-950">
-                    {step.number} {step.title}
+                  <h2 className="mt-5 text-base font-bold text-slate-950">
+                    <span aria-hidden="true">{step.number} </span>
+                    {step.title}
                   </h2>
 
                   <p className="mt-2 text-sm leading-6 text-slate-700">{step.description}</p>
