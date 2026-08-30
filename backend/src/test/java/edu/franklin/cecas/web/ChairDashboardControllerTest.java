@@ -8,8 +8,17 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import edu.franklin.cecas.config.SecurityConfig;
+import edu.franklin.cecas.domain.Category;
+import edu.franklin.cecas.domain.Course;
+import edu.franklin.cecas.domain.ExtraCreditRequest;
+import edu.franklin.cecas.domain.ExtraCreditRequestStatus;
+import edu.franklin.cecas.domain.User;
+import edu.franklin.cecas.dto.ChairDashboardQueueResponse;
+import edu.franklin.cecas.dto.ChairDashboardSummaryResponse;
+import edu.franklin.cecas.service.CecasUserDetailsService;
+import edu.franklin.cecas.service.ChairDashboardService;
 import java.util.List;
-
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
@@ -21,19 +30,8 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.test.web.servlet.MockMvc;
 
-import edu.franklin.cecas.config.SecurityConfig;
-import edu.franklin.cecas.domain.Category;
-import edu.franklin.cecas.domain.Course;
-import edu.franklin.cecas.domain.ExtraCreditRequest;
-import edu.franklin.cecas.domain.ExtraCreditRequestStatus;
-import edu.franklin.cecas.domain.User;
-import edu.franklin.cecas.dto.ChairDashboardQueueResponse;
-import edu.franklin.cecas.dto.ChairDashboardSummaryResponse;
-import edu.franklin.cecas.service.CecasUserDetailsService;
-import edu.franklin.cecas.service.ChairDashboardService;
-
 @WebMvcTest(controllers = ChairDashboardController.class)
-@Import({ SecurityConfig.class, GlobalExceptionHandler.class })
+@Import({SecurityConfig.class, GlobalExceptionHandler.class})
 class ChairDashboardControllerTest {
 
     @Autowired
@@ -45,9 +43,9 @@ class ChairDashboardControllerTest {
     @MockitoBean
     private ChairDashboardService chairDashboardService;
 
-   @Test
-        @WithMockUser(roles = "CHAIR")
-        void testChairSummaryAndQueueAccessWithDefaultStatus() throws Exception {
+    @Test
+    @WithMockUser(roles = "CHAIR")
+    void testChairSummaryAndQueueAccessWithDefaultStatus() throws Exception {
         User student = new User();
         student.setEmail("student@test.com");
         student.setFullName("Nica Kelley");
@@ -74,12 +72,11 @@ class ChairDashboardControllerTest {
         request.setAwardedPoints(5);
 
         when(chairDashboardService.getRequestCountSummary(any()))
-                .thenReturn(new ChairDashboardSummaryResponse(1L, 1L,2L, 3L, 4L));
+                .thenReturn(new ChairDashboardSummaryResponse(1L, 1L, 2L, 3L, 4L));
 
         ChairDashboardQueueResponse response = new ChairDashboardQueueResponse(request);
 
-        when(chairDashboardService.getChairReviewQueue(any(), any()))
-                .thenReturn(List.of(response));
+        when(chairDashboardService.getChairReviewQueue(any(), any())).thenReturn(List.of(response));
 
         mockMvc.perform(get("/api/chair/dashboard/summary"))
                 .andExpect(status().isOk())
@@ -103,31 +100,28 @@ class ChairDashboardControllerTest {
                 .andExpect(jsonPath("$[0].status").value("PENDING"))
                 .andExpect(jsonPath("$[0].defaultPoints").value(10))
                 .andExpect(jsonPath("$[0].awardedPoints").value(5));
-                
-        ArgumentCaptor<ExtraCreditRequestStatus> statusCaptor =
-                ArgumentCaptor.forClass(ExtraCreditRequestStatus.class);
+
+        ArgumentCaptor<ExtraCreditRequestStatus> statusCaptor = ArgumentCaptor.forClass(ExtraCreditRequestStatus.class);
 
         verify(chairDashboardService).getChairReviewQueue(any(), statusCaptor.capture());
         assertEquals(ExtraCreditRequestStatus.PENDING, statusCaptor.getValue());
-        }
+    }
 
     @Test
-    @WithMockUser(username= "student@test.com", roles = { "STUDENT" })
+    @WithMockUser(
+            username = "student@test.com",
+            roles = {"STUDENT"})
     void testStudentAccess() throws Exception {
-        mockMvc.perform(get("/api/chair/dashboard/summary"))
-                .andExpect(status().isForbidden());
+        mockMvc.perform(get("/api/chair/dashboard/summary")).andExpect(status().isForbidden());
 
-        mockMvc.perform(get("/api/chair/dashboard/queue"))
-                .andExpect(status().isForbidden());
+        mockMvc.perform(get("/api/chair/dashboard/queue")).andExpect(status().isForbidden());
     }
 
     @Test
     void testAnonymousAccess() throws Exception {
-        mockMvc.perform(get("/api/chair/dashboard/summary"))
-                .andExpect(status().isUnauthorized());
+        mockMvc.perform(get("/api/chair/dashboard/summary")).andExpect(status().isUnauthorized());
 
-        mockMvc.perform(get("/api/chair/dashboard/queue"))
-                .andExpect(status().isUnauthorized());
+        mockMvc.perform(get("/api/chair/dashboard/queue")).andExpect(status().isUnauthorized());
     }
 
     @Test
@@ -136,9 +130,7 @@ class ChairDashboardControllerTest {
         when(chairDashboardService.getChairReviewQueue(any(), eq(ExtraCreditRequestStatus.EVIDENCE_SUBMITTED)))
                 .thenReturn(List.of(Mockito.mock(ChairDashboardQueueResponse.class)));
 
-        mockMvc.perform(get("/api/chair/dashboard/queue")
-                .param("status", "EVIDENCE_SUBMITTED")
-                )
+        mockMvc.perform(get("/api/chair/dashboard/queue").param("status", "EVIDENCE_SUBMITTED"))
                 .andExpect(status().isOk());
 
         verify(chairDashboardService).getChairReviewQueue(any(), eq(ExtraCreditRequestStatus.EVIDENCE_SUBMITTED));

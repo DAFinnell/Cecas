@@ -1,12 +1,6 @@
 package edu.franklin.cecas.repository;
 
-import java.time.LocalDateTime;
-import java.time.temporal.ChronoUnit;
-import java.util.List;
-
 import static org.assertj.core.api.Assertions.assertThat;
-import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
 
 import edu.franklin.cecas.domain.Category;
 import edu.franklin.cecas.domain.Course;
@@ -15,6 +9,11 @@ import edu.franklin.cecas.domain.ExtraCreditRequestStatus;
 import edu.franklin.cecas.domain.User;
 import edu.franklin.cecas.domain.UserRole;
 import edu.franklin.cecas.support.MySqlDataJpaTest;
+import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
+import java.util.List;
+import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
 
 @MySqlDataJpaTest
 public class ExtraCreditRequestRepositoryTest {
@@ -139,8 +138,8 @@ public class ExtraCreditRequestRepositoryTest {
 
         extraCreditRequestRepository.save(request);
 
-        List<ExtraCreditRequest> result = extraCreditRequestRepository
-                .findByCategory_CategoryId(category.getCategoryId());
+        List<ExtraCreditRequest> result =
+                extraCreditRequestRepository.findByCategory_CategoryId(category.getCategoryId());
 
         assertThat(result).hasSize(1);
         assertThat(result.get(0).getCategory().getCategoryId()).isEqualTo(category.getCategoryId());
@@ -167,8 +166,8 @@ public class ExtraCreditRequestRepositoryTest {
 
         extraCreditRequestRepository.save(request);
 
-        List<ExtraCreditRequest> result = extraCreditRequestRepository
-                .findByStatus(ExtraCreditRequestStatus.EVIDENCE_SUBMITTED);
+        List<ExtraCreditRequest> result =
+                extraCreditRequestRepository.findByStatus(ExtraCreditRequestStatus.EVIDENCE_SUBMITTED);
 
         assertThat(result).hasSize(1);
         assertThat(result.get(0).getStatus()).isEqualTo(ExtraCreditRequestStatus.EVIDENCE_SUBMITTED);
@@ -195,15 +194,13 @@ public class ExtraCreditRequestRepositoryTest {
 
         extraCreditRequestRepository.save(request);
 
-        List<ExtraCreditRequest> result = extraCreditRequestRepository
-                .findByStudent_IdAndStatus(student.getId(),
-                        ExtraCreditRequestStatus.EVIDENCE_SUBMITTED);
+        List<ExtraCreditRequest> result = extraCreditRequestRepository.findByStudent_IdAndStatus(
+                student.getId(), ExtraCreditRequestStatus.EVIDENCE_SUBMITTED);
 
         assertThat(result).hasSize(1);
         assertThat(result.get(0).getStudent().getId()).isEqualTo(student.getId());
         assertThat(result.get(0).getStatus()).isEqualTo(ExtraCreditRequestStatus.EVIDENCE_SUBMITTED);
     }
-
 
     @Test
     public void testFindByCourse_CourseIdInAndStatusOrderByUpdatedAtDesc() {
@@ -234,12 +231,13 @@ public class ExtraCreditRequestRepositoryTest {
         request2.setUpdatedAt(now);
         extraCreditRequestRepository.save(request2);
 
-        List<ExtraCreditRequest> result = extraCreditRequestRepository
-                .findByCourse_CourseIdInAndStatusOrderByUpdatedAtDesc(
+        List<ExtraCreditRequest> result =
+                extraCreditRequestRepository.findByCourse_CourseIdInAndStatusOrderByUpdatedAtDesc(
                         List.of(course.getCourseId()), ExtraCreditRequestStatus.PENDING);
 
         assertThat(result).hasSize(2);
-        assertThat(result.get(0).getUpdatedAt()).isAfterOrEqualTo(result.get(1).getUpdatedAt().truncatedTo(ChronoUnit.SECONDS));
+        assertThat(result.get(0).getUpdatedAt())
+                .isAfterOrEqualTo(result.get(1).getUpdatedAt().truncatedTo(ChronoUnit.SECONDS));
     }
 
     @Test
@@ -269,8 +267,8 @@ public class ExtraCreditRequestRepositoryTest {
         request2.setStatus(ExtraCreditRequestStatus.PENDING);
         extraCreditRequestRepository.save(request2);
 
-        long count = extraCreditRequestRepository
-                .countByCourse_CourseIdInAndStatus(List.of(course.getCourseId()), ExtraCreditRequestStatus.PENDING);
+        long count = extraCreditRequestRepository.countByCourse_CourseIdInAndStatus(
+                List.of(course.getCourseId()), ExtraCreditRequestStatus.PENDING);
 
         assertThat(count).isEqualTo(2);
     }

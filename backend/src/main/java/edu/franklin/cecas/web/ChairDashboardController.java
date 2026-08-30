@@ -1,7 +1,10 @@
 package edu.franklin.cecas.web;
 
+import edu.franklin.cecas.domain.ExtraCreditRequestStatus;
+import edu.franklin.cecas.dto.ChairDashboardQueueResponse;
+import edu.franklin.cecas.dto.ChairDashboardSummaryResponse;
+import edu.franklin.cecas.service.ChairDashboardService;
 import java.util.List;
-
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -9,11 +12,6 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-
-import edu.franklin.cecas.domain.ExtraCreditRequestStatus;
-import edu.franklin.cecas.dto.ChairDashboardQueueResponse;
-import edu.franklin.cecas.dto.ChairDashboardSummaryResponse;
-import edu.franklin.cecas.service.ChairDashboardService;
 
 @RestController
 @RequestMapping("/api/chair/dashboard")
@@ -25,8 +23,7 @@ public class ChairDashboardController {
         this.chairDashboardService = chairDashboardService;
     }
 
-
-/**
+    /**
      * Get Count Summary of requests for the chair dashboard
      * Returns counts for PENDING, EVIDENCE_SUBMITTED, PRE_APPROVED (approvedCount), and REJECTED
      */

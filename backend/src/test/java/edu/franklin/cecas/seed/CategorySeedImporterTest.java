@@ -5,15 +5,13 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import java.util.List;
-
-import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Import;
-
 import edu.franklin.cecas.domain.Category;
 import edu.franklin.cecas.repository.CategoryRepository;
 import edu.franklin.cecas.support.MySqlDataJpaTest;
+import java.util.List;
+import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Import;
 
 @MySqlDataJpaTest
 @Import(CategorySeedImporter.class)
@@ -25,8 +23,7 @@ public class CategorySeedImporterTest {
     @Autowired
     private CategoryRepository categoryRepository;
 
-    private Category createCategory(String categoryName, String description,
-            int defaultPoints, boolean active) {
+    private Category createCategory(String categoryName, String description, int defaultPoints, boolean active) {
         Category category = new Category();
         category.setCategoryName(categoryName);
         category.setDescription(description);
@@ -44,8 +41,8 @@ public class CategorySeedImporterTest {
      */
     @Test
     void testImportCategoriesInsertsNewCategory() {
-        CategorySeedImportResult result = importer.importCategories(List.of(
-                new CategorySeedRow("Participation", "Answering a question", 10)));
+        CategorySeedImportResult result =
+                importer.importCategories(List.of(new CategorySeedRow("Participation", "Answering a question", 10)));
 
         List<Category> categories = categoryRepository.findAll();
 
@@ -68,14 +65,9 @@ public class CategorySeedImporterTest {
      */
     @Test
     void testReactivatesInactiveCategoryWhenRestored() {
-        Category existing = createCategory(
-                "seminar attendance",
-                "Old description",
-                5,
-                false);
+        Category existing = createCategory("seminar attendance", "Old description", 5, false);
 
-        List<CategorySeedRow> rows = List.of(
-                new CategorySeedRow("Seminar Attendance", "Updated description", 10));
+        List<CategorySeedRow> rows = List.of(new CategorySeedRow("Seminar Attendance", "Updated description", 10));
 
         CategorySeedImportResult result = importer.importCategories(rows);
 
@@ -100,14 +92,10 @@ public class CategorySeedImporterTest {
      */
     @Test
     void testCapitalizationOnlyChangeUpdatesExistingCategory() {
-        Category existing = createCategory(
-                "seminar attendance",
-                "Approved seminar attendance",
-                5,
-                true);
+        Category existing = createCategory("seminar attendance", "Approved seminar attendance", 5, true);
 
-        List<CategorySeedRow> rows = List.of(
-                new CategorySeedRow("Seminar Attendance", "Approved seminar attendance", 5));
+        List<CategorySeedRow> rows =
+                List.of(new CategorySeedRow("Seminar Attendance", "Approved seminar attendance", 5));
 
         CategorySeedImportResult result = importer.importCategories(rows);
 
@@ -130,14 +118,9 @@ public class CategorySeedImporterTest {
      */
     @Test
     void testUpdatesDescriptionAndDefaultPointsForExistingActiveCategory() {
-        Category existing = createCategory(
-                "Seminar Attendance",
-                "Old description",
-                5,
-                true);
+        Category existing = createCategory("Seminar Attendance", "Old description", 5, true);
 
-        List<CategorySeedRow> rows = List.of(
-                new CategorySeedRow("Seminar Attendance", "New description", 12));
+        List<CategorySeedRow> rows = List.of(new CategorySeedRow("Seminar Attendance", "New description", 12));
 
         CategorySeedImportResult result = importer.importCategories(rows);
 
@@ -160,14 +143,10 @@ public class CategorySeedImporterTest {
      */
     @Test
     void testCountsExistingActiveCategoryAsUnchangedWhenValuesMatch() {
-        createCategory(
-                "Seminar Attendance",
-                "Approved seminar attendance",
-                5,
-                true);
+        createCategory("Seminar Attendance", "Approved seminar attendance", 5, true);
 
-        List<CategorySeedRow> rows = List.of(
-                new CategorySeedRow("Seminar Attendance", "Approved seminar attendance", 5));
+        List<CategorySeedRow> rows =
+                List.of(new CategorySeedRow("Seminar Attendance", "Approved seminar attendance", 5));
 
         CategorySeedImportResult result = importer.importCategories(rows);
 
@@ -186,20 +165,12 @@ public class CategorySeedImporterTest {
      */
     @Test
     void testDeactivatesActiveCategoriesMissingFromSeedData() {
-        createCategory(
-                "Seminar Attendance",
-                "Approved seminar attendance",
-                5,
-                true);
+        createCategory("Seminar Attendance", "Approved seminar attendance", 5, true);
 
-        createCategory(
-                "Workshop Participation",
-                "Approved workshop participation",
-                8,
-                true);
+        createCategory("Workshop Participation", "Approved workshop participation", 8, true);
 
-        List<CategorySeedRow> rows = List.of(
-                new CategorySeedRow("Seminar Attendance", "Approved seminar attendance", 5));
+        List<CategorySeedRow> rows =
+                List.of(new CategorySeedRow("Seminar Attendance", "Approved seminar attendance", 5));
 
         CategorySeedImportResult result = importer.importCategories(rows);
 
@@ -223,14 +194,10 @@ public class CategorySeedImporterTest {
      */
     @Test
     void testDoesNotCountAlreadyInactiveCategoryAsDeactivatedAgain() {
-        createCategory(
-                "Old Category",
-                "Old inactive category",
-                3,
-                false);
+        createCategory("Old Category", "Old inactive category", 3, false);
 
-        List<CategorySeedRow> rows = List.of(
-                new CategorySeedRow("Seminar Attendance", "Approved seminar attendance", 5));
+        List<CategorySeedRow> rows =
+                List.of(new CategorySeedRow("Seminar Attendance", "Approved seminar attendance", 5));
 
         CategorySeedImportResult result = importer.importCategories(rows);
 
@@ -253,14 +220,10 @@ public class CategorySeedImporterTest {
      */
     @Test
     void testMeaningfulNameChangeCreatesNewCategoryAndDeactivatesOldCategory() {
-        Category oldCategory = createCategory(
-                "Seminar Attendance",
-                "Approved seminar attendance",
-                5,
-                true);
+        Category oldCategory = createCategory("Seminar Attendance", "Approved seminar attendance", 5, true);
 
-        List<CategorySeedRow> rows = List.of(
-                new CategorySeedRow("Conference Attendance", "Approved conference attendance", 10));
+        List<CategorySeedRow> rows =
+                List.of(new CategorySeedRow("Conference Attendance", "Approved conference attendance", 10));
 
         CategorySeedImportResult result = importer.importCategories(rows);
 
@@ -286,8 +249,8 @@ public class CategorySeedImporterTest {
      */
     @Test
     void testImportCategoriesDoesNotCreateDuplicatesWhenReRunWithSameData() {
-        List<CategorySeedRow> rows = List.of(
-                new CategorySeedRow("Seminar Attendance", "Approved seminar attendance", 5));
+        List<CategorySeedRow> rows =
+                List.of(new CategorySeedRow("Seminar Attendance", "Approved seminar attendance", 5));
 
         CategorySeedImportResult firstResult = importer.importCategories(rows);
         CategorySeedImportResult secondResult = importer.importCategories(rows);

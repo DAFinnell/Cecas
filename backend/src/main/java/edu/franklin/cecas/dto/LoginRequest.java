@@ -3,12 +3,11 @@ package edu.franklin.cecas.dto;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 
-
 /**
  * This is for user login.
  */
 public class LoginRequest {
-    
+
     @Email
     @NotBlank
     private String email;
@@ -16,8 +15,7 @@ public class LoginRequest {
     @NotBlank
     private String password;
 
-    public LoginRequest() {
-    }
+    public LoginRequest() {}
 
     public LoginRequest(String email, String password) {
         this.email = email;

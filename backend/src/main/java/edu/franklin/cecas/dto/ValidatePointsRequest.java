@@ -4,7 +4,7 @@ public class ValidatePointsRequest {
     private Integer studentId;
     private String term;
     private int requestedPoints;
-    
+
     public ValidatePointsRequest() {}
 
     public ValidatePointsRequest(Integer studentId, String term, int requestedPoints) {

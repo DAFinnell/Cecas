@@ -1,12 +1,13 @@
 package edu.franklin.cecas.service;
 
+import edu.franklin.cecas.exception.EvidenceUploadException;
+import edu.franklin.cecas.exception.ResourceNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.UUID;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -15,9 +16,6 @@ import org.springframework.core.io.Resource;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
-
-import edu.franklin.cecas.exception.EvidenceUploadException;
-import edu.franklin.cecas.exception.ResourceNotFoundException;
 
 @Service
 public class EvidenceStorageService {
@@ -105,8 +103,7 @@ public class EvidenceStorageService {
             case "pdf" -> MediaType.APPLICATION_PDF;
             case "jpg" -> MediaType.IMAGE_JPEG;
             case "png" -> MediaType.IMAGE_PNG;
-            default -> throw new ResourceNotFoundException(
-                    "Evidence file type is not supported.");
+            default -> throw new ResourceNotFoundException("Evidence file type is not supported.");
         };
     }
 
@@ -154,7 +151,7 @@ public class EvidenceStorageService {
             return EvidenceType.JPG;
         }
 
-        byte[] png = new byte[] { (byte) 0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A };
+        byte[] png = new byte[] {(byte) 0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A};
         if (Arrays.equals(header, png)) {
             return EvidenceType.PNG;
         }
@@ -162,12 +159,7 @@ public class EvidenceStorageService {
         throw new EvidenceUploadException("Evidence file must be a PDF, JPG, or PNG.");
     }
 
-    public record StoredEvidence(
-            Resource resource,
-            MediaType contentType,
-            String fileName,
-            long size) {
-    }
+    public record StoredEvidence(Resource resource, MediaType contentType, String fileName, long size) {}
 
     private enum EvidenceType {
         PDF("pdf"),

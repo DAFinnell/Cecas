@@ -12,7 +12,12 @@ public class SeedService {
     private final CourseSeedImporter courseSeedImporter;
     private final TransactionTemplate transactionTemplate;
 
-    public SeedService(SeedDataParser seedDataParser, CategorySeedImporter categorySeedImporter, ChairSeedImporter chairSeedImporter, CourseSeedImporter courseSeedImporter, PlatformTransactionManager transactionManager) {
+    public SeedService(
+            SeedDataParser seedDataParser,
+            CategorySeedImporter categorySeedImporter,
+            ChairSeedImporter chairSeedImporter,
+            CourseSeedImporter courseSeedImporter,
+            PlatformTransactionManager transactionManager) {
         this.seedDataParser = seedDataParser;
         this.categorySeedImporter = categorySeedImporter;
         this.chairSeedImporter = chairSeedImporter;

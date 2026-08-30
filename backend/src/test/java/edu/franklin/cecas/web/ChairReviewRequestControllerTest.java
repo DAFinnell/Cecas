@@ -18,11 +18,18 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import edu.franklin.cecas.config.SecurityConfig;
+import edu.franklin.cecas.dto.ChairRequestActionDTO;
+import edu.franklin.cecas.dto.ChairReviewDTO;
+import edu.franklin.cecas.dto.StudentPointsDTO;
+import edu.franklin.cecas.service.CecasUserDetailsService;
+import edu.franklin.cecas.service.ChairReviewRequestService;
+import edu.franklin.cecas.service.EvidenceStorageService.StoredEvidence;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
-
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
@@ -35,18 +42,8 @@ import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-
-import edu.franklin.cecas.config.SecurityConfig;
-import edu.franklin.cecas.dto.ChairRequestActionDTO;
-import edu.franklin.cecas.dto.ChairReviewDTO;
-import edu.franklin.cecas.dto.StudentPointsDTO;
-import edu.franklin.cecas.service.CecasUserDetailsService;
-import edu.franklin.cecas.service.ChairReviewRequestService;
-import edu.franklin.cecas.service.EvidenceStorageService.StoredEvidence;
-
 @WebMvcTest(controllers = ChairReviewRequestController.class)
-@Import({ SecurityConfig.class, GlobalExceptionHandler.class })
+@Import({SecurityConfig.class, GlobalExceptionHandler.class})
 public class ChairReviewRequestControllerTest {
 
     @Autowired
@@ -87,9 +84,7 @@ public class ChairReviewRequestControllerTest {
     }
 
     private ChairRequestActionDTO createActionResponse(
-            String requestStatus,
-            Integer awardedPoints,
-            String chairFeedback) {
+            String requestStatus, Integer awardedPoints, String chairFeedback) {
 
         ChairRequestActionDTO response = new ChairRequestActionDTO();
         response.setRequestId(42);
@@ -100,16 +95,9 @@ public class ChairReviewRequestControllerTest {
         return response;
     }
 
-    private StoredEvidence createStoredEvidence(
-            byte[] content,
-            MediaType contentType,
-            String fileName) {
+    private StoredEvidence createStoredEvidence(byte[] content, MediaType contentType, String fileName) {
 
-        return new StoredEvidence(
-                new ByteArrayResource(content),
-                contentType,
-                fileName,
-                content.length);
+        return new StoredEvidence(new ByteArrayResource(content), contentType, fileName, content.length);
     }
 
     /**
@@ -117,7 +105,9 @@ public class ChairReviewRequestControllerTest {
      * details.
      */
     @Test
-    @WithMockUser(username = "derek-chair@derek.com", roles = { "CHAIR" })
+    @WithMockUser(
+            username = "derek-chair@derek.com",
+            roles = {"CHAIR"})
     void testGetRequestForReviewReturnsApplicationAndEvidenceDetails() throws Exception {
         when(chairReviewRequestService.getRequestForReview("derek-chair@derek.com", 42))
                 .thenReturn(createReviewResponse());
@@ -155,16 +145,14 @@ public class ChairReviewRequestControllerTest {
      * PDF headers and contents.
      */
     @Test
-    @WithMockUser(username = "derek-chair@derek.com", roles = { "CHAIR" })
+    @WithMockUser(
+            username = "derek-chair@derek.com",
+            roles = {"CHAIR"})
     void testGetEvidenceReturnsInlinePdf() throws Exception {
         byte[] fileContent = "%PDF-1.7 test".getBytes(StandardCharsets.UTF_8);
-        StoredEvidence evidence = createStoredEvidence(
-                fileContent,
-                APPLICATION_PDF,
-                "evidence-request-42.pdf");
+        StoredEvidence evidence = createStoredEvidence(fileContent, APPLICATION_PDF, "evidence-request-42.pdf");
 
-        when(chairReviewRequestService.getEvidence("derek-chair@derek.com", 42))
-                .thenReturn(evidence);
+        when(chairReviewRequestService.getEvidence("derek-chair@derek.com", 42)).thenReturn(evidence);
 
         mockMvc.perform(get("/api/chair/requests/{requestId}/evidence", 42))
                 .andExpect(status().isOk())
@@ -172,8 +160,11 @@ public class ChairReviewRequestControllerTest {
                 .andExpect(content().bytes(fileContent))
                 .andExpect(header().longValue(HttpHeaders.CONTENT_LENGTH, fileContent.length))
                 .andExpect(header().string(
-                        HttpHeaders.CONTENT_DISPOSITION,
-                        ContentDisposition.inline().filename("evidence-request-42.pdf").build().toString()));
+                                HttpHeaders.CONTENT_DISPOSITION,
+                                ContentDisposition.inline()
+                                        .filename("evidence-request-42.pdf")
+                                        .build()
+                                        .toString()));
 
         verify(chairReviewRequestService).getEvidence("derek-chair@derek.com", 42);
     }
@@ -183,26 +174,26 @@ public class ChairReviewRequestControllerTest {
      * expected PNG headers and contents.
      */
     @Test
-    @WithMockUser(username = "derek-chair@derek.com", roles = { "CHAIR" })
+    @WithMockUser(
+            username = "derek-chair@derek.com",
+            roles = {"CHAIR"})
     void testGetEvidenceReturnsPngAsDownload() throws Exception {
         byte[] fileContent = new byte[] {(byte) 0x89, 0x50, 0x4E, 0x47};
-        StoredEvidence evidence = createStoredEvidence(
-                fileContent,
-                IMAGE_PNG,
-                "evidence-request-42.png");
+        StoredEvidence evidence = createStoredEvidence(fileContent, IMAGE_PNG, "evidence-request-42.png");
 
-        when(chairReviewRequestService.getEvidence("derek-chair@derek.com", 42))
-                .thenReturn(evidence);
+        when(chairReviewRequestService.getEvidence("derek-chair@derek.com", 42)).thenReturn(evidence);
 
-        mockMvc.perform(get("/api/chair/requests/{requestId}/evidence", 42)
-                .param("download", "true"))
+        mockMvc.perform(get("/api/chair/requests/{requestId}/evidence", 42).param("download", "true"))
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(IMAGE_PNG))
                 .andExpect(content().bytes(fileContent))
                 .andExpect(header().longValue(HttpHeaders.CONTENT_LENGTH, fileContent.length))
                 .andExpect(header().string(
-                        HttpHeaders.CONTENT_DISPOSITION,
-                        ContentDisposition.attachment().filename("evidence-request-42.png").build().toString()));
+                                HttpHeaders.CONTENT_DISPOSITION,
+                                ContentDisposition.attachment()
+                                        .filename("evidence-request-42.png")
+                                        .build()
+                                        .toString()));
 
         verify(chairReviewRequestService).getEvidence("derek-chair@derek.com", 42);
     }
@@ -211,16 +202,14 @@ public class ChairReviewRequestControllerTest {
      * Verifies that JPG evidence is returned with the image/jpeg content type.
      */
     @Test
-    @WithMockUser(username = "derek-chair@derek.com", roles = { "CHAIR" })
+    @WithMockUser(
+            username = "derek-chair@derek.com",
+            roles = {"CHAIR"})
     void testGetEvidenceReturnsJpgContentType() throws Exception {
         byte[] fileContent = new byte[] {(byte) 0xFF, (byte) 0xD8, (byte) 0xFF};
-        StoredEvidence evidence = createStoredEvidence(
-                fileContent,
-                IMAGE_JPEG,
-                "evidence-request-42.jpg");
+        StoredEvidence evidence = createStoredEvidence(fileContent, IMAGE_JPEG, "evidence-request-42.jpg");
 
-        when(chairReviewRequestService.getEvidence("derek-chair@derek.com", 42))
-                .thenReturn(evidence);
+        when(chairReviewRequestService.getEvidence("derek-chair@derek.com", 42)).thenReturn(evidence);
 
         mockMvc.perform(get("/api/chair/requests/{requestId}/evidence", 42))
                 .andExpect(status().isOk())
@@ -233,23 +222,19 @@ public class ChairReviewRequestControllerTest {
      * receive the updated request details.
      */
     @Test
-    @WithMockUser(username = "derek-chair@derek.com", roles = { "CHAIR" })
+    @WithMockUser(
+            username = "derek-chair@derek.com",
+            roles = {"CHAIR"})
     void testApproveReturnsUpdatedRequestDetails() throws Exception {
-        Map<String, Object> request = Map.of(
-                "points", 5,
-                "feedback", "Evidence verified.");
+        Map<String, Object> request = Map.of("points", 5, "feedback", "Evidence verified.");
 
-        when(chairReviewRequestService.approve(
-                "derek-chair@derek.com",
-                42,
-                5,
-                "Evidence verified."))
-            .thenReturn(createActionResponse("APPROVED", 5, "Evidence verified."));
+        when(chairReviewRequestService.approve("derek-chair@derek.com", 42, 5, "Evidence verified."))
+                .thenReturn(createActionResponse("APPROVED", 5, "Evidence verified."));
 
         mockMvc.perform(post("/api/chair/requests/{requestId}/approve", 42)
-                .with(csrf())
-                .contentType(APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(request)))
+                        .with(csrf())
+                        .contentType(APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.requestId").value(42))
                 .andExpect(jsonPath("$.status").value("APPROVED"))
@@ -257,42 +242,32 @@ public class ChairReviewRequestControllerTest {
                 .andExpect(jsonPath("$.chairFeedback").value("Evidence verified."))
                 .andExpect(jsonPath("$.updatedAt").exists());
 
-        verify(chairReviewRequestService).approve(
-                "derek-chair@derek.com",
-                42,
-                5,
-                "Evidence verified.");
+        verify(chairReviewRequestService).approve("derek-chair@derek.com", 42, 5, "Evidence verified.");
     }
 
     /**
      * Verifies that approval feedback is optional when points are provided.
      */
     @Test
-    @WithMockUser(username = "derek-chair@derek.com", roles = { "CHAIR" })
+    @WithMockUser(
+            username = "derek-chair@derek.com",
+            roles = {"CHAIR"})
     void testApproveWithoutFeedbackIsAccepted() throws Exception {
         Map<String, Object> request = Map.of("points", 5);
 
-        when(chairReviewRequestService.approve(
-                eq("derek-chair@derek.com"),
-                eq(42),
-                eq(5),
-                isNull()))
-            .thenReturn(createActionResponse("APPROVED", 5, null));
+        when(chairReviewRequestService.approve(eq("derek-chair@derek.com"), eq(42), eq(5), isNull()))
+                .thenReturn(createActionResponse("APPROVED", 5, null));
 
         mockMvc.perform(post("/api/chair/requests/{requestId}/approve", 42)
-                .with(csrf())
-                .contentType(APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(request)))
+                        .with(csrf())
+                        .contentType(APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.status").value("APPROVED"))
                 .andExpect(jsonPath("$.awardedPoints").value(5))
                 .andExpect(jsonPath("$.chairFeedback").value(nullValue()));
 
-        verify(chairReviewRequestService).approve(
-                eq("derek-chair@derek.com"),
-                eq(42),
-                eq(5),
-                isNull());
+        verify(chairReviewRequestService).approve(eq("derek-chair@derek.com"), eq(42), eq(5), isNull());
     }
 
     /**
@@ -300,20 +275,19 @@ public class ChairReviewRequestControllerTest {
      * updated request details.
      */
     @Test
-    @WithMockUser(username = "derek-chair@derek.com", roles = { "CHAIR" })
+    @WithMockUser(
+            username = "derek-chair@derek.com",
+            roles = {"CHAIR"})
     void testRejectReturnsUpdatedRequestDetails() throws Exception {
         Map<String, Object> request = Map.of("feedback", "Insufficient evidence");
 
-        when(chairReviewRequestService.reject(
-                "derek-chair@derek.com",
-                42,
-                "Insufficient evidence"))
-            .thenReturn(createActionResponse("REJECTED", null, "Insufficient evidence"));
+        when(chairReviewRequestService.reject("derek-chair@derek.com", 42, "Insufficient evidence"))
+                .thenReturn(createActionResponse("REJECTED", null, "Insufficient evidence"));
 
         mockMvc.perform(post("/api/chair/requests/{requestId}/reject", 42)
-                .with(csrf())
-                .contentType(APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(request)))
+                        .with(csrf())
+                        .contentType(APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.requestId").value(42))
                 .andExpect(jsonPath("$.status").value("REJECTED"))
@@ -321,24 +295,23 @@ public class ChairReviewRequestControllerTest {
                 .andExpect(jsonPath("$.chairFeedback").value("Insufficient evidence"))
                 .andExpect(jsonPath("$.updatedAt").exists());
 
-        verify(chairReviewRequestService).reject(
-                "derek-chair@derek.com",
-                42,
-                "Insufficient evidence");
+        verify(chairReviewRequestService).reject("derek-chair@derek.com", 42, "Insufficient evidence");
     }
 
     /**
      * Verifies that approval without points returns a 400 Bad Request.
      */
     @Test
-    @WithMockUser(username = "derek-chair@derek.com", roles = { "CHAIR" })
+    @WithMockUser(
+            username = "derek-chair@derek.com",
+            roles = {"CHAIR"})
     void testApproveWithoutPointsReturnsBadRequest() throws Exception {
         Map<String, Object> request = Map.of("feedback", "Evidence verified.");
 
         mockMvc.perform(post("/api/chair/requests/{requestId}/approve", 42)
-                .with(csrf())
-                .contentType(APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(request)))
+                        .with(csrf())
+                        .contentType(APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.title").value("Validation failed"))
                 .andExpect(jsonPath("$.errorCode").value("VALIDATION_FAILED"))
@@ -351,15 +324,17 @@ public class ChairReviewRequestControllerTest {
      * Verifies that zero and negative approval points return a 400 Bad Request.
      */
     @Test
-    @WithMockUser(username = "derek-chair@derek.com", roles = { "CHAIR" })
+    @WithMockUser(
+            username = "derek-chair@derek.com",
+            roles = {"CHAIR"})
     void testApproveWithNonPositivePointsReturnsBadRequest() throws Exception {
         for (int points : new int[] {0, -1}) {
             Map<String, Object> request = Map.of("points", points);
 
             mockMvc.perform(post("/api/chair/requests/{requestId}/approve", 42)
-                    .with(csrf())
-                    .contentType(APPLICATION_JSON)
-                    .content(objectMapper.writeValueAsString(request)))
+                            .with(csrf())
+                            .contentType(APPLICATION_JSON)
+                            .content(objectMapper.writeValueAsString(request)))
                     .andExpect(status().isBadRequest())
                     .andExpect(jsonPath("$.title").value("Validation failed"))
                     .andExpect(jsonPath("$.errors.points").value("Points must be greater than zero."));
@@ -373,20 +348,19 @@ public class ChairReviewRequestControllerTest {
      * Request.
      */
     @Test
-    @WithMockUser(username = "derek-chair@derek.com", roles = { "CHAIR" })
+    @WithMockUser(
+            username = "derek-chair@derek.com",
+            roles = {"CHAIR"})
     void testApproveWithFeedbackOver1000CharactersReturnsBadRequest() throws Exception {
-        Map<String, Object> request = Map.of(
-                "points", 5,
-                "feedback", "a".repeat(1001));
+        Map<String, Object> request = Map.of("points", 5, "feedback", "a".repeat(1001));
 
         mockMvc.perform(post("/api/chair/requests/{requestId}/approve", 42)
-                .with(csrf())
-                .contentType(APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(request)))
+                        .with(csrf())
+                        .contentType(APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.title").value("Validation failed"))
-                .andExpect(jsonPath("$.errors.feedback")
-                        .value("Feedback must be 1000 characters or fewer"));
+                .andExpect(jsonPath("$.errors.feedback").value("Feedback must be 1000 characters or fewer"));
 
         verifyNoInteractions(chairReviewRequestService);
     }
@@ -396,18 +370,18 @@ public class ChairReviewRequestControllerTest {
      * Request.
      */
     @Test
-    @WithMockUser(username = "derek-chair@derek.com", roles = { "CHAIR" })
+    @WithMockUser(
+            username = "derek-chair@derek.com",
+            roles = {"CHAIR"})
     void testRejectWithoutFeedbackReturnsBadRequest() throws Exception {
-        List<Map<String, Object>> requests = List.of(
-                Map.of(),
-                Map.of("feedback", "   "));
+        List<Map<String, Object>> requests = List.of(Map.of(), Map.of("feedback", "   "));
 
         for (Map<String, Object> request : requests) {
 
             mockMvc.perform(post("/api/chair/requests/{requestId}/reject", 42)
-                    .with(csrf())
-                    .contentType(APPLICATION_JSON)
-                    .content(objectMapper.writeValueAsString(request)))
+                            .with(csrf())
+                            .contentType(APPLICATION_JSON)
+                            .content(objectMapper.writeValueAsString(request)))
                     .andExpect(status().isBadRequest())
                     .andExpect(jsonPath("$.title").value("Validation failed"))
                     .andExpect(jsonPath("$.errors.feedback").value("Feedback is required."));
@@ -421,26 +395,23 @@ public class ChairReviewRequestControllerTest {
      */
     @Test
     void testAnonymousAccessReturnsUnauthorized() throws Exception {
-        mockMvc.perform(get("/api/chair/requests/{requestId}/review", 42))
-                .andExpect(status().isUnauthorized());
+        mockMvc.perform(get("/api/chair/requests/{requestId}/review", 42)).andExpect(status().isUnauthorized());
 
-        mockMvc.perform(get("/api/chair/requests/{requestId}/evidence", 42))
-                .andExpect(status().isUnauthorized());
+        mockMvc.perform(get("/api/chair/requests/{requestId}/evidence", 42)).andExpect(status().isUnauthorized());
 
-        mockMvc.perform(post("/api/chair/requests/{requestId}/pre-approve", 42)
-                .with(csrf()))
+        mockMvc.perform(post("/api/chair/requests/{requestId}/pre-approve", 42).with(csrf()))
                 .andExpect(status().isUnauthorized());
 
         mockMvc.perform(post("/api/chair/requests/{requestId}/approve", 42)
-                .with(csrf())
-                .contentType(APPLICATION_JSON)
-                .content("{\"points\":5}"))
+                        .with(csrf())
+                        .contentType(APPLICATION_JSON)
+                        .content("{\"points\":5}"))
                 .andExpect(status().isUnauthorized());
 
         mockMvc.perform(post("/api/chair/requests/{requestId}/reject", 42)
-                .with(csrf())
-                .contentType(APPLICATION_JSON)
-                .content("{\"feedback\":\"Insufficient evidence\"}"))
+                        .with(csrf())
+                        .contentType(APPLICATION_JSON)
+                        .content("{\"feedback\":\"Insufficient evidence\"}"))
                 .andExpect(status().isUnauthorized());
 
         verifyNoInteractions(chairReviewRequestService);
@@ -450,28 +421,27 @@ public class ChairReviewRequestControllerTest {
      * Verifies that students cannot access chair review endpoints.
      */
     @Test
-    @WithMockUser(username = "derek@derek.com", roles = { "STUDENT" })
+    @WithMockUser(
+            username = "derek@derek.com",
+            roles = {"STUDENT"})
     void testStudentAccessReturnsForbidden() throws Exception {
-        mockMvc.perform(get("/api/chair/requests/{requestId}/review", 42))
-                .andExpect(status().isForbidden());
+        mockMvc.perform(get("/api/chair/requests/{requestId}/review", 42)).andExpect(status().isForbidden());
 
-        mockMvc.perform(get("/api/chair/requests/{requestId}/evidence", 42))
-                .andExpect(status().isForbidden());
+        mockMvc.perform(get("/api/chair/requests/{requestId}/evidence", 42)).andExpect(status().isForbidden());
 
-        mockMvc.perform(post("/api/chair/requests/{requestId}/pre-approve", 42)
-                .with(csrf()))
+        mockMvc.perform(post("/api/chair/requests/{requestId}/pre-approve", 42).with(csrf()))
                 .andExpect(status().isForbidden());
 
         mockMvc.perform(post("/api/chair/requests/{requestId}/approve", 42)
-                .with(csrf())
-                .contentType(APPLICATION_JSON)
-                .content("{\"points\":5}"))
+                        .with(csrf())
+                        .contentType(APPLICATION_JSON)
+                        .content("{\"points\":5}"))
                 .andExpect(status().isForbidden());
 
         mockMvc.perform(post("/api/chair/requests/{requestId}/reject", 42)
-                .with(csrf())
-                .contentType(APPLICATION_JSON)
-                .content("{\"feedback\":\"Insufficient evidence\"}"))
+                        .with(csrf())
+                        .contentType(APPLICATION_JSON)
+                        .content("{\"feedback\":\"Insufficient evidence\"}"))
                 .andExpect(status().isForbidden());
 
         verifyNoInteractions(chairReviewRequestService);

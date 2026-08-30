@@ -1,15 +1,12 @@
 package edu.franklin.cecas.domain;
 
+import jakarta.persistence.*;
 import java.time.LocalDateTime;
-
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
-import jakarta.persistence.*;
-
 @Entity
 @Table(name = "users")
-
 public class User {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -52,7 +49,7 @@ public class User {
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
 
-    public User(){}
+    public User() {}
 
     public Integer getId() {
         return id;
@@ -86,7 +83,7 @@ public class User {
         return role;
     }
 
-    public void setRole (UserRole role) {
+    public void setRole(UserRole role) {
         this.role = role;
     }
 

@@ -1,6 +1,5 @@
 package edu.franklin.cecas.service;
 
-import org.junit.jupiter.api.AfterEach;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
@@ -8,17 +7,6 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.mock.web.MockHttpServletRequest;
-import org.springframework.mock.web.MockHttpServletResponse;
-import org.springframework.security.authentication.AnonymousAuthenticationToken;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.authority.AuthorityUtils;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.security.web.context.HttpSessionSecurityContextRepository;
 
 import edu.franklin.cecas.domain.User;
 import edu.franklin.cecas.domain.UserRole;
@@ -30,6 +18,18 @@ import edu.franklin.cecas.exception.InvalidCredentialsException;
 import edu.franklin.cecas.repository.UserRepository;
 import edu.franklin.cecas.support.MySqlServiceTest;
 import jakarta.servlet.http.HttpSession;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.mock.web.MockHttpServletRequest;
+import org.springframework.mock.web.MockHttpServletResponse;
+import org.springframework.security.authentication.AnonymousAuthenticationToken;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.authority.AuthorityUtils;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.web.context.HttpSessionSecurityContextRepository;
 
 @MySqlServiceTest
 public class AuthServiceTest {
@@ -49,12 +49,7 @@ public class AuthServiceTest {
     }
 
     private RegisterRequest createRegisterRequest() {
-        return new RegisterRequest(
-                "derek@derek.com",
-                "TestPass1!",
-                "Derek Test",
-                "Computer Science",
-                1234);
+        return new RegisterRequest("derek@derek.com", "TestPass1!", "Derek Test", "Computer Science", 1234);
     }
 
     private LoginRequest createLoginRequest() {
@@ -127,9 +122,8 @@ public class AuthServiceTest {
 
         createAndSaveStudent("derek@test.com", "Existingpass1!");
 
-        EmailAlreadyExistsException ex = assertThrows(
-                EmailAlreadyExistsException.class,
-                () -> authService.register(request));
+        EmailAlreadyExistsException ex =
+                assertThrows(EmailAlreadyExistsException.class, () -> authService.register(request));
 
         assertEquals("An account with this email already exists.", ex.getMessage());
     }
@@ -199,9 +193,7 @@ public class AuthServiceTest {
     @Test
     void testGetCurrentUserResponseReturnsAnonymousForAnonymousAuthentication() {
         Authentication anonymous = new AnonymousAuthenticationToken(
-                "key",
-                "anonymousUser",
-                AuthorityUtils.createAuthorityList("ROLE_ANONYMOUS"));
+                "key", "anonymousUser", AuthorityUtils.createAuthorityList("ROLE_ANONYMOUS"));
 
         CurrentUserResponse response = authService.getCurrentUserResponse(anonymous);
 
@@ -226,9 +218,7 @@ public class AuthServiceTest {
         userRepository.save(chair);
 
         Authentication authentication = new UsernamePasswordAuthenticationToken(
-                "derek.lookup@test.com",
-                "ignored",
-                AuthorityUtils.createAuthorityList("ROLE_CHAIR"));
+                "derek.lookup@test.com", "ignored", AuthorityUtils.createAuthorityList("ROLE_CHAIR"));
 
         CurrentUserResponse response = authService.getCurrentUserResponse(authentication);
 
@@ -248,8 +238,7 @@ public class AuthServiceTest {
         MockHttpServletResponse httpResponse = new MockHttpServletResponse();
 
         InvalidCredentialsException ex = assertThrows(
-                InvalidCredentialsException.class,
-                () -> authService.login(request, httpRequest, httpResponse));
+                InvalidCredentialsException.class, () -> authService.login(request, httpRequest, httpResponse));
 
         assertEquals("Invalid email or password.", ex.getMessage());
         assertNull(httpRequest.getSession(false));

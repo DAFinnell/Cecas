@@ -1,15 +1,15 @@
 package edu.franklin.cecas.repository;
 
-import java.util.List;
-import java.util.Optional;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.assertj.core.api.Assertions.assertThat;
-import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.dao.DataIntegrityViolationException;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import edu.franklin.cecas.domain.Course;
 import edu.franklin.cecas.support.MySqlDataJpaTest;
+import java.util.List;
+import java.util.Optional;
+import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DataIntegrityViolationException;
 
 @MySqlDataJpaTest
 public class CourseRepositoryTest {
@@ -67,11 +67,8 @@ public class CourseRepositoryTest {
         List<Course> results = courseRepository.findAllByCourseCodeAndIsActiveTrue("COMP-110");
 
         assertThat(results).hasSize(2);
-        assertThat(results)
-                .extracting(Course::getTerm)
-                .containsExactlyInAnyOrder("26/SU", "26/FA");
-        assertThat(results)
-                .allMatch(Course::isActive);
+        assertThat(results).extracting(Course::getTerm).containsExactlyInAnyOrder("26/SU", "26/FA");
+        assertThat(results).allMatch(Course::isActive);
     }
 
     @Test
@@ -83,8 +80,7 @@ public class CourseRepositoryTest {
         List<Course> results = courseRepository.findAllByIsActiveTrue();
 
         assertThat(results).hasSize(2);
-        assertThat(results)
-                .allMatch(Course::isActive);
+        assertThat(results).allMatch(Course::isActive);
     }
 
     /**
@@ -107,7 +103,8 @@ public class CourseRepositoryTest {
         courseRepository.save(course1);
 
         assertThatThrownBy(() -> {
-            courseRepository.saveAndFlush(course2);
-        }).isInstanceOf(DataIntegrityViolationException.class);
+                    courseRepository.saveAndFlush(course2);
+                })
+                .isInstanceOf(DataIntegrityViolationException.class);
     }
 }

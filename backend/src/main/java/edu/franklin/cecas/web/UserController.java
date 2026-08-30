@@ -1,7 +1,15 @@
 package edu.franklin.cecas.web;
 
+import edu.franklin.cecas.dto.ChangePasswordRequest;
+import edu.franklin.cecas.dto.StudentPointsDTO;
+import edu.franklin.cecas.dto.UserDTO;
+import edu.franklin.cecas.dto.UserProfileResponse;
+import edu.franklin.cecas.dto.ValidatePointsRequest;
+import edu.franklin.cecas.exception.PointCapExceededException;
+import edu.franklin.cecas.service.PointAllocationService;
+import edu.franklin.cecas.service.UserService;
+import jakarta.validation.Valid;
 import java.util.Map;
-
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -15,16 +23,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import edu.franklin.cecas.dto.ChangePasswordRequest;
-import edu.franklin.cecas.dto.StudentPointsDTO;
-import edu.franklin.cecas.dto.UserDTO;
-import edu.franklin.cecas.dto.UserProfileResponse;
-import edu.franklin.cecas.dto.ValidatePointsRequest;
-import edu.franklin.cecas.exception.PointCapExceededException;
-import edu.franklin.cecas.service.PointAllocationService;
-import edu.franklin.cecas.service.UserService;
-import jakarta.validation.Valid;
-
 @RestController
 @RequestMapping("/api/users")
 public class UserController {
@@ -37,7 +35,6 @@ public class UserController {
         this.pointAllocationService = pointAllocationService;
     }
 
-
     /**
      * Get student by ID - only accessible by chairs
      * @param id student ID
@@ -46,8 +43,8 @@ public class UserController {
     @PreAuthorize("hasRole('CHAIR')")
     @GetMapping("/{studentId}")
     public ResponseEntity<?> getStudentById(@PathVariable Integer studentId) {
-            UserDTO dto = userService.getStudentByStudentId(studentId);
-            return ResponseEntity.ok(dto);
+        UserDTO dto = userService.getStudentByStudentId(studentId);
+        return ResponseEntity.ok(dto);
     }
 
     /**
@@ -58,7 +55,7 @@ public class UserController {
     @PreAuthorize("hasRole('STUDENT') or hasRole('CHAIR')")
     @GetMapping("/me")
     public UserProfileResponse getUserProfile(@AuthenticationPrincipal UserDetails userDetails) {
-         return userService.getUserProfile(userDetails.getUsername());
+        return userService.getUserProfile(userDetails.getUsername());
     }
 
     /**
@@ -66,8 +63,9 @@ public class UserController {
      */
     @PreAuthorize("hasRole('STUDENT')")
     @GetMapping("/me/points")
-    public StudentPointsDTO getStudentPoints(@AuthenticationPrincipal UserDetails userDetails, @RequestParam String term) {
-         return userService.getStudentPoints(userDetails.getUsername(), term);
+    public StudentPointsDTO getStudentPoints(
+            @AuthenticationPrincipal UserDetails userDetails, @RequestParam String term) {
+        return userService.getStudentPoints(userDetails.getUsername(), term);
     }
 
     /**
@@ -78,12 +76,11 @@ public class UserController {
      */
     @PreAuthorize("hasRole('STUDENT') or hasRole('CHAIR')")
     @PostMapping("/change-password")
-    public ResponseEntity<?> changePassword(@AuthenticationPrincipal UserDetails userDetails,
-                                            @Valid @RequestBody ChangePasswordRequest request) {
+    public ResponseEntity<?> changePassword(
+            @AuthenticationPrincipal UserDetails userDetails, @Valid @RequestBody ChangePasswordRequest request) {
         String email = userDetails.getUsername();
         userService.changePassword(email, request);
         return ResponseEntity.ok("Password changed successfully");
-
     }
 
     /**
@@ -99,8 +96,8 @@ public class UserController {
      */
     @PreAuthorize("hasRole('CHAIR')")
     @PostMapping("/force-change-password")
-    public ResponseEntity<?> forceChangePassword(@AuthenticationPrincipal UserDetails userDetails,
-                                                 @Valid @RequestBody ChangePasswordRequest request) {
+    public ResponseEntity<?> forceChangePassword(
+            @AuthenticationPrincipal UserDetails userDetails, @Valid @RequestBody ChangePasswordRequest request) {
         String email = userDetails.getUsername();
         userService.forceChangePassword(email, request);
         return ResponseEntity.ok("Password changed successfully.");
@@ -116,11 +113,11 @@ public class UserController {
     @PreAuthorize("hasRole('CHAIR')")
     public ResponseEntity<?> validatePointAllocation(@RequestBody ValidatePointsRequest request) {
         try {
-            pointAllocationService.validateAwardAllowed(request.getStudentId(), request.getTerm(), request.getRequestedPoints());
+            pointAllocationService.validateAwardAllowed(
+                    request.getStudentId(), request.getTerm(), request.getRequestedPoints());
             return ResponseEntity.ok().build();
         } catch (PointCapExceededException ex) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of("message", ex.getMessage()));
         }
     }
-
 }

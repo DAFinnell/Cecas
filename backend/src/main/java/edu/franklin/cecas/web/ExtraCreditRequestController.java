@@ -1,7 +1,12 @@
 package edu.franklin.cecas.web;
 
+import edu.franklin.cecas.dto.ExtraCreditRequestCreateDTO;
+import edu.franklin.cecas.dto.StudentRequestDetailDTO;
+import edu.franklin.cecas.dto.StudentRequestSummaryDTO;
+import edu.franklin.cecas.service.EvidenceSubmissionService;
+import edu.franklin.cecas.service.ExtraCreditRequestService;
+import jakarta.validation.Valid;
 import java.util.List;
-
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -17,21 +22,14 @@ import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
-import edu.franklin.cecas.dto.ExtraCreditRequestCreateDTO;
-import edu.franklin.cecas.dto.StudentRequestDetailDTO;
-import edu.franklin.cecas.dto.StudentRequestSummaryDTO;
-import edu.franklin.cecas.service.EvidenceSubmissionService;
-import edu.franklin.cecas.service.ExtraCreditRequestService;
-import jakarta.validation.Valid;
-
 @RestController
 @RequestMapping("/api/extra-credit-requests")
 public class ExtraCreditRequestController {
     private final ExtraCreditRequestService extraCreditRequestService;
     private final EvidenceSubmissionService evidenceSubmissionService;
 
-    public ExtraCreditRequestController(ExtraCreditRequestService extraCreditRequestService,
-            EvidenceSubmissionService evidenceSubmissionService) {
+    public ExtraCreditRequestController(
+            ExtraCreditRequestService extraCreditRequestService, EvidenceSubmissionService evidenceSubmissionService) {
         this.extraCreditRequestService = extraCreditRequestService;
         this.evidenceSubmissionService = evidenceSubmissionService;
     }
@@ -39,8 +37,7 @@ public class ExtraCreditRequestController {
     @PreAuthorize("hasRole('STUDENT')")
     @PostMapping
     public ResponseEntity<StudentRequestDetailDTO> createRequest(
-            @AuthenticationPrincipal UserDetails userDetails,
-            @Valid @RequestBody ExtraCreditRequestCreateDTO dto) {
+            @AuthenticationPrincipal UserDetails userDetails, @Valid @RequestBody ExtraCreditRequestCreateDTO dto) {
         StudentRequestDetailDTO response = extraCreditRequestService.createRequest(userDetails.getUsername(), dto);
 
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
@@ -50,8 +47,8 @@ public class ExtraCreditRequestController {
     @GetMapping
     public ResponseEntity<List<StudentRequestSummaryDTO>> getRequests(
             @AuthenticationPrincipal UserDetails userDetails) {
-        List<StudentRequestSummaryDTO> response = extraCreditRequestService.getRequestsForStudent(
-                userDetails.getUsername());
+        List<StudentRequestSummaryDTO> response =
+                extraCreditRequestService.getRequestsForStudent(userDetails.getUsername());
 
         return ResponseEntity.ok(response);
     }
@@ -59,24 +56,21 @@ public class ExtraCreditRequestController {
     @PreAuthorize("hasRole('STUDENT')")
     @GetMapping("/{requestId}")
     public ResponseEntity<StudentRequestDetailDTO> getRequest(
-            @AuthenticationPrincipal UserDetails userDetails,
-            @PathVariable Integer requestId) {
-        StudentRequestDetailDTO response = extraCreditRequestService.getRequestForStudent(
-                userDetails.getUsername(),
-                requestId);
+            @AuthenticationPrincipal UserDetails userDetails, @PathVariable Integer requestId) {
+        StudentRequestDetailDTO response =
+                extraCreditRequestService.getRequestForStudent(userDetails.getUsername(), requestId);
 
         return ResponseEntity.ok(response);
     }
 
     @PreAuthorize("hasRole('STUDENT')")
     @PostMapping(value = "/{requestId}/evidence", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public ResponseEntity<StudentRequestDetailDTO> uploadEvidence(@AuthenticationPrincipal UserDetails userDetails,
+    public ResponseEntity<StudentRequestDetailDTO> uploadEvidence(
+            @AuthenticationPrincipal UserDetails userDetails,
             @PathVariable Integer requestId,
             @RequestPart(value = "evidence", required = false) MultipartFile evidence) {
-        StudentRequestDetailDTO response = evidenceSubmissionService.submitEvidence(
-                userDetails.getUsername(),
-                requestId,
-                evidence);
+        StudentRequestDetailDTO response =
+                evidenceSubmissionService.submitEvidence(userDetails.getUsername(), requestId, evidence);
 
         return ResponseEntity.ok(response);
     }

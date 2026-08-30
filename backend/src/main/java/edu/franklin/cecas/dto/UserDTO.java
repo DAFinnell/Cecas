@@ -1,9 +1,8 @@
 package edu.franklin.cecas.dto;
 
-import java.time.LocalDateTime;
-
 import edu.franklin.cecas.domain.User;
 import edu.franklin.cecas.domain.UserRole;
+import java.time.LocalDateTime;
 
 public class UserDTO {
     private Integer id;
@@ -15,18 +14,18 @@ public class UserDTO {
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 
-public UserDTO() {}
+    public UserDTO() {}
 
-public UserDTO(User user) {
-    this.id = user.getId();
-    this.email = user.getEmail();
-    this.fullName = user.getFullName();
-    this.role = user.getRole();
-    this.studentId = user.getStudentId();
-    this.isActive = user.getIsActive();
-    this.createdAt = user.getCreatedAt();
-    this.updatedAt = user.getUpdatedAt();
-}
+    public UserDTO(User user) {
+        this.id = user.getId();
+        this.email = user.getEmail();
+        this.fullName = user.getFullName();
+        this.role = user.getRole();
+        this.studentId = user.getStudentId();
+        this.isActive = user.getIsActive();
+        this.createdAt = user.getCreatedAt();
+        this.updatedAt = user.getUpdatedAt();
+    }
 
     public Integer getId() {
         return id;
@@ -91,5 +90,4 @@ public UserDTO(User user) {
     public void setUpdatedAt(LocalDateTime updatedAt) {
         this.updatedAt = updatedAt;
     }
-
 }

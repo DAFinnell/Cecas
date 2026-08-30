@@ -1,15 +1,14 @@
 package edu.franklin.cecas.domain;
-import java.time.LocalDateTime;
-
-import org.hibernate.annotations.CreationTimestamp;
-import org.hibernate.annotations.UpdateTimestamp;
 
 import jakarta.persistence.*;
+import java.time.LocalDateTime;
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
 
 @Entity
 @Table(name = "extra_credit_requests")
 public class ExtraCreditRequest {
-    
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id")
@@ -62,9 +61,7 @@ public class ExtraCreditRequest {
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
 
-    public ExtraCreditRequest() {
-
-    }
+    public ExtraCreditRequest() {}
 
     public Integer getId() {
         return id;

@@ -3,22 +3,6 @@ package edu.franklin.cecas.seed;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.util.List;
-
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.test.context.DynamicPropertyRegistry;
-import org.springframework.test.context.DynamicPropertySource;
-import org.springframework.test.context.bean.override.mockito.MockitoBean;
-import org.springframework.transaction.annotation.Propagation;
-import org.springframework.transaction.annotation.Transactional;
-
 import edu.franklin.cecas.domain.Category;
 import edu.franklin.cecas.domain.ChairCourseAssignment;
 import edu.franklin.cecas.domain.Course;
@@ -32,6 +16,20 @@ import edu.franklin.cecas.repository.CourseRepository;
 import edu.franklin.cecas.repository.UserRepository;
 import edu.franklin.cecas.service.CecasUserDetailsService;
 import edu.franklin.cecas.support.MySqlServiceTest;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.List;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.test.context.DynamicPropertyRegistry;
+import org.springframework.test.context.DynamicPropertySource;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
 
 @MySqlServiceTest
 public class SeedServiceTest {
@@ -163,8 +161,10 @@ public class SeedServiceTest {
         assertThat(categories).hasSize(2);
         assertThat(chairs).hasSize(2);
 
-        assertThat(findCategoryByNameOrThrow("Seminar Attendance").getDefaultPoints()).isEqualTo(5);
-        assertThat(findCategoryByNameOrThrow("Research Presentation").getDefaultPoints()).isEqualTo(10);
+        assertThat(findCategoryByNameOrThrow("Seminar Attendance").getDefaultPoints())
+                .isEqualTo(5);
+        assertThat(findCategoryByNameOrThrow("Research Presentation").getDefaultPoints())
+                .isEqualTo(10);
 
         assertThat(grace.getMustChangePassword()).isTrue();
         assertThat(passwordEncoder.matches("ChairTemp01!", grace.getPassword())).isTrue();
@@ -227,8 +227,7 @@ public class SeedServiceTest {
                 Seminar Attendance,Approved seminar attendance,-1
                 """);
 
-        assertThatThrownBy(() -> seedService.seed())
-                .isInstanceOf(SeedValidationException.class);
+        assertThatThrownBy(() -> seedService.seed()).isInstanceOf(SeedValidationException.class);
 
         assertThat(courseRepository.findAll()).isEmpty();
         assertThat(categoryRepository.findAll()).isEmpty();
@@ -309,14 +308,13 @@ public class SeedServiceTest {
         assertThat(updatedGrace.getFullName()).isEqualTo("Grace Hopper Updated");
         assertThat(updatedGrace.getProgram()).isEqualTo("Data Science");
         assertThat(updatedGrace.getPassword()).isEqualTo(originalPasswordHash);
-        assertThat(passwordEncoder.matches("NewTempPassword99!", updatedGrace.getPassword())).isFalse();
+        assertThat(passwordEncoder.matches("NewTempPassword99!", updatedGrace.getPassword()))
+                .isFalse();
 
         assertThat(seminar.getDescription()).isEqualTo("Updated description");
         assertThat(seminar.getDefaultPoints()).isEqualTo(6);
 
-        assertThat(assignments)
-                .extracting(a -> a.getCourse().getCourseCode())
-                .containsExactly("COMP-495");
+        assertThat(assignments).extracting(a -> a.getCourse().getCourseCode()).containsExactly("COMP-495");
 
         assertThat(result.categories().updated()).isEqualTo(1);
     }

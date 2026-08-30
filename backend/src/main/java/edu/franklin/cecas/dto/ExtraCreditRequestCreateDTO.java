@@ -18,27 +18,27 @@ public class ExtraCreditRequestCreateDTO {
 
     public ExtraCreditRequestCreateDTO() {}
 
-        public Integer getCourseId() {
-            return courseId;
-        }
+    public Integer getCourseId() {
+        return courseId;
+    }
 
-        public void setCourseId(Integer courseId) {
-            this.courseId = courseId;
-        }
+    public void setCourseId(Integer courseId) {
+        this.courseId = courseId;
+    }
 
-        public Integer getCategoryId() {
-            return categoryId;
-        }
+    public Integer getCategoryId() {
+        return categoryId;
+    }
 
-        public void setCategoryId(Integer categoryId) {
-            this.categoryId = categoryId;
-        }
+    public void setCategoryId(Integer categoryId) {
+        this.categoryId = categoryId;
+    }
 
-        public String getDescription() {
-            return description;
-        }
+    public String getDescription() {
+        return description;
+    }
 
-        public void setDescription(String description) {
-            this.description = description == null ? null : description.trim();
-        }
+    public void setDescription(String description) {
+        this.description = description == null ? null : description.trim();
+    }
 }

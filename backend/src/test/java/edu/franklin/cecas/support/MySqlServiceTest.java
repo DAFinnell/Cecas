@@ -4,7 +4,6 @@ import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
-
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.testcontainers.context.ImportTestcontainers;
 import org.springframework.transaction.annotation.Transactional;
@@ -14,5 +13,4 @@ import org.springframework.transaction.annotation.Transactional;
 @SpringBootTest
 @Transactional
 @ImportTestcontainers(MySqlTestcontainers.class)
-public @interface MySqlServiceTest {
-}
+public @interface MySqlServiceTest {}

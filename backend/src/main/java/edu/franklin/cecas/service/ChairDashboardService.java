@@ -1,16 +1,5 @@
 package edu.franklin.cecas.service;
 
-import java.util.Collections;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.stream.Collectors;
-
-import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
 import edu.franklin.cecas.domain.ExtraCreditRequest;
 import edu.franklin.cecas.domain.ExtraCreditRequestStatus;
 import edu.franklin.cecas.domain.User;
@@ -19,6 +8,15 @@ import edu.franklin.cecas.dto.ChairDashboardSummaryResponse;
 import edu.franklin.cecas.repository.ChairCourseAssignmentRepository;
 import edu.franklin.cecas.repository.ExtraCreditRequestRepository;
 import edu.franklin.cecas.repository.UserRepository;
+import java.util.Collections;
+import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.stream.Collectors;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class ChairDashboardService {
@@ -27,13 +25,16 @@ public class ChairDashboardService {
     private final ChairCourseAssignmentRepository chairCourseAssignmentRepository;
     private final ExtraCreditRequestRepository extraCreditRequestRepository;
 
-    public ChairDashboardService(UserRepository userRepository, ChairCourseAssignmentRepository chairCourseAssignmentRepository, ExtraCreditRequestRepository extraCreditRequestRepository) {
+    public ChairDashboardService(
+            UserRepository userRepository,
+            ChairCourseAssignmentRepository chairCourseAssignmentRepository,
+            ExtraCreditRequestRepository extraCreditRequestRepository) {
         this.userRepository = userRepository;
         this.chairCourseAssignmentRepository = chairCourseAssignmentRepository;
         this.extraCreditRequestRepository = extraCreditRequestRepository;
     }
 
-         /**
+    /**
      * Summary counts for the chair's assigned courses. If the chair has no assignments
      * returns zeros for all counts.
      */
@@ -46,16 +47,16 @@ public class ChairDashboardService {
             return new ChairDashboardSummaryResponse(0L, 0L, 0L, 0L, 0L);
         }
 
-        long pending = extraCreditRequestRepository
-                .countByCourse_CourseIdInAndStatus(assignedCourseIds, ExtraCreditRequestStatus.PENDING);
-        long preApproved = extraCreditRequestRepository
-                .countByCourse_CourseIdInAndStatus(assignedCourseIds, ExtraCreditRequestStatus.PRE_APPROVED);
-        long evidence = extraCreditRequestRepository
-                .countByCourse_CourseIdInAndStatus(assignedCourseIds, ExtraCreditRequestStatus.EVIDENCE_SUBMITTED);
-        long approved = extraCreditRequestRepository
-                .countByCourse_CourseIdInAndStatus(assignedCourseIds, ExtraCreditRequestStatus.APPROVED);
-        long rejected = extraCreditRequestRepository
-                .countByCourse_CourseIdInAndStatus(assignedCourseIds, ExtraCreditRequestStatus.REJECTED);
+        long pending = extraCreditRequestRepository.countByCourse_CourseIdInAndStatus(
+                assignedCourseIds, ExtraCreditRequestStatus.PENDING);
+        long preApproved = extraCreditRequestRepository.countByCourse_CourseIdInAndStatus(
+                assignedCourseIds, ExtraCreditRequestStatus.PRE_APPROVED);
+        long evidence = extraCreditRequestRepository.countByCourse_CourseIdInAndStatus(
+                assignedCourseIds, ExtraCreditRequestStatus.EVIDENCE_SUBMITTED);
+        long approved = extraCreditRequestRepository.countByCourse_CourseIdInAndStatus(
+                assignedCourseIds, ExtraCreditRequestStatus.APPROVED);
+        long rejected = extraCreditRequestRepository.countByCourse_CourseIdInAndStatus(
+                assignedCourseIds, ExtraCreditRequestStatus.REJECTED);
 
         return new ChairDashboardSummaryResponse(pending, preApproved, evidence, approved, rejected);
     }
@@ -66,7 +67,8 @@ public class ChairDashboardService {
      * Results ordered by updatedAt DESC as provided by repository method.
      */
     @Transactional(readOnly = true)
-    public List<ChairDashboardQueueResponse> getChairReviewQueue(UserDetails userDetails, ExtraCreditRequestStatus status) {
+    public List<ChairDashboardQueueResponse> getChairReviewQueue(
+            UserDetails userDetails, ExtraCreditRequestStatus status) {
         User chair = resolveChair(userDetails);
         List<Integer> assignedCourseIds = getAssignedCourseIds(chair);
 
@@ -74,8 +76,9 @@ public class ChairDashboardService {
             return Collections.emptyList();
         }
 
-        List<ExtraCreditRequest> requests = extraCreditRequestRepository
-                .findByCourse_CourseIdInAndStatusOrderByUpdatedAtDesc(assignedCourseIds, status);
+        List<ExtraCreditRequest> requests =
+                extraCreditRequestRepository.findByCourse_CourseIdInAndStatusOrderByUpdatedAtDesc(
+                        assignedCourseIds, status);
 
         return requests.stream()
                 .filter(Objects::nonNull)

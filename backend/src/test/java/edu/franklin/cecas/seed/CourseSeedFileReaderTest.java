@@ -3,15 +3,13 @@ package edu.franklin.cecas.seed;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
+import edu.franklin.cecas.exception.SeedValidationException;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
-
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
-
-import edu.franklin.cecas.exception.SeedValidationException;
 
 public class CourseSeedFileReaderTest {
 
@@ -54,9 +52,7 @@ public class CourseSeedFileReaderTest {
                   ,26/FA,H1WW
                 """);
 
-        SeedValidationException ex = assertThrows(
-                SeedValidationException.class,
-                () -> reader.read(file));
+        SeedValidationException ex = assertThrows(SeedValidationException.class, () -> reader.read(file));
 
         SeedValidationError error = ex.getErrors().get(0);
         assertEquals("courses.csv", error.fileName());
@@ -75,9 +71,7 @@ public class CourseSeedFileReaderTest {
                 COMP-110,    ,H1WW
                 """);
 
-        SeedValidationException ex = assertThrows(
-                SeedValidationException.class,
-                () -> reader.read(file));
+        SeedValidationException ex = assertThrows(SeedValidationException.class, () -> reader.read(file));
 
         SeedValidationError error = ex.getErrors().get(0);
         assertEquals("courses.csv", error.fileName());
@@ -96,9 +90,7 @@ public class CourseSeedFileReaderTest {
                 COMP-110,26/FA,
                 """);
 
-        SeedValidationException ex = assertThrows(
-                SeedValidationException.class,
-                () -> reader.read(file));
+        SeedValidationException ex = assertThrows(SeedValidationException.class, () -> reader.read(file));
 
         SeedValidationError error = ex.getErrors().get(0);
         assertEquals("courses.csv", error.fileName());
@@ -118,9 +110,7 @@ public class CourseSeedFileReaderTest {
                 COMP-110,26/FA,H1WW
                 """);
 
-        SeedValidationException ex = assertThrows(
-                SeedValidationException.class,
-                () -> reader.read(file));
+        SeedValidationException ex = assertThrows(SeedValidationException.class, () -> reader.read(file));
 
         SeedValidationError error = ex.getErrors().get(0);
         assertEquals("courses.csv", error.fileName());
@@ -160,9 +150,7 @@ public class CourseSeedFileReaderTest {
                 comp394,26/fa,h1ww
                 """);
 
-        SeedValidationException ex = assertThrows(
-                SeedValidationException.class,
-                () -> reader.read(file));
+        SeedValidationException ex = assertThrows(SeedValidationException.class, () -> reader.read(file));
 
         SeedValidationError error = ex.getErrors().get(0);
         assertEquals("courses.csv", error.fileName());
@@ -182,9 +170,7 @@ public class CourseSeedFileReaderTest {
                 comp-394,fa/26,h1ww
                 """);
 
-        SeedValidationException ex = assertThrows(
-                SeedValidationException.class,
-                () -> reader.read(file));
+        SeedValidationException ex = assertThrows(SeedValidationException.class, () -> reader.read(file));
 
         SeedValidationError error = ex.getErrors().get(0);
         assertEquals("courses.csv", error.fileName());
@@ -204,9 +190,7 @@ public class CourseSeedFileReaderTest {
                 comp-394,26/fa,h1-w
                 """);
 
-        SeedValidationException ex = assertThrows(
-                SeedValidationException.class,
-                () -> reader.read(file));
+        SeedValidationException ex = assertThrows(SeedValidationException.class, () -> reader.read(file));
 
         SeedValidationError error = ex.getErrors().get(0);
         assertEquals("courses.csv", error.fileName());

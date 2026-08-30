@@ -1,9 +1,8 @@
 package edu.franklin.cecas.dto;
 
-import java.time.LocalDateTime;
-
 import edu.franklin.cecas.domain.ExtraCreditRequest;
 import edu.franklin.cecas.domain.ExtraCreditRequestStatus;
+import java.time.LocalDateTime;
 
 public class ChairDashboardQueueResponse {
     private int requestId;
@@ -24,7 +23,7 @@ public class ChairDashboardQueueResponse {
     private LocalDateTime updatedAt;
 
     public ChairDashboardQueueResponse() {}
-    
+
     public ChairDashboardQueueResponse(ExtraCreditRequest request) {
         this.requestId = request.getId();
         this.studentName = request.getStudent().getFullName();

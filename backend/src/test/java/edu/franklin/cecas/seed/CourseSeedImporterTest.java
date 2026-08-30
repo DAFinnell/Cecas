@@ -1,16 +1,14 @@
 package edu.franklin.cecas.seed;
 
-import java.util.List;
-
 import static org.assertj.core.api.Assertions.assertThat;
-
-import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Import;
 
 import edu.franklin.cecas.domain.Course;
 import edu.franklin.cecas.repository.CourseRepository;
 import edu.franklin.cecas.support.MySqlDataJpaTest;
+import java.util.List;
+import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Import;
 
 @MySqlDataJpaTest
 @Import(CourseSeedImporter.class)
@@ -33,8 +31,7 @@ public class CourseSeedImporterTest {
      */
     @Test
     void testImportCoursesInsertsNewCourse() {
-        CourseSeedImportResult result = importer.importCourses(List.of(
-                new CourseSeedRow("COMP-495", "26/FA", "H1WW")));
+        CourseSeedImportResult result = importer.importCourses(List.of(new CourseSeedRow("COMP-495", "26/FA", "H1WW")));
 
         List<Course> courses = courseRepository.findAll();
 
@@ -57,8 +54,7 @@ public class CourseSeedImporterTest {
     void testImportCoursesLeavesExistingCourseUnchanged() {
         Course existingCourse = saveCourse("COMP-495", "26/SP", "H2WW", true);
 
-        CourseSeedImportResult result = importer.importCourses(List.of(
-                new CourseSeedRow("COMP-495", "26/SP", "H2WW")));
+        CourseSeedImportResult result = importer.importCourses(List.of(new CourseSeedRow("COMP-495", "26/SP", "H2WW")));
 
         List<Course> courses = courseRepository.findAll();
 
@@ -81,8 +77,7 @@ public class CourseSeedImporterTest {
     void testImportCoursesReactivatesInactiveCourse() {
         Course existingCourse = saveCourse("COMP-495", "26/SP", "H2WW", false);
 
-        CourseSeedImportResult result = importer.importCourses(List.of(
-                new CourseSeedRow("COMP-495", "26/SP", "H2WW")));
+        CourseSeedImportResult result = importer.importCourses(List.of(new CourseSeedRow("COMP-495", "26/SP", "H2WW")));
 
         List<Course> courses = courseRepository.findAll();
 
@@ -129,8 +124,7 @@ public class CourseSeedImporterTest {
     void testImportCoursesTreatsNaturalKeyChangeAsInsertAndDeactivate() {
         Course oldCourse = saveCourse("COMP-495", "26/SP", "001", true);
 
-        CourseSeedImportResult result = importer.importCourses(List.of(
-                new CourseSeedRow("COMP-495", "26/SP", "002")));
+        CourseSeedImportResult result = importer.importCourses(List.of(new CourseSeedRow("COMP-495", "26/SP", "002")));
 
         List<Course> courses = courseRepository.findAll();
         assertThat(courses).hasSize(2);
@@ -157,9 +151,8 @@ public class CourseSeedImporterTest {
      */
     @Test
     void testImportCoursesIsIdempotentForSameRows() {
-        List<CourseSeedRow> rows = List.of(
-                new CourseSeedRow("COMP-495", "26/FA", "H1WW"),
-                new CourseSeedRow("COMP-496", "26/FA", "H2WW"));
+        List<CourseSeedRow> rows =
+                List.of(new CourseSeedRow("COMP-495", "26/FA", "H1WW"), new CourseSeedRow("COMP-496", "26/FA", "H2WW"));
 
         CourseSeedImportResult firstResult = importer.importCourses(rows);
         CourseSeedImportResult secondResult = importer.importCourses(rows);

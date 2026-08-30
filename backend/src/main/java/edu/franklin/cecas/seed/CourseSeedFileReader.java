@@ -1,12 +1,11 @@
 package edu.franklin.cecas.seed;
 
 import java.nio.file.Path;
-import java.util.regex.Pattern;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Set;
-
+import java.util.regex.Pattern;
 import org.apache.commons.csv.CSVRecord;
 import org.springframework.stereotype.Component;
 
@@ -37,38 +36,39 @@ public class CourseSeedFileReader extends AbstractSeedCsvReader<CourseSeedRow> {
         String section = record.get("section").trim().toUpperCase(Locale.ROOT);
 
         if (courseCode.isBlank()) {
-            errors.add(new SeedValidationError(fileName(), physicalRowNumber,
-                    "course_code", "Course code is required."));
+            errors.add(
+                    new SeedValidationError(fileName(), physicalRowNumber, "course_code", "Course code is required."));
             return null;
         }
 
         if (term.isBlank()) {
-            errors.add(new SeedValidationError(fileName(), physicalRowNumber,
-                    "term", "Term is required."));
+            errors.add(new SeedValidationError(fileName(), physicalRowNumber, "term", "Term is required."));
             return null;
         }
 
         if (section.isBlank()) {
-            errors.add(new SeedValidationError(fileName(), physicalRowNumber,
-                    "section", "Section is required."));
+            errors.add(new SeedValidationError(fileName(), physicalRowNumber, "section", "Section is required."));
             return null;
         }
 
         if (!COURSE_CODE_PATTERN.matcher(courseCode).matches()) {
-            errors.add(new SeedValidationError(fileName(), physicalRowNumber,
-                    "course_code", "Course code must match DEPT-123 format."));
+            errors.add(new SeedValidationError(
+                    fileName(), physicalRowNumber, "course_code", "Course code must match DEPT-123 format."));
             return null;
         }
 
         if (!TERM_PATTERN.matcher(term).matches()) {
-            errors.add(new SeedValidationError(fileName(), physicalRowNumber,
-                    "term", "Term must match YY/FA, YY/SP, or YY/SU format."));
+            errors.add(new SeedValidationError(
+                    fileName(), physicalRowNumber, "term", "Term must match YY/FA, YY/SP, or YY/SU format."));
             return null;
         }
 
         if (!SECTION_PATTERN.matcher(section).matches()) {
-            errors.add(new SeedValidationError(fileName(), physicalRowNumber,
-                    "section", "Section must be exactly four uppercase alphanumeric characters."));
+            errors.add(new SeedValidationError(
+                    fileName(),
+                    physicalRowNumber,
+                    "section",
+                    "Section must be exactly four uppercase alphanumeric characters."));
             return null;
         }
 
@@ -77,8 +77,8 @@ public class CourseSeedFileReader extends AbstractSeedCsvReader<CourseSeedRow> {
         // Courses are unique by normalized course_code + term + section.
         String key = courseCode + "|" + term + "|" + section;
         if (seenCourseKeys.add(key) == false) {
-            errors.add(new SeedValidationError(fileName(), physicalRowNumber,
-                    "course_key", "Duplicate course row found after normalization."));
+            errors.add(new SeedValidationError(
+                    fileName(), physicalRowNumber, "course_key", "Duplicate course row found after normalization."));
             return null;
         }
 

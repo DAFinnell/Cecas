@@ -1,7 +1,4 @@
 package edu.franklin.cecas.domain;
-import java.time.LocalDateTime;
-
-import org.hibernate.annotations.CreationTimestamp;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -10,14 +7,17 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
+import java.time.LocalDateTime;
+import org.hibernate.annotations.CreationTimestamp;
 
 @Entity
-@Table(name = "courses",
-    uniqueConstraints = {
-        @UniqueConstraint(name = "course_code_term_section_IDX", columnNames = {"course_code", "term", "section"})
-    }
-)
-
+@Table(
+        name = "courses",
+        uniqueConstraints = {
+            @UniqueConstraint(
+                    name = "course_code_term_section_IDX",
+                    columnNames = {"course_code", "term", "section"})
+        })
 public class Course {
 
     @Id

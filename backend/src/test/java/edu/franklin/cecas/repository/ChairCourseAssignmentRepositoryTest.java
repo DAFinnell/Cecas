@@ -2,13 +2,11 @@ package edu.franklin.cecas.repository;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import java.util.List;
-
-import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-
 import edu.franklin.cecas.domain.*;
 import edu.franklin.cecas.support.MySqlDataJpaTest;
+import java.util.List;
+import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
 
 @MySqlDataJpaTest
 public class ChairCourseAssignmentRepositoryTest {
@@ -47,16 +45,11 @@ public class ChairCourseAssignmentRepositoryTest {
         User chair = createChair();
         Course course = createCourse();
 
-        ChairCourseAssignment assignment =
-                new ChairCourseAssignment(chair, course);
+        ChairCourseAssignment assignment = new ChairCourseAssignment(chair, course);
 
         assignmentRepository.save(assignment);
 
-        boolean exists = assignmentRepository
-                .existsByChair_IdAndCourse_CourseId(
-                        chair.getId(),
-                        course.getCourseId()
-                );
+        boolean exists = assignmentRepository.existsByChair_IdAndCourse_CourseId(chair.getId(), course.getCourseId());
 
         assertThat(exists).isTrue();
     }
@@ -70,13 +63,10 @@ public class ChairCourseAssignmentRepositoryTest {
         course2.setActive(true);
         courseRepository.save(course2);
 
-        assignmentRepository.saveAll(List.of(
-                new ChairCourseAssignment(chair, course1),
-                new ChairCourseAssignment(chair, course2)
-        ));
+        assignmentRepository.saveAll(
+                List.of(new ChairCourseAssignment(chair, course1), new ChairCourseAssignment(chair, course2)));
 
-        List<ChairCourseAssignment> results =
-                assignmentRepository.findAllByChairId(chair.getId());
+        List<ChairCourseAssignment> results = assignmentRepository.findAllByChairId(chair.getId());
 
         assertThat(results).hasSize(2);
 
@@ -91,14 +81,11 @@ public class ChairCourseAssignmentRepositoryTest {
         User chair = createChair();
         Course course = createCourse();
 
-        assignmentRepository.save(
-                new ChairCourseAssignment(chair, course)
-        );
+        assignmentRepository.save(new ChairCourseAssignment(chair, course));
 
         assignmentRepository.deleteAllByChairId(chair.getId());
 
-        List<ChairCourseAssignment> results =
-                assignmentRepository.findAllByChairId(chair.getId());
+        List<ChairCourseAssignment> results = assignmentRepository.findAllByChairId(chair.getId());
 
         assertThat(results).isEmpty();
     }

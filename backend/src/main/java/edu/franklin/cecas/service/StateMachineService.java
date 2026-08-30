@@ -10,28 +10,28 @@ public interface StateMachineService {
      * Chair Only
      */
     ExtraCreditRequest preApproveRequest(Integer requestId, User chair);
-    
+
     /**
      * PENDING -> REJECTED (Pre-Review)
      * EVIDENCE_SUBMITTED -> REJECTED (Final Review)
      * Chair Only
      */
     ExtraCreditRequest rejectRequest(Integer requestId, String feedback, User chair);
-    
+
     /**
-     * PRE_APPROVED -> EVIDENCE_SUBMITTED 
+     * PRE_APPROVED -> EVIDENCE_SUBMITTED
      * Student Only
      */
     ExtraCreditRequest submitEvidenceRequest(Integer requestId, User student, String evidenceFilePath);
 
     /**
-     * PRE_APPROVED -> CLOSED 
+     * PRE_APPROVED -> CLOSED
      * Automated
      */
     ExtraCreditRequest passDeadlineRequest(Integer requestId);
 
     /**
-     * EVIDENCE_SUBMITTED -> APPROVED 
+     * EVIDENCE_SUBMITTED -> APPROVED
      * Chair Only
      */
     ExtraCreditRequest approveWithPointsRequest(Integer requestId, Integer points, String feedback, User chair);

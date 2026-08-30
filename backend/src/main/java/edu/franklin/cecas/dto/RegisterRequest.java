@@ -6,12 +6,11 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
 import jakarta.validation.constraints.Size;
 
-
 /**
  * This is for user registration.
  */
 public class RegisterRequest {
-    
+
     @Email
     @NotBlank
     public String email;
@@ -32,21 +31,19 @@ public class RegisterRequest {
     @Positive
     public Integer studentId;
 
-    public RegisterRequest() {
-    }
+    public RegisterRequest() {}
 
-    public RegisterRequest(String email, String password, String fullName,
-        String program, Integer studentId) {
-            this.email = email;
-            this.password = password;
-            this.fullName = fullName;
-            this.program = program;
-            this.studentId = studentId;
+    public RegisterRequest(String email, String password, String fullName, String program, Integer studentId) {
+        this.email = email;
+        this.password = password;
+        this.fullName = fullName;
+        this.program = program;
+        this.studentId = studentId;
     }
 
     public String getEmail() {
         return this.email;
-    }  
+    }
 
     public void setEmail(String email) {
         this.email = email;

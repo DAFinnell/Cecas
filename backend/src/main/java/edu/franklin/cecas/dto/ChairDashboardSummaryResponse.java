@@ -9,7 +9,12 @@ public class ChairDashboardSummaryResponse {
 
     public ChairDashboardSummaryResponse() {}
 
-    public ChairDashboardSummaryResponse(long pendingCount, long preApprovedCount, long evidenceSubmittedCount, long approvedCount, long rejectedCount) {
+    public ChairDashboardSummaryResponse(
+            long pendingCount,
+            long preApprovedCount,
+            long evidenceSubmittedCount,
+            long approvedCount,
+            long rejectedCount) {
         this.pendingCount = pendingCount;
         this.preApprovedCount = preApprovedCount;
         this.evidenceSubmittedCount = evidenceSubmittedCount;
@@ -32,7 +37,7 @@ public class ChairDashboardSummaryResponse {
     public void setPreApprovedCount(long preApprovedCount) {
         this.preApprovedCount = preApprovedCount;
     }
-    
+
     public long getEvidenceSubmittedCount() {
         return evidenceSubmittedCount;
     }
@@ -56,5 +61,4 @@ public class ChairDashboardSummaryResponse {
     public void setRejectedCount(long rejectedCount) {
         this.rejectedCount = rejectedCount;
     }
-
 }

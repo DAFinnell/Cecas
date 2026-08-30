@@ -1,12 +1,9 @@
 package edu.franklin.cecas.service;
 
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
 import edu.franklin.cecas.domain.ExtraCreditRequest;
 import edu.franklin.cecas.domain.User;
-import edu.franklin.cecas.dto.ChairReviewDTO;
 import edu.franklin.cecas.dto.ChairRequestActionDTO;
+import edu.franklin.cecas.dto.ChairReviewDTO;
 import edu.franklin.cecas.dto.StudentPointsDTO;
 import edu.franklin.cecas.exception.ChairNotAssignedException;
 import edu.franklin.cecas.exception.ResourceNotFoundException;
@@ -14,6 +11,8 @@ import edu.franklin.cecas.repository.ChairCourseAssignmentRepository;
 import edu.franklin.cecas.repository.ExtraCreditRequestRepository;
 import edu.franklin.cecas.repository.UserRepository;
 import edu.franklin.cecas.service.EvidenceStorageService.StoredEvidence;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @Transactional
@@ -48,17 +47,14 @@ public class ChairReviewRequestService {
         ExtraCreditRequest request = requireAssignedRequest(chair, requestId);
 
         boolean assigned = assignmentRepository.existsByChair_IdAndCourse_CourseId(
-                chair.getId(),
-                request.getCourse().getCourseId());
+                chair.getId(), request.getCourse().getCourseId());
 
         if (!assigned) {
-            throw new ChairNotAssignedException(
-                    "Chair is not assigned to this course.");
+            throw new ChairNotAssignedException("Chair is not assigned to this course.");
         }
 
         StudentPointsDTO pointsSummary = pointAllocationService.getStudentPoints(
-                request.getStudent().getId(),
-                request.getCourse().getTerm());
+                request.getStudent().getId(), request.getCourse().getTerm());
 
         ChairReviewDTO dto = new ChairReviewDTO();
 
@@ -90,7 +86,8 @@ public class ChairReviewRequestService {
 
         if (evidenceAvailable) {
             dto.setEvidenceFileName(evidenceStorageService.evidenceFileName(request.getId(), evidencePath));
-            dto.setEvidenceContentType(evidenceStorageService.contentTypeFor(evidencePath).toString());
+            dto.setEvidenceContentType(
+                    evidenceStorageService.contentTypeFor(evidencePath).toString());
         }
 
         return dto;
@@ -102,12 +99,10 @@ public class ChairReviewRequestService {
         ExtraCreditRequest request = requireAssignedRequest(chair, requestId);
 
         boolean assigned = assignmentRepository.existsByChair_IdAndCourse_CourseId(
-                chair.getId(),
-                request.getCourse().getCourseId());
+                chair.getId(), request.getCourse().getCourseId());
 
         if (!assigned) {
-            throw new ChairNotAssignedException(
-                    "Chair is not assigned to this course.");
+            throw new ChairNotAssignedException("Chair is not assigned to this course.");
         }
 
         ExtraCreditRequest updatedRequest = stateMachineService.preApproveRequest(requestId, chair);
@@ -115,27 +110,19 @@ public class ChairReviewRequestService {
         return toActionDTO(updatedRequest);
     }
 
-    public ChairRequestActionDTO reject(
-            String username,
-            Integer requestId,
-            String feedback) {
+    public ChairRequestActionDTO reject(String username, Integer requestId, String feedback) {
 
         User chair = resolveChair(username);
         ExtraCreditRequest request = requireAssignedRequest(chair, requestId);
 
         boolean assigned = assignmentRepository.existsByChair_IdAndCourse_CourseId(
-                chair.getId(),
-                request.getCourse().getCourseId());
+                chair.getId(), request.getCourse().getCourseId());
 
         if (!assigned) {
-            throw new ChairNotAssignedException(
-                    "Chair is not assigned to this course.");
+            throw new ChairNotAssignedException("Chair is not assigned to this course.");
         }
 
-        ExtraCreditRequest updatedRequest = stateMachineService.rejectRequest(
-                requestId,
-                feedback,
-                chair);
+        ExtraCreditRequest updatedRequest = stateMachineService.rejectRequest(requestId, feedback, chair);
 
         return toActionDTO(updatedRequest);
     }
@@ -157,25 +144,22 @@ public class ChairReviewRequestService {
     }
 
     private User resolveChair(String username) {
-        return userRepository.findByEmailIgnoreCase(username)
+        return userRepository
+                .findByEmailIgnoreCase(username)
                 .orElseThrow(() -> new ResourceNotFoundException("Chair not found."));
     }
 
-    private ExtraCreditRequest requireAssignedRequest(
-            User chair,
-            Integer requestId) {
+    private ExtraCreditRequest requireAssignedRequest(User chair, Integer requestId) {
 
-        ExtraCreditRequest request = requestRepository.findById(requestId)
-                .orElseThrow(() -> new ResourceNotFoundException(
-                        "Extra credit request not found."));
+        ExtraCreditRequest request = requestRepository
+                .findById(requestId)
+                .orElseThrow(() -> new ResourceNotFoundException("Extra credit request not found."));
 
         boolean assigned = assignmentRepository.existsByChair_IdAndCourse_CourseId(
-                chair.getId(),
-                request.getCourse().getCourseId());
+                chair.getId(), request.getCourse().getCourseId());
 
         if (!assigned) {
-            throw new ChairNotAssignedException(
-                    "Chair is not assigned to this course.");
+            throw new ChairNotAssignedException("Chair is not assigned to this course.");
         }
 
         return request;

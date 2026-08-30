@@ -23,7 +23,6 @@ public class UserProfileResponse {
         return fullName;
     }
 
-
     public String getRole() {
         return role;
     }

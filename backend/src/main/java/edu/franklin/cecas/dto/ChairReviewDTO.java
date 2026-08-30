@@ -28,8 +28,7 @@ public class ChairReviewDTO {
     private String evidenceFileName;
     private String evidenceContentType;
 
-    public ChairReviewDTO() {
-    }
+    public ChairReviewDTO() {}
 
     public Integer getRequestId() {
         return requestId;

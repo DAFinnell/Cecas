@@ -1,8 +1,7 @@
 package edu.franklin.cecas.exception;
 
-import java.util.List;
-
 import edu.franklin.cecas.seed.SeedValidationError;
+import java.util.List;
 
 public class SeedValidationException extends RuntimeException {
     private final List<SeedValidationError> errors;

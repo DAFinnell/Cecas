@@ -3,15 +3,13 @@ package edu.franklin.cecas.seed;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
+import edu.franklin.cecas.exception.SeedValidationException;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
-
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
-
-import edu.franklin.cecas.exception.SeedValidationException;
 
 public class CategorySeedFileReaderTest {
 
@@ -56,9 +54,7 @@ public class CategorySeedFileReaderTest {
         List<CategorySeedRow> rows = reader.read(file);
 
         assertEquals(1, rows.size());
-        assertEquals(
-                new CategorySeedRow("Seminar Attendance", "Approved seminar, workshop, or event", 5),
-                rows.get(0));
+        assertEquals(new CategorySeedRow("Seminar Attendance", "Approved seminar, workshop, or event", 5), rows.get(0));
     }
 
     /**
@@ -71,9 +67,7 @@ public class CategorySeedFileReaderTest {
                   ,Coming to class,5
                 """);
 
-        SeedValidationException ex = assertThrows(
-                SeedValidationException.class,
-                () -> reader.read(file));
+        SeedValidationException ex = assertThrows(SeedValidationException.class, () -> reader.read(file));
 
         SeedValidationError error = ex.getErrors().get(0);
         assertEquals("categories.csv", error.fileName());
@@ -92,9 +86,7 @@ public class CategorySeedFileReaderTest {
                 Participation,   ,5
                 """);
 
-        SeedValidationException ex = assertThrows(
-                SeedValidationException.class,
-                () -> reader.read(file));
+        SeedValidationException ex = assertThrows(SeedValidationException.class, () -> reader.read(file));
 
         SeedValidationError error = ex.getErrors().get(0);
         assertEquals("categories.csv", error.fileName());
@@ -113,9 +105,7 @@ public class CategorySeedFileReaderTest {
                 Participation,Coming to class,
                 """);
 
-        SeedValidationException ex = assertThrows(
-                SeedValidationException.class,
-                () -> reader.read(file));
+        SeedValidationException ex = assertThrows(SeedValidationException.class, () -> reader.read(file));
 
         SeedValidationError error = ex.getErrors().get(0);
         assertEquals("categories.csv", error.fileName());
@@ -134,9 +124,7 @@ public class CategorySeedFileReaderTest {
                 Participation,Coming to class,five
                 """);
 
-        SeedValidationException ex = assertThrows(
-                SeedValidationException.class,
-                () -> reader.read(file));
+        SeedValidationException ex = assertThrows(SeedValidationException.class, () -> reader.read(file));
 
         SeedValidationError error = ex.getErrors().get(0);
         assertEquals("categories.csv", error.fileName());
@@ -155,9 +143,7 @@ public class CategorySeedFileReaderTest {
                 Participation,Coming to class,-1
                 """);
 
-        SeedValidationException ex = assertThrows(
-                SeedValidationException.class,
-                () -> reader.read(file));
+        SeedValidationException ex = assertThrows(SeedValidationException.class, () -> reader.read(file));
 
         SeedValidationError error = ex.getErrors().get(0);
         assertEquals("categories.csv", error.fileName());
@@ -178,9 +164,7 @@ public class CategorySeedFileReaderTest {
                 seminar attendance,Second description,10
                 """);
 
-        SeedValidationException ex = assertThrows(
-                SeedValidationException.class,
-                () -> reader.read(file));
+        SeedValidationException ex = assertThrows(SeedValidationException.class, () -> reader.read(file));
 
         SeedValidationError error = ex.getErrors().get(0);
         assertEquals("categories.csv", error.fileName());
@@ -203,8 +187,6 @@ public class CategorySeedFileReaderTest {
         List<CategorySeedRow> rows = reader.read(file);
 
         assertEquals(1, rows.size());
-        assertEquals(
-                new CategorySeedRow("Seminar Attendance", "Approved   seminar   attendance", 5),
-                rows.get(0));
+        assertEquals(new CategorySeedRow("Seminar Attendance", "Approved   seminar   attendance", 5), rows.get(0));
     }
 }

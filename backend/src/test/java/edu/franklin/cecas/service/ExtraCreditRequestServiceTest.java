@@ -1,16 +1,10 @@
 package edu.franklin.cecas.service;
 
-import java.util.List;
-import java.util.Set;
-import java.util.stream.Collectors;
-
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
 
 import edu.franklin.cecas.domain.Category;
 import edu.franklin.cecas.domain.Course;
@@ -19,15 +13,20 @@ import edu.franklin.cecas.domain.ExtraCreditRequestStatus;
 import edu.franklin.cecas.domain.User;
 import edu.franklin.cecas.domain.UserRole;
 import edu.franklin.cecas.dto.ExtraCreditRequestCreateDTO;
+import edu.franklin.cecas.dto.StudentPointsDTO;
 import edu.franklin.cecas.dto.StudentRequestDetailDTO;
 import edu.franklin.cecas.dto.StudentRequestSummaryDTO;
-import edu.franklin.cecas.dto.StudentPointsDTO;
 import edu.franklin.cecas.exception.PointCapExceededException;
 import edu.franklin.cecas.repository.CategoryRepository;
 import edu.franklin.cecas.repository.CourseRepository;
 import edu.franklin.cecas.repository.ExtraCreditRequestRepository;
 import edu.franklin.cecas.repository.UserRepository;
 import edu.franklin.cecas.support.MySqlServiceTest;
+import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
+import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
 
 @MySqlServiceTest
 public class ExtraCreditRequestServiceTest {
@@ -106,11 +105,7 @@ public class ExtraCreditRequestServiceTest {
     }
 
     private ExtraCreditRequest saveRequest(
-            User student,
-            Course course,
-            Category category,
-            ExtraCreditRequestStatus status,
-            Integer awardedPoints) {
+            User student, Course course, Category category, ExtraCreditRequestStatus status, Integer awardedPoints) {
         ExtraCreditRequest request = new ExtraCreditRequest();
 
         request.setStudent(student);
@@ -150,7 +145,8 @@ public class ExtraCreditRequestServiceTest {
         assertEquals(ExtraCreditRequestStatus.PENDING, response.getStatus());
         assertEquals(5, response.getDefaultPoints());
 
-        var savedRequest = extraCreditRequestRepository.findById(response.getId()).orElseThrow();
+        var savedRequest =
+                extraCreditRequestRepository.findById(response.getId()).orElseThrow();
         assertEquals(ExtraCreditRequestStatus.PENDING, savedRequest.getStatus());
         assertEquals("I attended an approved academic seminar", savedRequest.getDescription());
     }
@@ -172,8 +168,8 @@ public class ExtraCreditRequestServiceTest {
         dto.setCategoryId(category.getCategoryId());
         dto.setDescription("Attempt by non-student");
 
-        RuntimeException ex = assertThrows(RuntimeException.class,
-                () -> extraCreditRequestService.createRequest(faculty.getEmail(), dto));
+        RuntimeException ex = assertThrows(
+                RuntimeException.class, () -> extraCreditRequestService.createRequest(faculty.getEmail(), dto));
 
         assertEquals("Unauthorized: User is not a student", ex.getMessage());
     }
@@ -225,12 +221,10 @@ public class ExtraCreditRequestServiceTest {
 
         extraCreditRequestService.createRequest(studentA.getEmail(), dto);
 
-        List<StudentRequestSummaryDTO> requestsA =
-                extraCreditRequestService.getRequestsForStudent(studentA.getEmail());
+        List<StudentRequestSummaryDTO> requestsA = extraCreditRequestService.getRequestsForStudent(studentA.getEmail());
         assertEquals(1, requestsA.size());
 
-        List<StudentRequestSummaryDTO> requestsB =
-                extraCreditRequestService.getRequestsForStudent(studentB.getEmail());
+        List<StudentRequestSummaryDTO> requestsB = extraCreditRequestService.getRequestsForStudent(studentB.getEmail());
         assertTrue(requestsB.isEmpty());
     }
 
@@ -252,7 +246,8 @@ public class ExtraCreditRequestServiceTest {
 
         assertNotNull(response.getId());
 
-        var savedRequest = extraCreditRequestRepository.findById(response.getId()).orElseThrow();
+        var savedRequest =
+                extraCreditRequestRepository.findById(response.getId()).orElseThrow();
 
         assertNotNull(savedRequest.getCourse());
         assertEquals(course.getCourseId(), savedRequest.getCourse().getCourseId());
@@ -283,7 +278,8 @@ public class ExtraCreditRequestServiceTest {
         assertEquals(5, response.getDefaultPoints());
         assertEquals(ExtraCreditRequestStatus.PENDING, response.getStatus());
 
-        var savedRequest = extraCreditRequestRepository.findById(response.getId()).orElseThrow();
+        var savedRequest =
+                extraCreditRequestRepository.findById(response.getId()).orElseThrow();
 
         assertNotNull(savedRequest.getCategory());
         assertEquals(category.getCategoryId(), savedRequest.getCategory().getCategoryId());
@@ -300,16 +296,11 @@ public class ExtraCreditRequestServiceTest {
         User student = createTestStudent("Derek Finnell", "derek@derek.com", 7001);
         Course course = createTestCourse();
         Category category = createTestCategory();
-        ExtraCreditRequest request = saveRequest(
-                student,
-                course,
-                category,
-                ExtraCreditRequestStatus.PRE_APPROVED,
-                null);
+        ExtraCreditRequest request =
+                saveRequest(student, course, category, ExtraCreditRequestStatus.PRE_APPROVED, null);
 
-        StudentRequestDetailDTO response = extraCreditRequestService.getRequestForStudent(
-                student.getEmail(),
-                request.getId());
+        StudentRequestDetailDTO response =
+                extraCreditRequestService.getRequestForStudent(student.getEmail(), request.getId());
 
         assertEquals(ExtraCreditRequestStatus.PRE_APPROVED, response.getStatus());
         assertTrue(response.isEvidenceUploadAvailable());
@@ -325,10 +316,18 @@ public class ExtraCreditRequestServiceTest {
         User student = createTestStudent("Derek Finnell", "derek.status@derek.com", 7002);
         Category category = createTestCategory("Status Test Category", 5);
 
-        saveRequest(student, createTestCourse("COMP-210", "26/FA", "H1WW"),
-                category, ExtraCreditRequestStatus.PENDING, null);
-        saveRequest(student, createTestCourse("COMP-220", "26/FA", "H2WW"),
-                category, ExtraCreditRequestStatus.PRE_APPROVED, null);
+        saveRequest(
+                student,
+                createTestCourse("COMP-210", "26/FA", "H1WW"),
+                category,
+                ExtraCreditRequestStatus.PENDING,
+                null);
+        saveRequest(
+                student,
+                createTestCourse("COMP-220", "26/FA", "H2WW"),
+                category,
+                ExtraCreditRequestStatus.PRE_APPROVED,
+                null);
         ExtraCreditRequest submitted = saveRequest(
                 student,
                 createTestCourse("COMP-230", "26/FA", "H3WW"),
@@ -337,20 +336,25 @@ public class ExtraCreditRequestServiceTest {
                 null);
         submitted.setEvidenceFilePath("evidence/request-" + submitted.getId() + "/proof.pdf");
         extraCreditRequestRepository.save(submitted);
-        saveRequest(student, createTestCourse("COMP-240", "26/FA", "H4WW"),
-                category, ExtraCreditRequestStatus.REJECTED, null);
+        saveRequest(
+                student,
+                createTestCourse("COMP-240", "26/FA", "H4WW"),
+                category,
+                ExtraCreditRequestStatus.REJECTED,
+                null);
 
-        Set<ExtraCreditRequestStatus> statuses = extraCreditRequestService
-                .getRequestsForStudent(student.getEmail())
-                .stream()
-                .map(StudentRequestSummaryDTO::getStatus)
-                .collect(Collectors.toSet());
+        Set<ExtraCreditRequestStatus> statuses =
+                extraCreditRequestService.getRequestsForStudent(student.getEmail()).stream()
+                        .map(StudentRequestSummaryDTO::getStatus)
+                        .collect(Collectors.toSet());
 
-        assertEquals(Set.of(
-                ExtraCreditRequestStatus.PENDING,
-                ExtraCreditRequestStatus.PRE_APPROVED,
-                ExtraCreditRequestStatus.EVIDENCE_SUBMITTED,
-                ExtraCreditRequestStatus.REJECTED), statuses);
+        assertEquals(
+                Set.of(
+                        ExtraCreditRequestStatus.PENDING,
+                        ExtraCreditRequestStatus.PRE_APPROVED,
+                        ExtraCreditRequestStatus.EVIDENCE_SUBMITTED,
+                        ExtraCreditRequestStatus.REJECTED),
+                statuses);
     }
 
     /**
@@ -364,10 +368,18 @@ public class ExtraCreditRequestServiceTest {
         Category pendingCategory = createTestCategory("Pending Activity", 15);
         Category requestedCategory = createTestCategory("Requested Activity", 10);
 
-        saveRequest(student, createTestCourse("COMP-310", "26/FA", "Q1WW"),
-                approvedCategory, ExtraCreditRequestStatus.APPROVED, 30);
-        saveRequest(student, createTestCourse("COMP-320", "26/FA", "Q2WW"),
-                pendingCategory, ExtraCreditRequestStatus.PENDING, null);
+        saveRequest(
+                student,
+                createTestCourse("COMP-310", "26/FA", "Q1WW"),
+                approvedCategory,
+                ExtraCreditRequestStatus.APPROVED,
+                30);
+        saveRequest(
+                student,
+                createTestCourse("COMP-320", "26/FA", "Q2WW"),
+                pendingCategory,
+                ExtraCreditRequestStatus.PENDING,
+                null);
         Course requestedCourse = createTestCourse("COMP-330", "26/FA", "Q3WW");
 
         StudentPointsDTO points = pointAllocationService.getStudentPoints(student.getId(), "26/FA");
@@ -383,7 +395,9 @@ public class ExtraCreditRequestServiceTest {
         assertThrows(
                 PointCapExceededException.class,
                 () -> extraCreditRequestService.createRequest(student.getEmail(), dto));
-        assertEquals(2, extraCreditRequestRepository.findByStudent_Id(student.getId()).size());
+        assertEquals(
+                2,
+                extraCreditRequestRepository.findByStudent_Id(student.getId()).size());
     }
 
     /**
@@ -397,10 +411,18 @@ public class ExtraCreditRequestServiceTest {
         Category secondCategory = createTestCategory("Second Approved Activity", 30);
         Category requestedCategory = createTestCategory("Additional Activity", 5);
 
-        saveRequest(student, createTestCourse("COMP-410", "26/FA", "F1WW"),
-                firstCategory, ExtraCreditRequestStatus.APPROVED, 20);
-        saveRequest(student, createTestCourse("COMP-420", "26/FA", "F2WW"),
-                secondCategory, ExtraCreditRequestStatus.APPROVED, 30);
+        saveRequest(
+                student,
+                createTestCourse("COMP-410", "26/FA", "F1WW"),
+                firstCategory,
+                ExtraCreditRequestStatus.APPROVED,
+                20);
+        saveRequest(
+                student,
+                createTestCourse("COMP-420", "26/FA", "F2WW"),
+                secondCategory,
+                ExtraCreditRequestStatus.APPROVED,
+                30);
         Course requestedCourse = createTestCourse("COMP-430", "26/FA", "F3WW");
 
         StudentPointsDTO points = pointAllocationService.getStudentPoints(student.getId(), "26/FA");
@@ -416,6 +438,8 @@ public class ExtraCreditRequestServiceTest {
         assertThrows(
                 PointCapExceededException.class,
                 () -> extraCreditRequestService.createRequest(student.getEmail(), dto));
-        assertEquals(2, extraCreditRequestRepository.findByStudent_Id(student.getId()).size());
+        assertEquals(
+                2,
+                extraCreditRequestRepository.findByStudent_Id(student.getId()).size());
     }
 }

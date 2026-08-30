@@ -1,5 +1,12 @@
 package edu.franklin.cecas.web;
 
+import edu.franklin.cecas.dto.CurrentUserResponse;
+import edu.franklin.cecas.dto.LoginRequest;
+import edu.franklin.cecas.dto.RegisterRequest;
+import edu.franklin.cecas.service.AuthService;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.web.csrf.CsrfToken;
@@ -8,14 +15,6 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-
-import edu.franklin.cecas.dto.CurrentUserResponse;
-import edu.franklin.cecas.dto.LoginRequest;
-import edu.franklin.cecas.dto.RegisterRequest;
-import edu.franklin.cecas.service.AuthService;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
-import jakarta.validation.Valid;
 
 @RestController
 @RequestMapping("/api/auth")
@@ -37,8 +36,7 @@ public class AuthController {
      * Register a new user account
      */
     @PostMapping("/register")
-    public ResponseEntity<CurrentUserResponse> registerUser(
-            @Valid @RequestBody RegisterRequest request) {
+    public ResponseEntity<CurrentUserResponse> registerUser(@Valid @RequestBody RegisterRequest request) {
 
         CurrentUserResponse response = authService.register(request);
         return ResponseEntity.ok(response);

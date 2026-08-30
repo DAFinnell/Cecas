@@ -2,16 +2,15 @@ package edu.franklin.cecas.service;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.crypto.password.PasswordEncoder;
-
 import edu.franklin.cecas.domain.User;
 import edu.franklin.cecas.domain.UserRole;
 import edu.franklin.cecas.dto.ChangePasswordRequest;
 import edu.franklin.cecas.dto.UserProfileResponse;
 import edu.franklin.cecas.repository.UserRepository;
 import edu.franklin.cecas.support.MySqlServiceTest;
+import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.password.PasswordEncoder;
 
 @MySqlServiceTest
 public class UserServiceTest {
@@ -97,7 +96,8 @@ public class UserServiceTest {
 
         ChangePasswordRequest req = new ChangePasswordRequest("wrong", "new", "new");
 
-        RuntimeException ex = assertThrows(RuntimeException.class, () -> userService.changePassword(user.getEmail(), req));
+        RuntimeException ex =
+                assertThrows(RuntimeException.class, () -> userService.changePassword(user.getEmail(), req));
         assertEquals("Current password is incorrect", ex.getMessage());
     }
 
@@ -111,7 +111,8 @@ public class UserServiceTest {
 
         ChangePasswordRequest req = new ChangePasswordRequest("whatever", "newA", "newB");
 
-        RuntimeException ex = assertThrows(RuntimeException.class, () -> userService.changePassword(user.getEmail(), req));
+        RuntimeException ex =
+                assertThrows(RuntimeException.class, () -> userService.changePassword(user.getEmail(), req));
         assertEquals("New password and confirm password do not match", ex.getMessage());
     }
 
@@ -132,13 +133,11 @@ public class UserServiceTest {
 
         userRepository.save(user);
 
-        ChangePasswordRequest req =
-                new ChangePasswordRequest("tempPass", "newPassword", "newPassword");
+        ChangePasswordRequest req = new ChangePasswordRequest("tempPass", "newPassword", "newPassword");
 
         userService.forceChangePassword("chair@test.com", req);
 
-        User updated = userRepository.findByEmailIgnoreCase("chair@test.com")
-                .orElseThrow();
+        User updated = userRepository.findByEmailIgnoreCase("chair@test.com").orElseThrow();
 
         assertFalse(updated.getMustChangePassword());
         assertTrue(passwordEncoder.matches("newPassword", updated.getPassword()));

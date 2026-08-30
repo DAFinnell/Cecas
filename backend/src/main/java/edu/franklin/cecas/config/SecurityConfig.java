@@ -1,5 +1,6 @@
 package edu.franklin.cecas.config;
 
+import edu.franklin.cecas.service.CecasUserDetailsService;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpStatus;
@@ -20,7 +21,6 @@ import org.springframework.security.web.authentication.session.SessionAuthentica
 import org.springframework.security.web.context.HttpSessionSecurityContextRepository;
 import org.springframework.security.web.context.SecurityContextRepository;
 import org.springframework.security.web.header.writers.ClearSiteDataHeaderWriter;
-import edu.franklin.cecas.service.CecasUserDetailsService;
 
 @Configuration
 @EnableWebSecurity
@@ -39,40 +39,28 @@ public class SecurityConfig {
     }
 
     @Bean
-    public SecurityFilterChain securityFilterChain(HttpSecurity http,
-            SecurityContextRepository securityContextRepository) throws Exception {
+    public SecurityFilterChain securityFilterChain(
+            HttpSecurity http, SecurityContextRepository securityContextRepository) throws Exception {
 
-        http
-            .csrf(csrf -> csrf.spa())
-            .securityContext(sc -> sc
-                .securityContextRepository(securityContextRepository)
-            )
-            .sessionManagement(sm -> sm
-                .sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED)
-                .sessionFixation(sf -> sf.migrateSession())
-            )
-            .exceptionHandling(ex -> ex
-                .authenticationEntryPoint((request, response, exception) -> {
+        http.csrf(csrf -> csrf.spa())
+                .securityContext(sc -> sc.securityContextRepository(securityContextRepository))
+                .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED)
+                        .sessionFixation(sf -> sf.migrateSession()))
+                .exceptionHandling(ex -> ex.authenticationEntryPoint((request, response, exception) -> {
                     response.sendError(HttpStatus.UNAUTHORIZED.value());
-                })
-            )
-            .authorizeHttpRequests(auth -> auth
-                .requestMatchers(
-                    "/actuator/health",
-                    "/api/hello",
-                    "/api/auth/**"
-                ).permitAll()
-                .anyRequest().authenticated()
-            )
-            .logout(logout -> logout
-                .logoutUrl("/api/auth/logout")
-                .invalidateHttpSession(true)
-                .deleteCookies("CECASSESSION") // must match application.properties
-                .addLogoutHandler(new HeaderWriterLogoutHandler(
-                    new ClearSiteDataHeaderWriter(ClearSiteDataHeaderWriter.Directive.COOKIES)))
-                .logoutSuccessHandler(new HttpStatusReturningLogoutSuccessHandler(HttpStatus.NO_CONTENT))
-                .permitAll())
-            .httpBasic(httpBasic -> httpBasic.disable());
+                }))
+                .authorizeHttpRequests(auth -> auth.requestMatchers("/actuator/health", "/api/hello", "/api/auth/**")
+                        .permitAll()
+                        .anyRequest()
+                        .authenticated())
+                .logout(logout -> logout.logoutUrl("/api/auth/logout")
+                        .invalidateHttpSession(true)
+                        .deleteCookies("CECASSESSION") // must match application.properties
+                        .addLogoutHandler(new HeaderWriterLogoutHandler(
+                                new ClearSiteDataHeaderWriter(ClearSiteDataHeaderWriter.Directive.COOKIES)))
+                        .logoutSuccessHandler(new HttpStatusReturningLogoutSuccessHandler(HttpStatus.NO_CONTENT))
+                        .permitAll())
+                .httpBasic(httpBasic -> httpBasic.disable());
 
         return http.build();
     }
