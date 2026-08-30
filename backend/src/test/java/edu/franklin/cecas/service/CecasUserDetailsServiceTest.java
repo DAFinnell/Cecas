@@ -3,19 +3,17 @@ package edu.franklin.cecas.service;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
+import edu.franklin.cecas.domain.User;
+import edu.franklin.cecas.domain.UserRole;
+import edu.franklin.cecas.repository.UserRepository;
 import java.util.Optional;
-
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.junit.jupiter.MockitoExtension;
 import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
-
-import edu.franklin.cecas.domain.User;
-import edu.franklin.cecas.domain.UserRole; 
-import edu.franklin.cecas.repository.UserRepository;
 
 @ExtendWith(MockitoExtension.class)
 public class CecasUserDetailsServiceTest {
@@ -46,8 +44,7 @@ public class CecasUserDetailsServiceTest {
         assertEquals("sample@test.com", ud.getUsername());
         assertEquals("Somepassword!", ud.getPassword());
         assertTrue(ud.isEnabled());
-        assertTrue(ud.getAuthorities().stream()
-            .anyMatch(a -> "ROLE_STUDENT".equals(a.getAuthority())));
+        assertTrue(ud.getAuthorities().stream().anyMatch(a -> "ROLE_STUDENT".equals(a.getAuthority())));
     }
 
     @Test

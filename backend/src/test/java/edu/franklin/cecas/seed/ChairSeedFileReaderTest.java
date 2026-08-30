@@ -4,17 +4,15 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
+import edu.franklin.cecas.exception.SeedValidationException;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
-
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
-
-import edu.franklin.cecas.exception.SeedValidationException;
 
 public class ChairSeedFileReaderTest {
 
@@ -34,8 +32,7 @@ public class ChairSeedFileReaderTest {
      */
     @Test
     void testReadNormalizesValidChairRows() throws IOException {
-        Path file = writeCSV("chairs.csv",
-                """
+        Path file = writeCSV("chairs.csv", """
                         email,full_name,program,course_codes,temp_password
                          Grace.Hopper@Email.Franklin.edu , Grace Hopper , Computer Science , comp-110 | comp-120 | comp-210 , ChairTemp01!
                         ada.lovelace@email.franklin.edu,Ada Lovelace,Computer Science,COMP-220|COMP-230,ChairTemp02!
@@ -67,8 +64,7 @@ public class ChairSeedFileReaderTest {
      */
     @Test
     void testCourseCodesAreSplitTrimmedUppercasedAndDeduplicated() throws IOException {
-        Path file = writeCSV("chairs.csv",
-                """
+        Path file = writeCSV("chairs.csv", """
                         email,full_name,program,course_codes,temp_password
                         grace.hopper@email.franklin.edu,Grace Hopper,Computer Science, comp-110 | COMP-110 | comp-120 |   ,ChairTemp01!
                         """);
@@ -91,9 +87,7 @@ public class ChairSeedFileReaderTest {
                   ,Grace Hopper,Computer Science,COMP-110|COMP-120,ChairTemp01!
                 """);
 
-        SeedValidationException ex = assertThrows(
-                SeedValidationException.class,
-                () -> reader.read(file));
+        SeedValidationException ex = assertThrows(SeedValidationException.class, () -> reader.read(file));
 
         SeedValidationError error = ex.getErrors().get(0);
         assertEquals("chairs.csv", error.fileName());
@@ -112,9 +106,7 @@ public class ChairSeedFileReaderTest {
                 not-an-email,Grace Hopper,Computer Science,COMP-110|COMP-120,ChairTemp01!
                 """);
 
-        SeedValidationException ex = assertThrows(
-                SeedValidationException.class,
-                () -> reader.read(file));
+        SeedValidationException ex = assertThrows(SeedValidationException.class, () -> reader.read(file));
 
         SeedValidationError error = ex.getErrors().get(0);
         assertEquals("chairs.csv", error.fileName());
@@ -133,9 +125,7 @@ public class ChairSeedFileReaderTest {
                 grace.hopper@email.franklin.edu,   ,Computer Science,COMP-110|COMP-120,ChairTemp01!
                 """);
 
-        SeedValidationException ex = assertThrows(
-                SeedValidationException.class,
-                () -> reader.read(file));
+        SeedValidationException ex = assertThrows(SeedValidationException.class, () -> reader.read(file));
 
         SeedValidationError error = ex.getErrors().get(0);
         assertEquals("chairs.csv", error.fileName());
@@ -154,9 +144,7 @@ public class ChairSeedFileReaderTest {
                 grace.hopper@email.franklin.edu,Grace Hopper,   ,COMP-110|COMP-120,ChairTemp01!
                 """);
 
-        SeedValidationException ex = assertThrows(
-                SeedValidationException.class,
-                () -> reader.read(file));
+        SeedValidationException ex = assertThrows(SeedValidationException.class, () -> reader.read(file));
 
         SeedValidationError error = ex.getErrors().get(0);
         assertEquals("chairs.csv", error.fileName());
@@ -176,9 +164,7 @@ public class ChairSeedFileReaderTest {
                 grace.hopper@email.franklin.edu,Grace Hopper,Computer Science, |   |  ,ChairTemp01!
                 """);
 
-        SeedValidationException ex = assertThrows(
-                SeedValidationException.class,
-                () -> reader.read(file));
+        SeedValidationException ex = assertThrows(SeedValidationException.class, () -> reader.read(file));
 
         SeedValidationError error = ex.getErrors().get(0);
         assertEquals("chairs.csv", error.fileName());
@@ -197,9 +183,7 @@ public class ChairSeedFileReaderTest {
                 grace.hopper@email.franklin.edu,Grace Hopper,Computer Science,COMP-110|COMP-120,
                 """);
 
-        SeedValidationException ex = assertThrows(
-                SeedValidationException.class,
-                () -> reader.read(file));
+        SeedValidationException ex = assertThrows(SeedValidationException.class, () -> reader.read(file));
 
         SeedValidationError error = ex.getErrors().get(0);
         assertEquals("chairs.csv", error.fileName());
@@ -219,9 +203,7 @@ public class ChairSeedFileReaderTest {
                 grace.hopper@email.franklin.edu,Grace Hopper,Computer Science,COMP-210|COMP-220,ChairTemp02!
                 """);
 
-        SeedValidationException ex = assertThrows(
-                SeedValidationException.class,
-                () -> reader.read(file));
+        SeedValidationException ex = assertThrows(SeedValidationException.class, () -> reader.read(file));
 
         SeedValidationError error = ex.getErrors().get(0);
         assertEquals("chairs.csv", error.fileName());
@@ -241,9 +223,7 @@ public class ChairSeedFileReaderTest {
                   ,Grace Hopper,Computer Science,COMP-110|COMP-120,%s
                 """.formatted(secretPassword));
 
-        SeedValidationException ex = assertThrows(
-                SeedValidationException.class,
-                () -> reader.read(file));
+        SeedValidationException ex = assertThrows(SeedValidationException.class, () -> reader.read(file));
 
         assertFalse(ex.getMessage().contains(secretPassword));
         assertFalse(ex.getErrors().get(0).message().contains(secretPassword));

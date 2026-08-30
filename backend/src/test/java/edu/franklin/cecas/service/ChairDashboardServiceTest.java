@@ -5,30 +5,28 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
-import java.time.LocalDateTime;
-import java.util.List;
-import java.util.Optional;
-
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.mockito.ArgumentCaptor;
-import org.mockito.Captor;
-import org.mockito.junit.jupiter.MockitoExtension;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
-
 import edu.franklin.cecas.domain.Category;
 import edu.franklin.cecas.domain.ChairCourseAssignment;
 import edu.franklin.cecas.domain.Course;
 import edu.franklin.cecas.domain.ExtraCreditRequest;
 import edu.franklin.cecas.domain.ExtraCreditRequestStatus;
 import edu.franklin.cecas.domain.User;
-import edu.franklin.cecas.dto.ChairDashboardSummaryResponse;
 import edu.franklin.cecas.dto.ChairDashboardQueueResponse;
+import edu.franklin.cecas.dto.ChairDashboardSummaryResponse;
 import edu.franklin.cecas.repository.ChairCourseAssignmentRepository;
 import edu.franklin.cecas.repository.ExtraCreditRequestRepository;
 import edu.franklin.cecas.repository.UserRepository;
+import java.time.LocalDateTime;
+import java.util.List;
+import java.util.Optional;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Captor;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 
 @ExtendWith(MockitoExtension.class)
 class ChairDashboardServiceTest {
@@ -48,7 +46,8 @@ class ChairDashboardServiceTest {
         chairCourseAssignmentRepository = mock(ChairCourseAssignmentRepository.class);
         extraCreditRequestRepository = mock(ExtraCreditRequestRepository.class);
 
-        service = new ChairDashboardService(userRepository, chairCourseAssignmentRepository, extraCreditRequestRepository);
+        service = new ChairDashboardService(
+                userRepository, chairCourseAssignmentRepository, extraCreditRequestRepository);
     }
 
     @Test
@@ -56,7 +55,8 @@ class ChairDashboardServiceTest {
         UserDetails userDetails = mock(UserDetails.class);
         when(userDetails.getUsername()).thenReturn("unknown@example.edu");
         when(userRepository.findByEmailIgnoreCase("unknown@example.edu")).thenReturn(Optional.empty());
-        UsernameNotFoundException exception = assertThrows(UsernameNotFoundException.class, () -> service.resolveChair(userDetails));
+        UsernameNotFoundException exception =
+                assertThrows(UsernameNotFoundException.class, () -> service.resolveChair(userDetails));
         assertThat(exception.getMessage()).contains("User not found");
     }
 
@@ -82,14 +82,20 @@ class ChairDashboardServiceTest {
 
         when(chairCourseAssignmentRepository.findAllByChairId(42)).thenReturn(List.of(a1, a2));
 
-        when(extraCreditRequestRepository.countByCourse_CourseIdInAndStatus(anyList(), eq(ExtraCreditRequestStatus.PENDING)))
+        when(extraCreditRequestRepository.countByCourse_CourseIdInAndStatus(
+                        anyList(), eq(ExtraCreditRequestStatus.PENDING)))
                 .thenReturn(5L);
-        when(extraCreditRequestRepository.countByCourse_CourseIdInAndStatus(anyList(), eq(ExtraCreditRequestStatus.PRE_APPROVED))).thenReturn(1L);
-        when(extraCreditRequestRepository.countByCourse_CourseIdInAndStatus(anyList(), eq(ExtraCreditRequestStatus.EVIDENCE_SUBMITTED)))
-                .thenReturn(2L);
-        when(extraCreditRequestRepository.countByCourse_CourseIdInAndStatus(anyList(), eq(ExtraCreditRequestStatus.APPROVED)))
+        when(extraCreditRequestRepository.countByCourse_CourseIdInAndStatus(
+                        anyList(), eq(ExtraCreditRequestStatus.PRE_APPROVED)))
                 .thenReturn(1L);
-        when(extraCreditRequestRepository.countByCourse_CourseIdInAndStatus(anyList(), eq(ExtraCreditRequestStatus.REJECTED)))
+        when(extraCreditRequestRepository.countByCourse_CourseIdInAndStatus(
+                        anyList(), eq(ExtraCreditRequestStatus.EVIDENCE_SUBMITTED)))
+                .thenReturn(2L);
+        when(extraCreditRequestRepository.countByCourse_CourseIdInAndStatus(
+                        anyList(), eq(ExtraCreditRequestStatus.APPROVED)))
+                .thenReturn(1L);
+        when(extraCreditRequestRepository.countByCourse_CourseIdInAndStatus(
+                        anyList(), eq(ExtraCreditRequestStatus.REJECTED)))
                 .thenReturn(0L);
 
         ChairDashboardSummaryResponse response = service.getRequestCountSummary(userDetails);
@@ -102,7 +108,8 @@ class ChairDashboardServiceTest {
         assertThat(response.getRejectedCount()).isEqualTo(0L);
 
         // verify repository was called with only the two assigned course ids
-        verify(extraCreditRequestRepository, times(5)).countByCourse_CourseIdInAndStatus(courseListCaptor.capture(), any());
+        verify(extraCreditRequestRepository, times(5))
+                .countByCourse_CourseIdInAndStatus(courseListCaptor.capture(), any());
         List<Integer> captured = courseListCaptor.getAllValues().get(0);
         assertThat(captured).containsExactlyInAnyOrder(1, 2);
     }
@@ -124,7 +131,8 @@ class ChairDashboardServiceTest {
         assertThat(summary.getApprovedCount()).isEqualTo(0L);
         assertThat(summary.getRejectedCount()).isEqualTo(0L);
 
-        List<ChairDashboardQueueResponse> queue = service.getChairReviewQueue(userDetails, ExtraCreditRequestStatus.PENDING);
+        List<ChairDashboardQueueResponse> queue =
+                service.getChairReviewQueue(userDetails, ExtraCreditRequestStatus.PENDING);
         assertThat(queue).isEmpty();
 
         // ensure repo not invoked for counts or find when no assignments
@@ -154,9 +162,7 @@ class ChairDashboardServiceTest {
         User student = mock(User.class);
         when(student.getFullName()).thenReturn("Test Student");
         when(student.getEmail()).thenReturn("student@test.edu");
-        
 
-        
         ExtraCreditRequest request1 = new ExtraCreditRequest();
         request1.setId(10);
         request1.setStudent(student);
@@ -178,10 +184,12 @@ class ChairDashboardServiceTest {
         request2.setUpdatedAt(LocalDateTime.now().minusMinutes(1));
 
         // repository should already return in updatedAt DESC order
-        when(extraCreditRequestRepository.findByCourse_CourseIdInAndStatusOrderByUpdatedAtDesc(List.of(100), ExtraCreditRequestStatus.PENDING))
+        when(extraCreditRequestRepository.findByCourse_CourseIdInAndStatusOrderByUpdatedAtDesc(
+                        List.of(100), ExtraCreditRequestStatus.PENDING))
                 .thenReturn(List.of(request2, request1));
 
-        List<ChairDashboardQueueResponse> queueList = service.getChairReviewQueue(userDetails, ExtraCreditRequestStatus.PENDING);
+        List<ChairDashboardQueueResponse> queueList =
+                service.getChairReviewQueue(userDetails, ExtraCreditRequestStatus.PENDING);
         assertThat(queueList).hasSize(2);
         assertThat(queueList.get(0).getRequestId()).isEqualTo(11);
         assertThat(queueList.get(1).getRequestId()).isEqualTo(10);
@@ -198,8 +206,7 @@ class ChairDashboardServiceTest {
 
         User chair = mock(User.class);
         when(chair.getId()).thenReturn(7);
-        when(userRepository.findByEmailIgnoreCase("derek-chair@derek.com"))
-                .thenReturn(Optional.of(chair));
+        when(userRepository.findByEmailIgnoreCase("derek-chair@derek.com")).thenReturn(Optional.of(chair));
 
         Course course = mock(Course.class);
         when(course.getCourseId()).thenReturn(100);
@@ -209,8 +216,7 @@ class ChairDashboardServiceTest {
 
         ChairCourseAssignment assignment = mock(ChairCourseAssignment.class);
         when(assignment.getCourse()).thenReturn(course);
-        when(chairCourseAssignmentRepository.findAllByChairId(7))
-                .thenReturn(List.of(assignment));
+        when(chairCourseAssignmentRepository.findAllByChairId(7)).thenReturn(List.of(assignment));
 
         User student = mock(User.class);
         when(student.getFullName()).thenReturn("Derek Test");
@@ -230,22 +236,18 @@ class ChairDashboardServiceTest {
         request.setStatus(ExtraCreditRequestStatus.EVIDENCE_SUBMITTED);
 
         when(extraCreditRequestRepository.findByCourse_CourseIdInAndStatusOrderByUpdatedAtDesc(
-                List.of(100),
-                ExtraCreditRequestStatus.EVIDENCE_SUBMITTED))
-            .thenReturn(List.of(request));
+                        List.of(100), ExtraCreditRequestStatus.EVIDENCE_SUBMITTED))
+                .thenReturn(List.of(request));
 
-        List<ChairDashboardQueueResponse> queueList = service.getChairReviewQueue(
-                userDetails,
-                ExtraCreditRequestStatus.EVIDENCE_SUBMITTED);
+        List<ChairDashboardQueueResponse> queueList =
+                service.getChairReviewQueue(userDetails, ExtraCreditRequestStatus.EVIDENCE_SUBMITTED);
 
         assertThat(queueList).hasSize(1);
         assertThat(queueList.get(0).getRequestId()).isEqualTo(42);
-        assertThat(queueList.get(0).getStatus())
-                .isEqualTo(ExtraCreditRequestStatus.EVIDENCE_SUBMITTED);
+        assertThat(queueList.get(0).getStatus()).isEqualTo(ExtraCreditRequestStatus.EVIDENCE_SUBMITTED);
 
         verify(extraCreditRequestRepository)
                 .findByCourse_CourseIdInAndStatusOrderByUpdatedAtDesc(
-                        List.of(100),
-                        ExtraCreditRequestStatus.EVIDENCE_SUBMITTED);
+                        List.of(100), ExtraCreditRequestStatus.EVIDENCE_SUBMITTED);
     }
 }

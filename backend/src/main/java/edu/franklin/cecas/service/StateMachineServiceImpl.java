@@ -1,9 +1,5 @@
 package edu.franklin.cecas.service;
 
-import java.util.Objects;
-
-import org.springframework.stereotype.Service;
-
 import edu.franklin.cecas.domain.ExtraCreditRequest;
 import edu.franklin.cecas.domain.ExtraCreditRequestStatus;
 import edu.franklin.cecas.domain.User;
@@ -16,6 +12,8 @@ import edu.franklin.cecas.exception.UserNotFoundException;
 import edu.franklin.cecas.repository.ExtraCreditRequestRepository;
 import edu.franklin.cecas.repository.UserRepository;
 import jakarta.transaction.Transactional;
+import java.util.Objects;
+import org.springframework.stereotype.Service;
 
 @Service
 @Transactional
@@ -49,7 +47,8 @@ public class StateMachineServiceImpl implements StateMachineService {
 
     @Override
     public ExtraCreditRequest preApproveRequest(Integer requestId, User user) {
-        ExtraCreditRequest request = requestRepository.findById(requestId)
+        ExtraCreditRequest request = requestRepository
+                .findById(requestId)
                 .orElseThrow(() -> new ResourceNotFoundException("Request not found with ID: " + requestId));
 
         if (isFinal(request)) {
@@ -68,7 +67,8 @@ public class StateMachineServiceImpl implements StateMachineService {
 
     @Override
     public ExtraCreditRequest rejectRequest(Integer requestId, String feedback, User user) {
-        ExtraCreditRequest request = requestRepository.findById(requestId)
+        ExtraCreditRequest request = requestRepository
+                .findById(requestId)
                 .orElseThrow(() -> new ResourceNotFoundException("Request not found with ID: " + requestId));
 
         if (isFinal(request)) {
@@ -81,7 +81,7 @@ public class StateMachineServiceImpl implements StateMachineService {
             throw new InvalidStateTransitionException(
                     "Invalid transition: reject allowed only from PENDING or EVIDENCE_SUBMITTED state.");
         }
-        
+
         requireRole(user, UserRole.CHAIR);
 
         if (feedback == null || feedback.trim().isEmpty()) {
@@ -96,7 +96,8 @@ public class StateMachineServiceImpl implements StateMachineService {
 
     @Override
     public ExtraCreditRequest submitEvidenceRequest(Integer requestId, User user, String evidenceFilePath) {
-        ExtraCreditRequest request = requestRepository.findById(requestId)
+        ExtraCreditRequest request = requestRepository
+                .findById(requestId)
                 .orElseThrow(() -> new ResourceNotFoundException("Request not found with ID: " + requestId));
 
         if (isFinal(request)) {
@@ -115,7 +116,8 @@ public class StateMachineServiceImpl implements StateMachineService {
             throw new UnauthorizedRoleException("Only the owning student may submit evidence for this request.");
         }
 
-        if (request.getEvidenceFilePath() != null && !request.getEvidenceFilePath().isBlank()) {
+        if (request.getEvidenceFilePath() != null
+                && !request.getEvidenceFilePath().isBlank()) {
             throw new EvidenceUploadException("Evidence has already been uploaded for this request.");
         }
 
@@ -126,7 +128,8 @@ public class StateMachineServiceImpl implements StateMachineService {
 
     @Override
     public ExtraCreditRequest passDeadlineRequest(Integer requestId) {
-        ExtraCreditRequest request = requestRepository.findById(requestId)
+        ExtraCreditRequest request = requestRepository
+                .findById(requestId)
                 .orElseThrow(() -> new ResourceNotFoundException("Request not found with ID: " + requestId));
 
         if (isFinal(request)) {
@@ -144,7 +147,8 @@ public class StateMachineServiceImpl implements StateMachineService {
 
     @Override
     public ExtraCreditRequest approveWithPointsRequest(Integer requestId, Integer points, String feedback, User user) {
-        ExtraCreditRequest request = requestRepository.findById(requestId)
+        ExtraCreditRequest request = requestRepository
+                .findById(requestId)
                 .orElseThrow(() -> new ResourceNotFoundException("Request not found with ID: " + requestId));
 
         if (isFinal(request)) {
@@ -163,13 +167,12 @@ public class StateMachineServiceImpl implements StateMachineService {
             throw new InvalidStateTransitionException("Approval points must be greater than zero.");
         }
 
-        userRepository.findByIdForUpdate(request.getStudent().getId())
+        userRepository
+                .findByIdForUpdate(request.getStudent().getId())
                 .orElseThrow(() -> new UserNotFoundException("Student not found."));
 
         pointAllocationService.validateAwardAllowed(
-                request.getStudent().getId(),
-                request.getCourse().getTerm(),
-                points);
+                request.getStudent().getId(), request.getCourse().getTerm(), points);
 
         String normalizedFeedback = feedback == null || feedback.isBlank() ? null : feedback.trim();
 

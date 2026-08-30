@@ -1,9 +1,5 @@
 package edu.franklin.cecas.service;
 
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
-import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.stereotype.Service;
-
 import edu.franklin.cecas.domain.User;
 import edu.franklin.cecas.domain.UserRole;
 import edu.franklin.cecas.dto.ChangePasswordRequest;
@@ -16,6 +12,9 @@ import edu.franklin.cecas.exception.PasswordMismatchException;
 import edu.franklin.cecas.exception.UnauthorizedRoleException;
 import edu.franklin.cecas.repository.UserRepository;
 import jakarta.transaction.Transactional;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.stereotype.Service;
 
 @Service
 @Transactional
@@ -24,19 +23,23 @@ public class UserService {
     private final PasswordEncoder passwordEncoder;
     private final PointAllocationService pointAllocationService;
 
-    UserService(UserRepository userRepository, PasswordEncoder passwordEncoder, PointAllocationService pointAllocationService) {    
+    UserService(
+            UserRepository userRepository,
+            PasswordEncoder passwordEncoder,
+            PointAllocationService pointAllocationService) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
         this.pointAllocationService = pointAllocationService;
     }
-    
+
     /**
      * Get student by studentId. Throws if not found.
      * @param studentId
      * @return userDTO
      */
     public UserDTO getStudentByStudentId(Integer studentId) {
-        return userRepository.findByStudentId(studentId)
+        return userRepository
+                .findByStudentId(studentId)
                 .map(UserDTO::new)
                 .orElseThrow(() -> new RuntimeException("User not found"));
     }
@@ -47,17 +50,16 @@ public class UserService {
      * @return
      */
     public UserProfileResponse getUserProfile(String email) {
-        return userRepository.findByEmailIgnoreCase(email)
+        return userRepository
+                .findByEmailIgnoreCase(email)
                 .map(user -> new UserProfileResponse(
-                        user.getEmail(),
-                        user.getFullName(),
-                        user.getRole().name()
-                ))
+                        user.getEmail(), user.getFullName(), user.getRole().name()))
                 .orElseThrow(() -> new RuntimeException("User not found"));
     }
 
     public StudentPointsDTO getStudentPoints(String email, String term) {
-        User user = userRepository.findByEmailIgnoreCase(email)
+        User user = userRepository
+                .findByEmailIgnoreCase(email)
                 .orElseThrow(() -> new UsernameNotFoundException("User not found with email: " + email));
 
         if (user.getRole() != UserRole.STUDENT) {
@@ -71,10 +73,11 @@ public class UserService {
      * Normal Change Password logic
      * @param email
      * @param request
-     * 
+     *
      */
     public void changePassword(String email, ChangePasswordRequest request) {
-        User user = userRepository.findByEmailIgnoreCase(email)
+        User user = userRepository
+                .findByEmailIgnoreCase(email)
                 .orElseThrow(() -> new UsernameNotFoundException("User not found with email: " + email));
 
         if (!passwordEncoder.matches(request.getCurrentPassword(), user.getPassword())) {
@@ -95,7 +98,8 @@ public class UserService {
      * @param request
      */
     public void forceChangePassword(String email, ChangePasswordRequest request) {
-        User user = userRepository.findByEmailIgnoreCase(email)
+        User user = userRepository
+                .findByEmailIgnoreCase(email)
                 .orElseThrow(() -> new UsernameNotFoundException("User not found with email: " + email));
 
         if (user.getRole() != UserRole.CHAIR) {
@@ -103,7 +107,7 @@ public class UserService {
         }
 
         if (!Boolean.TRUE.equals(user.getMustChangePassword())) {
-            throw new PasswordChangeNotRequiredException ("Password change is not required");
+            throw new PasswordChangeNotRequiredException("Password change is not required");
         }
 
         if (!passwordEncoder.matches(request.getCurrentPassword(), user.getPassword())) {

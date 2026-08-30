@@ -1,15 +1,6 @@
 package edu.franklin.cecas.seed;
 
-import java.util.List;
-import java.util.Set;
-
 import static org.assertj.core.api.Assertions.assertThat;
-
-import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Import;
-import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
 import edu.franklin.cecas.config.SecurityConfig;
 import edu.franklin.cecas.domain.Category;
@@ -27,10 +18,17 @@ import edu.franklin.cecas.repository.UserRepository;
 import edu.franklin.cecas.service.CecasUserDetailsService;
 import edu.franklin.cecas.service.PasswordService;
 import edu.franklin.cecas.support.MySqlDataJpaTest;
+import java.util.List;
+import java.util.Set;
+import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Import;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
 @MySqlDataJpaTest
 @SuppressWarnings("unused")
-@Import({ ChairSeedImporter.class, PasswordService.class, SecurityConfig.class })
+@Import({ChairSeedImporter.class, PasswordService.class, SecurityConfig.class})
 public class ChairAssignmentHistoricalTest {
 
     @Autowired
@@ -57,8 +55,13 @@ public class ChairAssignmentHistoricalTest {
     @MockitoBean
     private CecasUserDetailsService userDetailsService;
 
-    private User saveChair(String email, String fullName, String program,
-            String encodedPassword, boolean active, boolean mustChangePassword) {
+    private User saveChair(
+            String email,
+            String fullName,
+            String program,
+            String encodedPassword,
+            boolean active,
+            boolean mustChangePassword) {
         User user = new User();
         user.setEmail(email);
         user.setFullName(fullName);
@@ -137,15 +140,15 @@ public class ChairAssignmentHistoricalTest {
         request.setStatus(ExtraCreditRequestStatus.PENDING);
         ExtraCreditRequest savedRequest = extraCreditRequestRepository.save(request);
 
-        ChairSeedImportResult result = importer.importChairs(List.of(
-                new ChairSeedRow(
-                        "grace.hopper@email.franklin.edu",
-                        "Grace Hopper",
-                        "Computer Science",
-                        Set.of("COMP-394"),
-                        "IgnoredTempPassword1!")));
+        ChairSeedImportResult result = importer.importChairs(List.of(new ChairSeedRow(
+                "grace.hopper@email.franklin.edu",
+                "Grace Hopper",
+                "Computer Science",
+                Set.of("COMP-394"),
+                "IgnoredTempPassword1!")));
 
-        ExtraCreditRequest reloadedRequest = extraCreditRequestRepository.findById(savedRequest.getId()).orElseThrow();
+        ExtraCreditRequest reloadedRequest =
+                extraCreditRequestRepository.findById(savedRequest.getId()).orElseThrow();
         List<ChairCourseAssignment> currentAssignments = assignmentRepository.findAllByChairId(chair.getId());
 
         assertThat(reloadedRequest.getChair().getId()).isEqualTo(chair.getId());

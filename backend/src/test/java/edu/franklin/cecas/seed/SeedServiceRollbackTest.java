@@ -5,17 +5,6 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.Mockito.when;
 
-import java.util.List;
-import java.util.Set;
-
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.test.context.bean.override.mockito.MockitoBean;
-import org.springframework.transaction.annotation.Propagation;
-import org.springframework.transaction.annotation.Transactional;
-
 import edu.franklin.cecas.domain.Category;
 import edu.franklin.cecas.domain.ChairCourseAssignment;
 import edu.franklin.cecas.domain.Course;
@@ -28,6 +17,15 @@ import edu.franklin.cecas.repository.CourseRepository;
 import edu.franklin.cecas.repository.UserRepository;
 import edu.franklin.cecas.service.CecasUserDetailsService;
 import edu.franklin.cecas.support.MySqlServiceTest;
+import java.util.List;
+import java.util.Set;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
 
 @MySqlServiceTest
 public class SeedServiceRollbackTest {
@@ -82,10 +80,7 @@ public class SeedServiceRollbackTest {
                         "Computer Science",
                         Set.of("COMP-294"),
                         "ChairTemp01!")),
-                List.of(new CategorySeedRow(
-                        "Seminar Attendance",
-                        "Approved seminar attendance",
-                        5)));
+                List.of(new CategorySeedRow("Seminar Attendance", "Approved seminar attendance", 5)));
     }
 
     private Course saveCourseEntity(String code, String term, String section, boolean active) {
@@ -191,10 +186,7 @@ public class SeedServiceRollbackTest {
 
         when(chairSeedImporter.importChairs(anyList())).thenAnswer(invocation -> {
             User chair = saveChairEntity(
-                    "grace.hopper@email.franklin.edu",
-                    "Grace Hopper",
-                    "Computer Science",
-                    "ChairTemp01!");
+                    "grace.hopper@email.franklin.edu", "Grace Hopper", "Computer Science", "ChairTemp01!");
 
             Course course = courseRepository.findAll().get(0);
             assignmentRepository.save(new ChairCourseAssignment(chair, course));

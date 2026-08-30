@@ -1,15 +1,13 @@
 package edu.franklin.cecas.seed;
 
+import edu.franklin.cecas.config.SeedProperties;
+import edu.franklin.cecas.exception.SeedValidationException;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
-
 import org.springframework.stereotype.Component;
-
-import edu.franklin.cecas.config.SeedProperties;
-import edu.franklin.cecas.exception.SeedValidationException;
 
 @Component
 public class SeedDataParser {
@@ -18,8 +16,11 @@ public class SeedDataParser {
     private final CategorySeedFileReader categorySeedFileReader;
     private final ChairSeedFileReader chairSeedFileReader;
 
-    public SeedDataParser(SeedProperties seedProperties, CourseSeedFileReader courseSeedFileReader,
-            CategorySeedFileReader categorySeedFileReader, ChairSeedFileReader chairSeedFileReader) {
+    public SeedDataParser(
+            SeedProperties seedProperties,
+            CourseSeedFileReader courseSeedFileReader,
+            CategorySeedFileReader categorySeedFileReader,
+            ChairSeedFileReader chairSeedFileReader) {
         this.seedProperties = seedProperties;
         this.courseSeedFileReader = courseSeedFileReader;
         this.categorySeedFileReader = categorySeedFileReader;
@@ -59,9 +60,8 @@ public class SeedDataParser {
 
         // Only run cross-file validation when both source files parsed successfully.
         if (courses != null && chairs != null) {
-            Set<String> knownCourseCodes = courses.stream()
-                    .map(CourseSeedRow::courseCode)
-                    .collect(Collectors.toSet());
+            Set<String> knownCourseCodes =
+                    courses.stream().map(CourseSeedRow::courseCode).collect(Collectors.toSet());
 
             // Convert the zero-based list index back to the physical CSV row number.
             for (int i = 0; i < chairs.size(); i++) {
@@ -70,8 +70,8 @@ public class SeedDataParser {
 
                 for (String courseCode : chair.courseCodes()) {
                     if (!knownCourseCodes.contains(courseCode)) {
-                        errors.add(new SeedValidationError("chairs.csv", rowNumber,
-                                "course_codes", "Unknown course code '" + courseCode + "'."));
+                        errors.add(new SeedValidationError(
+                                "chairs.csv", rowNumber, "course_codes", "Unknown course code '" + courseCode + "'."));
                     }
                 }
             }

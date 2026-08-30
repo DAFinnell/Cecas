@@ -1,21 +1,5 @@
 package edu.franklin.cecas.web;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-
-import java.nio.charset.StandardCharsets;
-import java.time.LocalDateTime;
-import java.util.List;
-import java.util.Map;
-
-import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
-import org.springframework.context.annotation.Import;
-import org.springframework.security.test.context.support.WithMockUser;
-import org.springframework.mock.web.MockMultipartFile;
-import org.springframework.test.context.bean.override.mockito.MockitoBean;
-import org.springframework.test.util.ReflectionTestUtils;
-import org.springframework.test.web.servlet.MockMvc;
 import static org.hamcrest.Matchers.nullValue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
@@ -32,6 +16,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import edu.franklin.cecas.config.SecurityConfig;
 import edu.franklin.cecas.domain.Category;
 import edu.franklin.cecas.domain.Course;
@@ -46,9 +31,22 @@ import edu.franklin.cecas.exception.EvidenceUploadException;
 import edu.franklin.cecas.service.CecasUserDetailsService;
 import edu.franklin.cecas.service.EvidenceSubmissionService;
 import edu.franklin.cecas.service.ExtraCreditRequestService;
+import java.nio.charset.StandardCharsets;
+import java.time.LocalDateTime;
+import java.util.List;
+import java.util.Map;
+import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
+import org.springframework.context.annotation.Import;
+import org.springframework.mock.web.MockMultipartFile;
+import org.springframework.security.test.context.support.WithMockUser;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
+import org.springframework.test.util.ReflectionTestUtils;
+import org.springframework.test.web.servlet.MockMvc;
 
 @WebMvcTest(controllers = ExtraCreditRequestController.class)
-@Import({ SecurityConfig.class, GlobalExceptionHandler.class })
+@Import({SecurityConfig.class, GlobalExceptionHandler.class})
 public class ExtraCreditRequestControllerTest {
 
     @Autowired
@@ -103,7 +101,9 @@ public class ExtraCreditRequestControllerTest {
      * Tests that an extra credit request create response is flattened for students.
      */
     @Test
-    @WithMockUser(username = "derek@derek.com", roles = { "STUDENT" })
+    @WithMockUser(
+            username = "derek@derek.com",
+            roles = {"STUDENT"})
     void testCreateRequestReturnsFlattenedStudentRequestDetail() throws Exception {
         StudentRequestDetailDTO response = new StudentRequestDetailDTO(createExtraCreditRequest());
         Map<String, Object> request = Map.of(
@@ -115,16 +115,17 @@ public class ExtraCreditRequestControllerTest {
                 .thenReturn(response);
 
         mockMvc.perform(post("/api/extra-credit-requests")
-                .with(csrf())
-                .contentType(APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(request)))
+                        .with(csrf())
+                        .contentType(APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.id").value(42))
                 .andExpect(jsonPath("$.courseCode").value("COMP-110"))
                 .andExpect(jsonPath("$.term").value("26/FA"))
                 .andExpect(jsonPath("$.section").value("H1WW"))
                 .andExpect(jsonPath("$.categoryName").value("Seminar Attendance"))
-                .andExpect(jsonPath("$.categoryDescription").value("Approved attendance at an academic or professional seminar"))
+                .andExpect(jsonPath("$.categoryDescription")
+                        .value("Approved attendance at an academic or professional seminar"))
                 .andExpect(jsonPath("$.description").value("I attended an approved academic seminar"))
                 .andExpect(jsonPath("$.status").value("PENDING"))
                 .andExpect(jsonPath("$.defaultPoints").value(5))
@@ -149,12 +150,13 @@ public class ExtraCreditRequestControllerTest {
      * Tests that a student's request list response is flattened for students.
      */
     @Test
-    @WithMockUser(username = "derek@derek.com", roles = { "STUDENT" })
+    @WithMockUser(
+            username = "derek@derek.com",
+            roles = {"STUDENT"})
     void testGetRequestsReturnsFlattenedStudentRequestSummaryList() throws Exception {
         StudentRequestSummaryDTO response = new StudentRequestSummaryDTO(createExtraCreditRequest());
 
-        when(extraCreditRequestService.getRequestsForStudent("derek@derek.com"))
-                .thenReturn(List.of(response));
+        when(extraCreditRequestService.getRequestsForStudent("derek@derek.com")).thenReturn(List.of(response));
 
         mockMvc.perform(get("/api/extra-credit-requests"))
                 .andExpect(status().isOk())
@@ -188,7 +190,9 @@ public class ExtraCreditRequestControllerTest {
      * Tests that a student can upload evidence and receive the updated request payload.
      */
     @Test
-    @WithMockUser(username = "derek@derek.com", roles = { "STUDENT" })
+    @WithMockUser(
+            username = "derek@derek.com",
+            roles = {"STUDENT"})
     void testUploadEvidenceReturnsUpdatedRequest() throws Exception {
         ExtraCreditRequest request = createExtraCreditRequest();
         request.setStatus(ExtraCreditRequestStatus.EVIDENCE_SUBMITTED);
@@ -196,17 +200,14 @@ public class ExtraCreditRequestControllerTest {
         StudentRequestDetailDTO response = new StudentRequestDetailDTO(request);
 
         MockMultipartFile evidence = new MockMultipartFile(
-                "evidence",
-                "proof.pdf",
-                "application/pdf",
-                "%PDF-1.7 test".getBytes(StandardCharsets.UTF_8));
+                "evidence", "proof.pdf", "application/pdf", "%PDF-1.7 test".getBytes(StandardCharsets.UTF_8));
 
         when(evidenceSubmissionService.submitEvidence(eq("derek@derek.com"), eq(42), any()))
                 .thenReturn(response);
 
         mockMvc.perform(multipart("/api/extra-credit-requests/{requestId}/evidence", 42)
-                .file(evidence)
-                .with(csrf()))
+                        .file(evidence)
+                        .with(csrf()))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id").value(42))
                 .andExpect(jsonPath("$.status").value("EVIDENCE_SUBMITTED"))
@@ -222,13 +223,15 @@ public class ExtraCreditRequestControllerTest {
      * Tests that an evidence upload without a file returns a clear validation error.
      */
     @Test
-    @WithMockUser(username = "derek@derek.com", roles = { "STUDENT" })
+    @WithMockUser(
+            username = "derek@derek.com",
+            roles = {"STUDENT"})
     void testUploadEvidenceWithoutFileReturnsBadRequest() throws Exception {
         when(evidenceSubmissionService.submitEvidence(eq("derek@derek.com"), eq(42), isNull()))
                 .thenThrow(new EvidenceUploadException("Evidence file is required."));
 
         mockMvc.perform(multipart("/api/extra-credit-requests/{requestId}/evidence", 42)
-                .with(csrf()))
+                        .with(csrf()))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.title").value("Invalid Evidence Upload"))
                 .andExpect(jsonPath("$.detail").value("Evidence file is required."))
@@ -241,16 +244,17 @@ public class ExtraCreditRequestControllerTest {
      * Tests that an extra credit request without a courseId returns bad request.
      */
     @Test
-    @WithMockUser(username = "student@test.com", roles = { "STUDENT" })
+    @WithMockUser(
+            username = "student@test.com",
+            roles = {"STUDENT"})
     void testCreateRequestWithoutCourseIdReturnsBadRequest() throws Exception {
-        Map<String, Object> request = Map.of(
-                "categoryId", 1,
-                "description", "Completed an approved extra credit activity");
+        Map<String, Object> request =
+                Map.of("categoryId", 1, "description", "Completed an approved extra credit activity");
 
         mockMvc.perform(post("/api/extra-credit-requests")
-                .with(csrf())
-                .contentType(APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(request)))
+                        .with(csrf())
+                        .contentType(APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.title").value("Validation failed"))
                 .andExpect(jsonPath("$.errorCode").value("VALIDATION_FAILED"))
@@ -264,7 +268,9 @@ public class ExtraCreditRequestControllerTest {
      * with the appropriate validation error message.
      */
     @Test
-    @WithMockUser(username = "student@test.com", roles = { "STUDENT" })
+    @WithMockUser(
+            username = "student@test.com",
+            roles = {"STUDENT"})
     void testCreateRequestWithBlankDescriptionReturnsBadRequest() throws Exception {
         Map<String, Object> request = Map.of(
                 "courseId", 1,
@@ -272,9 +278,9 @@ public class ExtraCreditRequestControllerTest {
                 "description", "   ");
 
         mockMvc.perform(post("/api/extra-credit-requests")
-                .with(csrf())
-                .contentType(APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(request)))
+                        .with(csrf())
+                        .contentType(APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.title").value("Validation failed"))
                 .andExpect(jsonPath("$.errorCode").value("VALIDATION_FAILED"))
@@ -288,7 +294,9 @@ public class ExtraCreditRequestControllerTest {
      * with the appropriate validation error message.
      */
     @Test
-    @WithMockUser(username = "student@test.com", roles = { "STUDENT" })
+    @WithMockUser(
+            username = "student@test.com",
+            roles = {"STUDENT"})
     void testCreateRequestWithDescriptionOver1000CharactersReturnsBadRequest() throws Exception {
         String longDescription = "a".repeat(1001);
 
@@ -298,14 +306,14 @@ public class ExtraCreditRequestControllerTest {
                 "description", longDescription);
 
         mockMvc.perform(post("/api/extra-credit-requests")
-                .with(csrf())
-                .contentType(APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(request)))
+                        .with(csrf())
+                        .contentType(APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.title").value("Validation failed"))
                 .andExpect(jsonPath("$.errorCode").value("VALIDATION_FAILED"))
-                .andExpect(jsonPath("$.errors.description")
-                        .value("description must be between 15 and 1000 characters"));
+                .andExpect(
+                        jsonPath("$.errors.description").value("description must be between 15 and 1000 characters"));
 
         verify(extraCreditRequestService, never()).createRequest(anyString(), any());
     }
@@ -313,7 +321,9 @@ public class ExtraCreditRequestControllerTest {
      * Verifies that a 14-character description is rejected.
      */
     @Test
-    @WithMockUser(username = "student@test.com", roles = { "STUDENT" })
+    @WithMockUser(
+            username = "student@test.com",
+            roles = {"STUDENT"})
     void testCreateRequestWithDescriptionUnder15CharactersReturnsBadRequest() throws Exception {
         Map<String, Object> request = Map.of(
                 "courseId", 1,
@@ -321,14 +331,14 @@ public class ExtraCreditRequestControllerTest {
                 "description", "a".repeat(14));
 
         mockMvc.perform(post("/api/extra-credit-requests")
-                .with(csrf())
-                .contentType(APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(request)))
+                        .with(csrf())
+                        .contentType(APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.title").value("Validation failed"))
                 .andExpect(jsonPath("$.errorCode").value("VALIDATION_FAILED"))
-                .andExpect(jsonPath("$.errors.description")
-                        .value("description must be between 15 and 1000 characters"));
+                .andExpect(
+                        jsonPath("$.errors.description").value("description must be between 15 and 1000 characters"));
 
         verify(extraCreditRequestService, never()).createRequest(anyString(), any());
     }
@@ -337,54 +347,49 @@ public class ExtraCreditRequestControllerTest {
      * Verifies that a description exactly 15 characters long is accepted.
      */
     @Test
-    @WithMockUser(username = "student@test.com", roles = { "STUDENT" })
+    @WithMockUser(
+            username = "student@test.com",
+            roles = {"STUDENT"})
     void testCreateRequestWithDescriptionExactly15CharactersIsAccepted() throws Exception {
         Map<String, Object> request = Map.of(
                 "courseId", 1,
                 "categoryId", 1,
                 "description", "a".repeat(15));
 
-        when(extraCreditRequestService.createRequest(
-                eq("student@test.com"),
-                any(ExtraCreditRequestCreateDTO.class)))
+        when(extraCreditRequestService.createRequest(eq("student@test.com"), any(ExtraCreditRequestCreateDTO.class)))
                 .thenReturn(new StudentRequestDetailDTO(createExtraCreditRequest()));
 
         mockMvc.perform(post("/api/extra-credit-requests")
-                .with(csrf())
-                .contentType(APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(request)))
+                        .with(csrf())
+                        .contentType(APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isCreated());
 
-        verify(extraCreditRequestService).createRequest(
-                eq("student@test.com"),
-                any(ExtraCreditRequestCreateDTO.class));
+        verify(extraCreditRequestService).createRequest(eq("student@test.com"), any(ExtraCreditRequestCreateDTO.class));
     }
 
     /**
      * Verifies that a description exactly 1000 characters long is accepted.
      */
     @Test
-    @WithMockUser(username = "student@test.com", roles = { "STUDENT" })
+    @WithMockUser(
+            username = "student@test.com",
+            roles = {"STUDENT"})
     void testCreateRequestWithDescriptionExactly1000CharactersIsAccepted() throws Exception {
         Map<String, Object> request = Map.of(
                 "courseId", 1,
                 "categoryId", 1,
                 "description", "a".repeat(1000));
 
-        when(extraCreditRequestService.createRequest(
-                eq("student@test.com"),
-                any(ExtraCreditRequestCreateDTO.class)))
+        when(extraCreditRequestService.createRequest(eq("student@test.com"), any(ExtraCreditRequestCreateDTO.class)))
                 .thenReturn(new StudentRequestDetailDTO(createExtraCreditRequest()));
 
         mockMvc.perform(post("/api/extra-credit-requests")
-                .with(csrf())
-                .contentType(APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(request)))
+                        .with(csrf())
+                        .contentType(APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isCreated());
 
-        verify(extraCreditRequestService).createRequest(
-                eq("student@test.com"),
-                any(ExtraCreditRequestCreateDTO.class));
+        verify(extraCreditRequestService).createRequest(eq("student@test.com"), any(ExtraCreditRequestCreateDTO.class));
     }
-
 }

@@ -4,16 +4,14 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import edu.franklin.cecas.exception.SeedValidationException;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
-
 import org.apache.commons.csv.CSVRecord;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
-
-import edu.franklin.cecas.exception.SeedValidationException;
 
 public class SharedSeedCsvReaderTest {
 
@@ -34,8 +32,7 @@ public class SharedSeedCsvReaderTest {
         }
 
         @Override
-        protected String mapRecord(CSVRecord record, long physicalRowNumber,
-                List<SeedValidationError> errors) {
+        protected String mapRecord(CSVRecord record, long physicalRowNumber, List<SeedValidationError> errors) {
             return physicalRowNumber + ":" + record.get(0) + ":" + record.get(1);
         }
     }
@@ -53,8 +50,7 @@ public class SharedSeedCsvReaderTest {
     void testMissingFileShowsRowZeroError() {
         Path missing = tempDir.resolve("missing.csv");
 
-        SeedValidationException ex = assertThrows(
-                SeedValidationException.class, () -> reader.read(missing));
+        SeedValidationException ex = assertThrows(SeedValidationException.class, () -> reader.read(missing));
 
         SeedValidationError error = ex.getErrors().get(0);
         assertEquals("test.csv", error.fileName());
@@ -69,8 +65,7 @@ public class SharedSeedCsvReaderTest {
     void testEmptyFileShowsRowOneError() throws IOException {
         Path file = writeCSV("empty.csv", "");
 
-        SeedValidationException ex = assertThrows(
-                SeedValidationException.class, () -> reader.read(file));
+        SeedValidationException ex = assertThrows(SeedValidationException.class, () -> reader.read(file));
 
         SeedValidationError error = ex.getErrors().get(0);
         assertEquals(1L, error.row());
@@ -87,9 +82,7 @@ public class SharedSeedCsvReaderTest {
                 a,b
                 """);
 
-        SeedValidationException ex = assertThrows(
-                SeedValidationException.class,
-                () -> reader.read(file));
+        SeedValidationException ex = assertThrows(SeedValidationException.class, () -> reader.read(file));
 
         SeedValidationError error = ex.getErrors().get(0);
         assertEquals(1L, error.row());
@@ -107,9 +100,7 @@ public class SharedSeedCsvReaderTest {
                 a,b
                 """);
 
-        SeedValidationException ex = assertThrows(
-                SeedValidationException.class,
-                () -> reader.read(file));
+        SeedValidationException ex = assertThrows(SeedValidationException.class, () -> reader.read(file));
 
         SeedValidationError error = ex.getErrors().get(0);
         assertEquals(1L, error.row());
@@ -127,9 +118,7 @@ public class SharedSeedCsvReaderTest {
                 a
                 """);
 
-        SeedValidationException ex = assertThrows(
-                SeedValidationException.class,
-                () -> reader.read(file));
+        SeedValidationException ex = assertThrows(SeedValidationException.class, () -> reader.read(file));
 
         assertEquals(1L, ex.getErrors().get(0).row());
     }
@@ -144,9 +133,7 @@ public class SharedSeedCsvReaderTest {
                 a,b,c
                 """);
 
-        SeedValidationException ex = assertThrows(
-                SeedValidationException.class,
-                () -> reader.read(file));
+        SeedValidationException ex = assertThrows(SeedValidationException.class, () -> reader.read(file));
 
         assertEquals(1L, ex.getErrors().get(0).row());
     }
@@ -163,9 +150,7 @@ public class SharedSeedCsvReaderTest {
                 only-one-value
                 """);
 
-        SeedValidationException ex = assertThrows(
-                SeedValidationException.class,
-                () -> reader.read(file));
+        SeedValidationException ex = assertThrows(SeedValidationException.class, () -> reader.read(file));
 
         SeedValidationError error = ex.getErrors().get(0);
         assertEquals(3L, error.row());

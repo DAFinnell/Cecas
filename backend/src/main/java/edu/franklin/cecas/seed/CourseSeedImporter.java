@@ -1,17 +1,15 @@
 package edu.franklin.cecas.seed;
 
+import edu.franklin.cecas.domain.Course;
+import edu.franklin.cecas.repository.CourseRepository;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
-
-import edu.franklin.cecas.domain.Course;
-import edu.franklin.cecas.repository.CourseRepository;
 
 @Component
 public class CourseSeedImporter {
@@ -36,8 +34,8 @@ public class CourseSeedImporter {
         int deactivated = 0;
 
         for (Course course : courses) {
-            existingByKey.put(new CourseNaturalKey(course.getCourseCode(), course.getTerm(), course.getSection()),
-                    course);
+            existingByKey.put(
+                    new CourseNaturalKey(course.getCourseCode(), course.getTerm(), course.getSection()), course);
         }
         for (CourseSeedRow row : rows) {
             CourseNaturalKey key = new CourseNaturalKey(row.courseCode(), row.term(), row.section());
@@ -59,8 +57,7 @@ public class CourseSeedImporter {
         }
 
         for (Course course : courses) {
-            CourseNaturalKey key = new CourseNaturalKey(
-                    course.getCourseCode(), course.getTerm(), course.getSection());
+            CourseNaturalKey key = new CourseNaturalKey(course.getCourseCode(), course.getTerm(), course.getSection());
 
             if (course.isActive() && !currentSeedKeys.contains(key)) {
                 course.setActive(false);
@@ -75,6 +72,5 @@ public class CourseSeedImporter {
         return new CourseSeedImportResult(inserted, unchanged, reactivated, deactivated);
     }
 
-    private record CourseNaturalKey(String courseCode, String term, String section) {
-    }
+    private record CourseNaturalKey(String courseCode, String term, String section) {}
 }

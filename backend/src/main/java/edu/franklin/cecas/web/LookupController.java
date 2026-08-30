@@ -1,19 +1,17 @@
 package edu.franklin.cecas.web;
 
-import java.util.Comparator;
-import java.util.List;
-
-import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
-
 import edu.franklin.cecas.domain.Category;
 import edu.franklin.cecas.domain.Course;
 import edu.franklin.cecas.dto.CategoryOptionDTO;
 import edu.franklin.cecas.dto.CourseOptionDTO;
 import edu.franklin.cecas.repository.CategoryRepository;
 import edu.franklin.cecas.repository.CourseRepository;
+import java.util.Comparator;
+import java.util.List;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/api/lookup")
@@ -31,8 +29,7 @@ public class LookupController {
     @GetMapping("/courses")
     public List<CourseOptionDTO> getActiveCourses() {
         return courseRepository.findAllByIsActiveTrue().stream()
-                .sorted(Comparator
-                        .comparing(Course::getCourseCode)
+                .sorted(Comparator.comparing(Course::getCourseCode)
                         .thenComparing(Course::getTerm)
                         .thenComparing(Course::getSection))
                 .map(CourseOptionDTO::new)

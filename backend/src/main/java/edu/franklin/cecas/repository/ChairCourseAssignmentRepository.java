@@ -1,10 +1,10 @@
 package edu.franklin.cecas.repository;
-import java.util.List;
 
-import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.stereotype.Repository;
 import edu.franklin.cecas.domain.ChairCourseAssignment;
 import edu.franklin.cecas.domain.ChairCourseAssignmentId;
+import java.util.List;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.stereotype.Repository;
 
 @Repository
 public interface ChairCourseAssignmentRepository extends JpaRepository<ChairCourseAssignment, ChairCourseAssignmentId> {

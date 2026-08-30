@@ -5,7 +5,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Set;
-
 import org.apache.commons.csv.CSVRecord;
 import org.springframework.stereotype.Component;
 
@@ -31,20 +30,20 @@ public class CategorySeedFileReader extends AbstractSeedCsvReader<CategorySeedRo
         int defaultPoints;
 
         if (categoryName.isBlank()) {
-            errors.add(new SeedValidationError(fileName(), physicalRowNumber,
-                    "category_name", "Category name is required."));
+            errors.add(new SeedValidationError(
+                    fileName(), physicalRowNumber, "category_name", "Category name is required."));
             return null;
         }
 
         if (description.isBlank()) {
-            errors.add(new SeedValidationError(fileName(), physicalRowNumber,
-                    "description", "Description is required."));
+            errors.add(
+                    new SeedValidationError(fileName(), physicalRowNumber, "description", "Description is required."));
             return null;
         }
 
         if (defaultPointsRaw.isBlank()) {
-            errors.add(new SeedValidationError(fileName(), physicalRowNumber,
-                    "default_points", "Default points is required."));
+            errors.add(new SeedValidationError(
+                    fileName(), physicalRowNumber, "default_points", "Default points is required."));
             return null;
         }
 
@@ -52,14 +51,17 @@ public class CategorySeedFileReader extends AbstractSeedCsvReader<CategorySeedRo
             defaultPoints = Integer.parseInt(defaultPointsRaw);
 
             if (defaultPoints < 0) {
-                errors.add(new SeedValidationError(fileName(), physicalRowNumber,
-                        "default_points", "Default points must be greater than or equal to 0."));
+                errors.add(new SeedValidationError(
+                        fileName(),
+                        physicalRowNumber,
+                        "default_points",
+                        "Default points must be greater than or equal to 0."));
                 return null;
             }
 
         } catch (NumberFormatException e) {
-            errors.add(new SeedValidationError(fileName(), physicalRowNumber,
-                    "default_points", "Default points must be a valid integer."));
+            errors.add(new SeedValidationError(
+                    fileName(), physicalRowNumber, "default_points", "Default points must be a valid integer."));
             return null;
         }
 
@@ -67,8 +69,11 @@ public class CategorySeedFileReader extends AbstractSeedCsvReader<CategorySeedRo
         // category.
         String key = categoryName.toLowerCase(Locale.ROOT);
         if (seenCategoryNames.add(key) == false) {
-            errors.add(new SeedValidationError(fileName(), physicalRowNumber,
-                    "category_name", "Duplicate category row found after normalization."));
+            errors.add(new SeedValidationError(
+                    fileName(),
+                    physicalRowNumber,
+                    "category_name",
+                    "Duplicate category row found after normalization."));
             return null;
         }
 

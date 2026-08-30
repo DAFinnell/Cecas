@@ -1,11 +1,5 @@
 package edu.franklin.cecas.service;
 
-import java.util.List;
-import java.util.stream.Collectors;
-
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
-import org.springframework.stereotype.Service;
-
 import edu.franklin.cecas.domain.Category;
 import edu.franklin.cecas.domain.Course;
 import edu.franklin.cecas.domain.ExtraCreditRequest;
@@ -23,6 +17,10 @@ import edu.franklin.cecas.repository.CourseRepository;
 import edu.franklin.cecas.repository.ExtraCreditRequestRepository;
 import edu.franklin.cecas.repository.UserRepository;
 import jakarta.transaction.Transactional;
+import java.util.List;
+import java.util.stream.Collectors;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.stereotype.Service;
 
 @Service
 @Transactional
@@ -48,16 +46,19 @@ public class ExtraCreditRequestService {
 
     @Transactional
     public StudentRequestDetailDTO createRequest(String studentEmail, ExtraCreditRequestCreateDTO dto) {
-        User student = userRepository.findByEmailIgnoreCaseForUpdate(studentEmail)
+        User student = userRepository
+                .findByEmailIgnoreCaseForUpdate(studentEmail)
                 .orElseThrow(() -> new StudentNotFoundException("Student not found with Email: " + studentEmail));
 
-        Course course = courseRepository.findById(dto.getCourseId())
-                .orElseThrow(() -> new InvalidExtraCreditRequestException(
-                        "Course not found with ID: " + dto.getCourseId()));
+        Course course = courseRepository
+                .findById(dto.getCourseId())
+                .orElseThrow(
+                        () -> new InvalidExtraCreditRequestException("Course not found with ID: " + dto.getCourseId()));
 
-        Category category = categoryRepository.findById(dto.getCategoryId())
-                .orElseThrow(() -> new InvalidExtraCreditRequestException(
-                        "Category not found with ID: " + dto.getCategoryId()));
+        Category category = categoryRepository
+                .findById(dto.getCategoryId())
+                .orElseThrow(() ->
+                        new InvalidExtraCreditRequestException("Category not found with ID: " + dto.getCategoryId()));
 
         if (student.getRole() != UserRole.STUDENT) {
             throw new UnauthorizedRoleException("Unauthorized: User is not a student");
@@ -78,7 +79,8 @@ public class ExtraCreditRequestService {
     }
 
     public List<StudentRequestSummaryDTO> getRequestsForStudent(String studentEmail) {
-        User student = userRepository.findByEmailIgnoreCase(studentEmail)
+        User student = userRepository
+                .findByEmailIgnoreCase(studentEmail)
                 .orElseThrow(() -> new UsernameNotFoundException("Student not found with Email: " + studentEmail));
 
         return requestRepository.findByStudent_Id(student.getId()).stream()
@@ -87,7 +89,8 @@ public class ExtraCreditRequestService {
     }
 
     public StudentRequestDetailDTO getRequestForStudent(String studentEmail, Integer requestId) {
-        User student = userRepository.findByEmailIgnoreCase(studentEmail)
+        User student = userRepository
+                .findByEmailIgnoreCase(studentEmail)
                 .orElseThrow(() -> new UsernameNotFoundException("Student not found with Email: " + studentEmail));
 
         ExtraCreditRequest request = requestRepository

@@ -1,10 +1,9 @@
 package edu.franklin.cecas.domain;
 
-import java.io.Serializable;
-import java.util.Objects;
-
 import jakarta.persistence.Column;
 import jakarta.persistence.Embeddable;
+import java.io.Serializable;
+import java.util.Objects;
 
 /**
  * Composite primary key class for ChairCourseAssignment entity.
@@ -19,8 +18,7 @@ public class ChairCourseAssignmentId implements Serializable {
     @Column(name = "course_id")
     private Integer courseId;
 
-    public ChairCourseAssignmentId() {
-    }
+    public ChairCourseAssignmentId() {}
 
     public ChairCourseAssignmentId(Integer chairId, Integer courseId) {
         this.chairId = chairId;
@@ -39,8 +37,7 @@ public class ChairCourseAssignmentId implements Serializable {
     public boolean equals(Object o) {
         if (this == o) return true;
         if (!(o instanceof ChairCourseAssignmentId that)) return false;
-        return Objects.equals(chairId, that.chairId)
-                && Objects.equals(courseId, that.courseId);
+        return Objects.equals(chairId, that.chairId) && Objects.equals(courseId, that.courseId);
     }
 
     @Override

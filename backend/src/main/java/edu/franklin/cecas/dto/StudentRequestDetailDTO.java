@@ -1,10 +1,9 @@
 package edu.franklin.cecas.dto;
 
-import java.nio.file.Path;
-import java.time.LocalDateTime;
-
 import edu.franklin.cecas.domain.ExtraCreditRequest;
 import edu.franklin.cecas.domain.ExtraCreditRequestStatus;
+import java.nio.file.Path;
+import java.time.LocalDateTime;
 
 public class StudentRequestDetailDTO {
     private Integer id;
@@ -40,9 +39,10 @@ public class StudentRequestDetailDTO {
         this.updatedAt = request.getUpdatedAt();
         this.chairFeedback = request.getChairFeedback();
         this.dueDate = request.getDueDate();
-        this.evidenceFileUploaded = request.getEvidenceFilePath() != null && !request.getEvidenceFilePath().isBlank();
-        this.evidenceUploadAvailable = request.getStatus() == ExtraCreditRequestStatus.PRE_APPROVED
-                && !this.evidenceFileUploaded;
+        this.evidenceFileUploaded = request.getEvidenceFilePath() != null
+                && !request.getEvidenceFilePath().isBlank();
+        this.evidenceUploadAvailable =
+                request.getStatus() == ExtraCreditRequestStatus.PRE_APPROVED && !this.evidenceFileUploaded;
         this.evidenceFileName = this.evidenceFileUploaded
                 ? Path.of(request.getEvidenceFilePath()).getFileName().toString()
                 : null;

@@ -9,7 +9,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import edu.franklin.cecas.config.SecurityConfig;
 import edu.franklin.cecas.service.AuthService;
 import edu.franklin.cecas.service.CecasUserDetailsService;
-
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
@@ -20,13 +19,13 @@ import org.springframework.test.web.servlet.MockMvc;
 @WebMvcTest(controllers = {HelloController.class, AuthController.class})
 @Import({SecurityConfig.class, GlobalExceptionHandler.class})
 public class PublicApiTest {
-    
+
     @MockitoBean
     private CecasUserDetailsService cecasUserDetailsService;
 
     @MockitoBean
     private AuthService authService;
-    
+
     @Autowired
     private MockMvc mockMvc;
 

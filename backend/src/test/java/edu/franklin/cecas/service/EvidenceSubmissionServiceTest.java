@@ -11,15 +11,6 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
-import java.nio.charset.StandardCharsets;
-import java.util.Optional;
-
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.mock.web.MockMultipartFile;
-
 import edu.franklin.cecas.domain.Category;
 import edu.franklin.cecas.domain.Course;
 import edu.franklin.cecas.domain.ExtraCreditRequest;
@@ -31,6 +22,13 @@ import edu.franklin.cecas.exception.EvidenceUploadException;
 import edu.franklin.cecas.exception.InvalidStateTransitionException;
 import edu.franklin.cecas.exception.StudentNotFoundException;
 import edu.franklin.cecas.repository.UserRepository;
+import java.nio.charset.StandardCharsets;
+import java.util.Optional;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.mock.web.MockMultipartFile;
 
 @ExtendWith(MockitoExtension.class)
 public class EvidenceSubmissionServiceTest {
@@ -44,10 +42,8 @@ public class EvidenceSubmissionServiceTest {
         userRepository = mock(UserRepository.class);
         evidenceStorageService = mock(EvidenceStorageService.class);
         stateMachineService = mock(StateMachineService.class);
-        evidenceSubmissionService = new EvidenceSubmissionService(
-                userRepository,
-                evidenceStorageService,
-                stateMachineService);
+        evidenceSubmissionService =
+                new EvidenceSubmissionService(userRepository, evidenceStorageService, stateMachineService);
     }
 
     private User createStudent() {
@@ -87,10 +83,7 @@ public class EvidenceSubmissionServiceTest {
 
     private MockMultipartFile createFile() {
         return new MockMultipartFile(
-                "evidence",
-                "proof.pdf",
-                "application/pdf",
-                "%PDF-1.7 test".getBytes(StandardCharsets.UTF_8));
+                "evidence", "proof.pdf", "application/pdf", "%PDF-1.7 test".getBytes(StandardCharsets.UTF_8));
     }
 
     /**

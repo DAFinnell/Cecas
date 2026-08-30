@@ -6,6 +6,11 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import edu.franklin.cecas.config.SecurityConfig;
+import edu.franklin.cecas.dto.StudentPointsDTO;
+import edu.franklin.cecas.service.CecasUserDetailsService;
+import edu.franklin.cecas.service.PointAllocationService;
+import edu.franklin.cecas.service.UserService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
@@ -14,14 +19,8 @@ import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
-import edu.franklin.cecas.config.SecurityConfig;
-import edu.franklin.cecas.dto.StudentPointsDTO;
-import edu.franklin.cecas.service.CecasUserDetailsService;
-import edu.franklin.cecas.service.PointAllocationService;
-import edu.franklin.cecas.service.UserService;
-
 @WebMvcTest(controllers = UserController.class)
-@Import({ SecurityConfig.class, GlobalExceptionHandler.class })
+@Import({SecurityConfig.class, GlobalExceptionHandler.class})
 class UserPointsControllerTest {
 
     @Autowired
@@ -37,10 +36,11 @@ class UserPointsControllerTest {
     private PointAllocationService pointAllocationService;
 
     @Test
-    @WithMockUser(username = "student@test.com", roles = { "STUDENT" })
+    @WithMockUser(
+            username = "student@test.com",
+            roles = {"STUDENT"})
     void getStudentPointsReturnsCurrentStudentPointSummary() throws Exception {
-        when(userService.getStudentPoints("student@test.com", "26/FA"))
-                .thenReturn(new StudentPointsDTO(10, 15, 25));
+        when(userService.getStudentPoints("student@test.com", "26/FA")).thenReturn(new StudentPointsDTO(10, 15, 25));
 
         mockMvc.perform(get("/api/users/me/points").param("term", "26/FA"))
                 .andExpect(status().isOk())
@@ -52,9 +52,10 @@ class UserPointsControllerTest {
     }
 
     @Test
-    @WithMockUser(username = "chair@test.com", roles = { "CHAIR" })
+    @WithMockUser(
+            username = "chair@test.com",
+            roles = {"CHAIR"})
     void getStudentPointsRejectsChairUsers() throws Exception {
-        mockMvc.perform(get("/api/users/me/points").param("term", "26/FA"))
-                .andExpect(status().isForbidden());
+        mockMvc.perform(get("/api/users/me/points").param("term", "26/FA")).andExpect(status().isForbidden());
     }
 }

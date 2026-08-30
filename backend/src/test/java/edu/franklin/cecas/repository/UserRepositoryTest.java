@@ -1,53 +1,52 @@
 package edu.franklin.cecas.repository;
 
-import java.util.List;
-import java.util.Optional;
-
 import static org.assertj.core.api.Assertions.assertThat;
-import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
 
 import edu.franklin.cecas.domain.User;
 import edu.franklin.cecas.domain.UserRole;
 import edu.franklin.cecas.support.MySqlDataJpaTest;
+import java.util.List;
+import java.util.Optional;
+import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
 
 @MySqlDataJpaTest
 public class UserRepositoryTest {
-    
-        @Autowired
-        private UserRepository userRepository;
 
-        private User createTestUser() {
-            User user = new User();
+    @Autowired
+    private UserRepository userRepository;
 
-            user.setFullName("John Doe");
-            user.setEmail("john@test.com");
-            user.setPassword("123456");
-            user.setRole(UserRole.STUDENT);
-            user.setStudentId(12345);
-            user.setProgram("Computer Science");
-            user.setIsActive(true);
-            user.setMustChangePassword(false);
-            user.setEmailVerified(true);
+    private User createTestUser() {
+        User user = new User();
 
-            return user;
-        }
+        user.setFullName("John Doe");
+        user.setEmail("john@test.com");
+        user.setPassword("123456");
+        user.setRole(UserRole.STUDENT);
+        user.setStudentId(12345);
+        user.setProgram("Computer Science");
+        user.setIsActive(true);
+        user.setMustChangePassword(false);
+        user.setEmailVerified(true);
 
-        private User createSecondTestUser() {
-            User user = new User();
+        return user;
+    }
 
-            user.setFullName("Jane Smith");
-            user.setEmail("jane@test.com");
-            user.setPassword("abcdef");
-            user.setRole(UserRole.STUDENT);
-            user.setStudentId(54321);
-            user.setProgram("Computer Science");
-            user.setIsActive(true);
-            user.setMustChangePassword(false);
-            user.setEmailVerified(true);
+    private User createSecondTestUser() {
+        User user = new User();
 
-            return user;
-        }
+        user.setFullName("Jane Smith");
+        user.setEmail("jane@test.com");
+        user.setPassword("abcdef");
+        user.setRole(UserRole.STUDENT);
+        user.setStudentId(54321);
+        user.setProgram("Computer Science");
+        user.setIsActive(true);
+        user.setMustChangePassword(false);
+        user.setEmailVerified(true);
+
+        return user;
+    }
 
     @Test
     public void testFindByEmailIgnoreCase() {
@@ -59,7 +58,7 @@ public class UserRepositoryTest {
         assertThat(result).isPresent();
         assertThat(result.get().getEmail()).isEqualTo("john@test.com");
     }
-    
+
     @Test
     public void testExistsByEmailIgnoreCase() {
         User user = createTestUser();
@@ -112,6 +111,7 @@ public class UserRepositoryTest {
         assertThat(results.get(1).getProgram()).isEqualTo("Computer Science");
         assertThat(results.size()).isEqualTo(2);
     }
+
     @Test
     public void testFindAllByRoleAndIsActiveTrue() {
 
@@ -124,20 +124,14 @@ public class UserRepositoryTest {
 
         userRepository.saveAll(List.of(user1, user2, inactiveUser));
 
-        List<User> results =
-            userRepository.findAllByRoleAndIsActiveTrue(UserRole.STUDENT);
-
+        List<User> results = userRepository.findAllByRoleAndIsActiveTrue(UserRole.STUDENT);
 
         assertThat(results).hasSize(2);
-        
-        assertThat(results)
-            .allMatch(u -> u.getRole() == UserRole.STUDENT);
 
-        assertThat(results)
-            .allMatch(User::getIsActive);
+        assertThat(results).allMatch(u -> u.getRole() == UserRole.STUDENT);
 
-        assertThat(results)
-            .extracting(User::getEmail)
-            .containsExactlyInAnyOrder("john@test.com", "jane@test.com");
+        assertThat(results).allMatch(User::getIsActive);
+
+        assertThat(results).extracting(User::getEmail).containsExactlyInAnyOrder("john@test.com", "jane@test.com");
     }
 }

@@ -4,18 +4,16 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import edu.franklin.cecas.config.SeedProperties;
+import edu.franklin.cecas.exception.SeedValidationException;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
-
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
-
-import edu.franklin.cecas.config.SeedProperties;
-import edu.franklin.cecas.exception.SeedValidationException;
 
 public class SeedDataParserTest {
 
@@ -54,18 +52,13 @@ public class SeedDataParserTest {
 
         SeedProperties seedProperties = new SeedProperties(tempDir, false);
         SeedDataParser parser = new SeedDataParser(
-                seedProperties,
-                new CourseSeedFileReader(),
-                new CategorySeedFileReader(),
-                new ChairSeedFileReader());
+                seedProperties, new CourseSeedFileReader(), new CategorySeedFileReader(), new ChairSeedFileReader());
 
         ParsedSeedData result = parser.parseAll();
 
         assertEquals(2, result.courses().size());
         assertEquals(
-                List.of(
-                        new CourseSeedRow("COMP-110", "26/FA", "H1WW"),
-                        new CourseSeedRow("COMP-220", "27/SP", "H2WW")),
+                List.of(new CourseSeedRow("COMP-110", "26/FA", "H1WW"), new CourseSeedRow("COMP-220", "27/SP", "H2WW")),
                 result.courses());
 
         assertEquals(2, result.chairs().size());
@@ -116,14 +109,9 @@ public class SeedDataParserTest {
 
         SeedProperties seedProperties = new SeedProperties(tempDir, false);
         SeedDataParser parser = new SeedDataParser(
-                seedProperties,
-                new CourseSeedFileReader(),
-                new CategorySeedFileReader(),
-                new ChairSeedFileReader());
+                seedProperties, new CourseSeedFileReader(), new CategorySeedFileReader(), new ChairSeedFileReader());
 
-        SeedValidationException ex = assertThrows(
-                SeedValidationException.class,
-                parser::parseAll);
+        SeedValidationException ex = assertThrows(SeedValidationException.class, parser::parseAll);
 
         SeedValidationError error = ex.getErrors().get(0);
 
@@ -158,14 +146,12 @@ public class SeedDataParserTest {
 
         SeedProperties seedProperties = new SeedProperties(tempDir, false);
         SeedDataParser parser = new SeedDataParser(
-                seedProperties,
-                new CourseSeedFileReader(),
-                new CategorySeedFileReader(),
-                new ChairSeedFileReader());
+                seedProperties, new CourseSeedFileReader(), new CategorySeedFileReader(), new ChairSeedFileReader());
 
         ParsedSeedData result = parser.parseAll();
         assertEquals(1, result.chairs().size());
-        assertEquals(new LinkedHashSet<>(Set.of("COMP-110")), result.chairs().get(0).courseCodes());
+        assertEquals(
+                new LinkedHashSet<>(Set.of("COMP-110")), result.chairs().get(0).courseCodes());
     }
 
     /**
@@ -192,26 +178,23 @@ public class SeedDataParserTest {
 
         SeedProperties seedProperties = new SeedProperties(tempDir, false);
         SeedDataParser parser = new SeedDataParser(
-                seedProperties,
-                new CourseSeedFileReader(),
-                new CategorySeedFileReader(),
-                new ChairSeedFileReader());
+                seedProperties, new CourseSeedFileReader(), new CategorySeedFileReader(), new ChairSeedFileReader());
 
-        SeedValidationException ex = assertThrows(
-                SeedValidationException.class,
-                parser::parseAll);
+        SeedValidationException ex = assertThrows(SeedValidationException.class, parser::parseAll);
 
         assertEquals(2, ex.getErrors().size());
 
-        assertTrue(ex.getErrors().stream().anyMatch(error -> error.fileName().equals("courses.csv")
-                && error.row() == 3L
-                && error.fieldOrRule().equals("course_key")
-                && error.message().equals("Duplicate course row found after normalization.")));
+        assertTrue(ex.getErrors().stream()
+                .anyMatch(error -> error.fileName().equals("courses.csv")
+                        && error.row() == 3L
+                        && error.fieldOrRule().equals("course_key")
+                        && error.message().equals("Duplicate course row found after normalization.")));
 
-        assertTrue(ex.getErrors().stream().anyMatch(error -> error.fileName().equals("categories.csv")
-                && error.row() == 2L
-                && error.fieldOrRule().equals("default_points")
-                && error.message().equals("Default points must be greater than or equal to 0.")));
+        assertTrue(ex.getErrors().stream()
+                .anyMatch(error -> error.fileName().equals("categories.csv")
+                        && error.row() == 2L
+                        && error.fieldOrRule().equals("default_points")
+                        && error.message().equals("Default points must be greater than or equal to 0.")));
     }
 
     /**
@@ -237,25 +220,22 @@ public class SeedDataParserTest {
 
         SeedProperties seedProperties = new SeedProperties(tempDir, false);
         SeedDataParser parser = new SeedDataParser(
-                seedProperties,
-                new CourseSeedFileReader(),
-                new CategorySeedFileReader(),
-                new ChairSeedFileReader());
+                seedProperties, new CourseSeedFileReader(), new CategorySeedFileReader(), new ChairSeedFileReader());
 
-        SeedValidationException ex = assertThrows(
-                SeedValidationException.class,
-                parser::parseAll);
+        SeedValidationException ex = assertThrows(SeedValidationException.class, parser::parseAll);
 
         assertEquals(2, ex.getErrors().size());
 
-        assertTrue(ex.getErrors().stream().anyMatch(error -> error.fileName().equals("chairs.csv")
-                && error.row() == 2L
-                && error.fieldOrRule().equals("course_codes")
-                && error.message().equals("Unknown course code 'COMP-999'.")));
+        assertTrue(ex.getErrors().stream()
+                .anyMatch(error -> error.fileName().equals("chairs.csv")
+                        && error.row() == 2L
+                        && error.fieldOrRule().equals("course_codes")
+                        && error.message().equals("Unknown course code 'COMP-999'.")));
 
-        assertTrue(ex.getErrors().stream().anyMatch(error -> error.fileName().equals("categories.csv")
-                && error.row() == 2L
-                && error.fieldOrRule().equals("default_points")
-                && error.message().equals("Default points must be greater than or equal to 0.")));
+        assertTrue(ex.getErrors().stream()
+                .anyMatch(error -> error.fileName().equals("categories.csv")
+                        && error.row() == 2L
+                        && error.fieldOrRule().equals("default_points")
+                        && error.message().equals("Default points must be greater than or equal to 0.")));
     }
 }

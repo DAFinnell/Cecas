@@ -1,5 +1,9 @@
 package edu.franklin.cecas.seed;
 
+import jakarta.validation.Validation;
+import jakarta.validation.Validator;
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotBlank;
 import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.HashSet;
@@ -8,24 +12,17 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Set;
 import java.util.stream.Collectors;
-
 import org.apache.commons.csv.CSVRecord;
 import org.springframework.stereotype.Component;
-
-import jakarta.validation.Validation;
-import jakarta.validation.Validator;
-import jakarta.validation.constraints.Email;
-import jakarta.validation.constraints.NotBlank;
 
 @Component
 public class ChairSeedFileReader extends AbstractSeedCsvReader<ChairSeedRow> {
     private Set<String> seenEmails = new HashSet<>();
 
-    private static final Validator VALIDATOR = Validation.buildDefaultValidatorFactory().getValidator();
+    private static final Validator VALIDATOR =
+            Validation.buildDefaultValidatorFactory().getValidator();
 
-    private record EmailValue(
-            @NotBlank @Email String email) {
-    }
+    private record EmailValue(@NotBlank @Email String email) {}
 
     @Override
     protected String fileName() {
@@ -48,44 +45,41 @@ public class ChairSeedFileReader extends AbstractSeedCsvReader<ChairSeedRow> {
         String temporaryPassword = record.get("temp_password").trim();
 
         if (email.isBlank()) {
-            errors.add(new SeedValidationError(fileName(), physicalRowNumber,
-                    "email", "Email is required."));
+            errors.add(new SeedValidationError(fileName(), physicalRowNumber, "email", "Email is required."));
             return null;
         }
 
         if (!isValidEmail(email)) {
-            errors.add(new SeedValidationError(fileName(), physicalRowNumber,
-                    "email", "Email must be a valid email address."));
+            errors.add(new SeedValidationError(
+                    fileName(), physicalRowNumber, "email", "Email must be a valid email address."));
             return null;
         }
 
         if (fullName.isBlank()) {
-            errors.add(new SeedValidationError(fileName(), physicalRowNumber,
-                    "full_name", "Full name is required."));
+            errors.add(new SeedValidationError(fileName(), physicalRowNumber, "full_name", "Full name is required."));
             return null;
         }
 
         if (program.isBlank()) {
-            errors.add(new SeedValidationError(fileName(), physicalRowNumber,
-                    "program", "Program is required."));
+            errors.add(new SeedValidationError(fileName(), physicalRowNumber, "program", "Program is required."));
             return null;
         }
 
         if (course_codes.isEmpty()) {
-            errors.add(new SeedValidationError(fileName(), physicalRowNumber,
-                    "course_codes", "At least one course code is required."));
+            errors.add(new SeedValidationError(
+                    fileName(), physicalRowNumber, "course_codes", "At least one course code is required."));
             return null;
         }
 
         if (temporaryPassword.isBlank()) {
-            errors.add(new SeedValidationError(fileName(), physicalRowNumber,
-                    "temp_password", "Temporary password is required."));
+            errors.add(new SeedValidationError(
+                    fileName(), physicalRowNumber, "temp_password", "Temporary password is required."));
             return null;
         }
 
         if (seenEmails.add(email) == false) {
-            errors.add(new SeedValidationError(fileName(), physicalRowNumber,
-                    "email", "Duplicate email found after normalization."));
+            errors.add(new SeedValidationError(
+                    fileName(), physicalRowNumber, "email", "Duplicate email found after normalization."));
             return null;
         }
 

@@ -1,5 +1,7 @@
 package edu.franklin.cecas.seed;
 
+import edu.franklin.cecas.domain.Category;
+import edu.franklin.cecas.repository.CategoryRepository;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -7,12 +9,8 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
-
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
-
-import edu.franklin.cecas.domain.Category;
-import edu.franklin.cecas.repository.CategoryRepository;
 
 @Component
 public class CategorySeedImporter {

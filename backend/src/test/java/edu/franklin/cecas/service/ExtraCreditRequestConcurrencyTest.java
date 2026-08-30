@@ -3,18 +3,6 @@ package edu.franklin.cecas.service;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import java.util.List;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
-
-import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.testcontainers.context.ImportTestcontainers;
-
 import edu.franklin.cecas.domain.Category;
 import edu.franklin.cecas.domain.Course;
 import edu.franklin.cecas.domain.ExtraCreditRequest;
@@ -29,6 +17,16 @@ import edu.franklin.cecas.repository.CourseRepository;
 import edu.franklin.cecas.repository.ExtraCreditRequestRepository;
 import edu.franklin.cecas.repository.UserRepository;
 import edu.franklin.cecas.support.MySqlTestcontainers;
+import java.util.List;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.testcontainers.context.ImportTestcontainers;
 
 @SpringBootTest
 @ImportTestcontainers(MySqlTestcontainers.class)
@@ -77,10 +75,8 @@ class ExtraCreditRequestConcurrencyTest {
     }
 
     private boolean submitAtTheSameTime(
-            String email,
-            ExtraCreditRequestCreateDTO dto,
-            CountDownLatch ready,
-            CountDownLatch start) throws InterruptedException {
+            String email, ExtraCreditRequestCreateDTO dto, CountDownLatch ready, CountDownLatch start)
+            throws InterruptedException {
         ready.countDown();
 
         if (!start.await(5, TimeUnit.SECONDS)) {
@@ -134,23 +130,21 @@ class ExtraCreditRequestConcurrencyTest {
         ExecutorService executor = Executors.newFixedThreadPool(2);
 
         try {
-            Future<Boolean> first = executor.submit(
-                    () -> submitAtTheSameTime(savedStudent.getEmail(), firstDto, ready, start));
-            Future<Boolean> second = executor.submit(
-                    () -> submitAtTheSameTime(savedStudent.getEmail(), secondDto, ready, start));
+            Future<Boolean> first =
+                    executor.submit(() -> submitAtTheSameTime(savedStudent.getEmail(), firstDto, ready, start));
+            Future<Boolean> second =
+                    executor.submit(() -> submitAtTheSameTime(savedStudent.getEmail(), secondDto, ready, start));
 
             assertTrue(ready.await(5, TimeUnit.SECONDS));
             start.countDown();
 
-            List<Boolean> results = List.of(
-                    first.get(10, TimeUnit.SECONDS),
-                    second.get(10, TimeUnit.SECONDS));
-            long successfulSubmissions = results.stream()
-                    .filter(Boolean::booleanValue)
-                    .count();
+            List<Boolean> results = List.of(first.get(10, TimeUnit.SECONDS), second.get(10, TimeUnit.SECONDS));
+            long successfulSubmissions =
+                    results.stream().filter(Boolean::booleanValue).count();
 
             assertEquals(1, successfulSubmissions);
-            assertEquals(2, requestRepository.findByStudent_Id(savedStudent.getId()).size());
+            assertEquals(
+                    2, requestRepository.findByStudent_Id(savedStudent.getId()).size());
 
             StudentPointsDTO points = userService.getStudentPoints(savedStudent.getEmail(), "26/FA");
             assertEquals(30, points.getIssued());

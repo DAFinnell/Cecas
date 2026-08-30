@@ -3,15 +3,6 @@ package edu.franklin.cecas.seed;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-import java.util.List;
-import java.util.Set;
-
-import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Import;
-import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.test.context.bean.override.mockito.MockitoBean;
-
 import edu.franklin.cecas.config.SecurityConfig;
 import edu.franklin.cecas.domain.ChairCourseAssignment;
 import edu.franklin.cecas.domain.Course;
@@ -24,10 +15,17 @@ import edu.franklin.cecas.repository.UserRepository;
 import edu.franklin.cecas.service.CecasUserDetailsService;
 import edu.franklin.cecas.service.PasswordService;
 import edu.franklin.cecas.support.MySqlDataJpaTest;
+import java.util.List;
+import java.util.Set;
+import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Import;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
 @MySqlDataJpaTest
 @SuppressWarnings("unused")
-@Import({ ChairSeedImporter.class, PasswordService.class, SecurityConfig.class })
+@Import({ChairSeedImporter.class, PasswordService.class, SecurityConfig.class})
 public class ChairSeedImporterTest {
 
     @Autowired
@@ -54,8 +52,13 @@ public class ChairSeedImporterTest {
         return courseRepository.save(course);
     }
 
-    private User saveChair(String email, String fullName, String program,
-            String encodedPassword, boolean active, boolean mustChangePassword) {
+    private User saveChair(
+            String email,
+            String fullName,
+            String program,
+            String encodedPassword,
+            boolean active,
+            boolean mustChangePassword) {
         User user = new User();
         user.setEmail(email);
         user.setFullName(fullName);
@@ -98,15 +101,16 @@ public class ChairSeedImporterTest {
         Course spring1 = saveCourse("COMP-294", "27/SP", "H1WW", true);
         saveCourse("COMP-294", "25/SP", "H1WW", false);
 
-        ChairSeedImportResult result = importer.importChairs(List.of(
-                new ChairSeedRow(
-                        "grace.hopper@email.franklin.edu",
-                        "Grace Hopper",
-                        "Computer Science",
-                        Set.of("COMP-294"),
-                        "ChairTemp01!")));
+        ChairSeedImportResult result = importer.importChairs(List.of(new ChairSeedRow(
+                "grace.hopper@email.franklin.edu",
+                "Grace Hopper",
+                "Computer Science",
+                Set.of("COMP-294"),
+                "ChairTemp01!")));
 
-        User saved = userRepository.findByEmailIgnoreCase("grace.hopper@email.franklin.edu").orElseThrow();
+        User saved = userRepository
+                .findByEmailIgnoreCase("grace.hopper@email.franklin.edu")
+                .orElseThrow();
         List<ChairCourseAssignment> assignments = assignmentRepository.findAllByChairId(saved.getId());
 
         assertThat(saved.getRole()).isEqualTo(UserRole.CHAIR);
@@ -120,10 +124,7 @@ public class ChairSeedImporterTest {
 
         assertThat(assignments)
                 .extracting(a -> a.getCourse().getCourseId())
-                .containsExactlyInAnyOrder(
-                        fall1.getCourseId(),
-                        fall2.getCourseId(),
-                        spring1.getCourseId());
+                .containsExactlyInAnyOrder(fall1.getCourseId(), fall2.getCourseId(), spring1.getCourseId());
 
         assertThat(result).isEqualTo(new ChairSeedImportResult(1, 0, 0, 0, 0, 3, 0));
     }
@@ -143,13 +144,12 @@ public class ChairSeedImporterTest {
 
         Course course = saveCourse("COMP-294", "26/FA", "H1WW", true);
 
-        ChairSeedImportResult result = importer.importChairs(List.of(
-                new ChairSeedRow(
-                        "derek.finnell@email.franklin.edu",
-                        "Derek Changename",
-                        "Data Science",
-                        Set.of("COMP-294"),
-                        "ThisShouldntWork!")));
+        ChairSeedImportResult result = importer.importChairs(List.of(new ChairSeedRow(
+                "derek.finnell@email.franklin.edu",
+                "Derek Changename",
+                "Data Science",
+                Set.of("COMP-294"),
+                "ThisShouldntWork!")));
 
         User updated = userRepository.findById(existing.getId()).orElseThrow();
 
@@ -157,8 +157,10 @@ public class ChairSeedImporterTest {
         assertThat(updated.getProgram()).isEqualTo("Data Science");
         assertThat(updated.getIsActive()).isTrue();
         assertThat(updated.getMustChangePassword()).isFalse();
-        assertThat(passwordEncoder.matches("ExistingPass1!", updated.getPassword())).isTrue();
-        assertThat(passwordEncoder.matches("ThisShouldntWork!", updated.getPassword())).isFalse();
+        assertThat(passwordEncoder.matches("ExistingPass1!", updated.getPassword()))
+                .isTrue();
+        assertThat(passwordEncoder.matches("ThisShouldntWork!", updated.getPassword()))
+                .isFalse();
 
         assertThat(result).isEqualTo(new ChairSeedImportResult(0, 1, 0, 0, 0, 1, 0));
     }
@@ -181,19 +183,16 @@ public class ChairSeedImporterTest {
         Course newCourse = saveCourse("COMP-394", "26/FA", "H1WW", true);
         saveAssignment(chair, oldCourse);
 
-        ChairSeedImportResult result = importer.importChairs(List.of(
-                new ChairSeedRow(
-                        "alan.turing@email.franklin.edu",
-                        "Alan Turing",
-                        "Computer Science",
-                        Set.of("COMP-394"),
-                        "IgnoredTempPassword1!")));
+        ChairSeedImportResult result = importer.importChairs(List.of(new ChairSeedRow(
+                "alan.turing@email.franklin.edu",
+                "Alan Turing",
+                "Computer Science",
+                Set.of("COMP-394"),
+                "IgnoredTempPassword1!")));
 
         List<ChairCourseAssignment> assignments = assignmentRepository.findAllByChairId(chair.getId());
 
-        assertThat(assignments)
-                .extracting(a -> a.getCourse().getCourseId())
-                .containsExactly(newCourse.getCourseId());
+        assertThat(assignments).extracting(a -> a.getCourse().getCourseId()).containsExactly(newCourse.getCourseId());
 
         assertThat(result).isEqualTo(new ChairSeedImportResult(0, 0, 1, 0, 0, 1, 1));
     }
@@ -214,20 +213,20 @@ public class ChairSeedImporterTest {
 
         Course course = saveCourse("COMP-394", "26/FA", "H1WW", true);
 
-        ChairSeedImportResult result = importer.importChairs(List.of(
-                new ChairSeedRow(
-                        "derek1@email.franklin.edu",
-                        "New Derek",
-                        "Data Science",
-                        Set.of("COMP-394"),
-                        "IgnoredTempPassword1!")));
+        ChairSeedImportResult result = importer.importChairs(List.of(new ChairSeedRow(
+                "derek1@email.franklin.edu",
+                "New Derek",
+                "Data Science",
+                Set.of("COMP-394"),
+                "IgnoredTempPassword1!")));
 
         User updated = userRepository.findById(chair.getId()).orElseThrow();
 
         assertThat(updated.getIsActive()).isTrue();
         assertThat(updated.getFullName()).isEqualTo("New Derek");
         assertThat(updated.getProgram()).isEqualTo("Data Science");
-        assertThat(passwordEncoder.matches("ExistingPass1!", updated.getPassword())).isTrue();
+        assertThat(passwordEncoder.matches("ExistingPass1!", updated.getPassword()))
+                .isTrue();
         assertThat(updated.getMustChangePassword()).isFalse();
 
         assertThat(result).isEqualTo(new ChairSeedImportResult(0, 0, 0, 1, 0, 1, 0));
@@ -242,8 +241,7 @@ public class ChairSeedImporterTest {
         saveStudent("chair1@email.franklin.edu", 1001);
         saveCourse("COMP-495", "26/FA", "H1WW", true);
 
-        assertThatThrownBy(() -> importer.importChairs(List.of(
-                new ChairSeedRow(
+        assertThatThrownBy(() -> importer.importChairs(List.of(new ChairSeedRow(
                         "chair1@email.franklin.edu",
                         "Donald Knuth",
                         "Computer Science",
@@ -298,16 +296,12 @@ public class ChairSeedImporterTest {
 
         Course course = saveCourse("COMP-394", "27/FA", "Q1WW", true);
 
-        ChairSeedImportResult result = importer.importChairs(List.of(
-                new ChairSeedRow(
-                        "new@email.franklin.edu",
-                        "Barbara Liskov",
-                        "Computer Science",
-                        Set.of("COMP-394"),
-                        "ChairTemp01!")));
+        ChairSeedImportResult result = importer.importChairs(List.of(new ChairSeedRow(
+                "new@email.franklin.edu", "Barbara Liskov", "Computer Science", Set.of("COMP-394"), "ChairTemp01!")));
 
         User inactiveOld = userRepository.findById(oldChair.getId()).orElseThrow();
-        User newChair = userRepository.findByEmailIgnoreCase("new@email.franklin.edu").orElseThrow();
+        User newChair =
+                userRepository.findByEmailIgnoreCase("new@email.franklin.edu").orElseThrow();
 
         assertThat(inactiveOld.getIsActive()).isFalse();
         assertThat(newChair.getId()).isNotEqualTo(oldChair.getId());
@@ -325,18 +319,19 @@ public class ChairSeedImporterTest {
         saveCourse("COMP-495", "26/SU", "F1WW", true);
         saveCourse("COMP-495", "26/SU", "F2WW", true);
 
-        List<ChairSeedRow> rows = List.of(
-                new ChairSeedRow(
-                        "edsger.dijkstra@email.franklin.edu",
-                        "Edsger Dijkstra",
-                        "Computer Science",
-                        Set.of("COMP-495"),
-                        "ChairTemp01!"));
+        List<ChairSeedRow> rows = List.of(new ChairSeedRow(
+                "edsger.dijkstra@email.franklin.edu",
+                "Edsger Dijkstra",
+                "Computer Science",
+                Set.of("COMP-495"),
+                "ChairTemp01!"));
 
         ChairSeedImportResult first = importer.importChairs(rows);
         ChairSeedImportResult second = importer.importChairs(rows);
 
-        User chair = userRepository.findByEmailIgnoreCase("edsger.dijkstra@email.franklin.edu").orElseThrow();
+        User chair = userRepository
+                .findByEmailIgnoreCase("edsger.dijkstra@email.franklin.edu")
+                .orElseThrow();
         List<ChairCourseAssignment> assignments = assignmentRepository.findAllByChairId(chair.getId());
 
         assertThat(assignments).hasSize(2);
@@ -366,8 +361,12 @@ public class ChairSeedImporterTest {
                         Set.of("COMP-495"),
                         "ChairTemp02!")));
 
-        User grace = userRepository.findByEmailIgnoreCase("grace.hopper@email.franklin.edu").orElseThrow();
-        User alan = userRepository.findByEmailIgnoreCase("alan.turing@email.franklin.edu").orElseThrow();
+        User grace = userRepository
+                .findByEmailIgnoreCase("grace.hopper@email.franklin.edu")
+                .orElseThrow();
+        User alan = userRepository
+                .findByEmailIgnoreCase("alan.turing@email.franklin.edu")
+                .orElseThrow();
 
         List<ChairCourseAssignment> graceAssignments = assignmentRepository.findAllByChairId(grace.getId());
         List<ChairCourseAssignment> alanAssignments = assignmentRepository.findAllByChairId(alan.getId());
@@ -376,9 +375,7 @@ public class ChairSeedImporterTest {
                 .extracting(a -> a.getCourse().getCourseId())
                 .containsExactly(course.getCourseId());
 
-        assertThat(alanAssignments)
-                .extracting(a -> a.getCourse().getCourseId())
-                .containsExactly(course.getCourseId());
+        assertThat(alanAssignments).extracting(a -> a.getCourse().getCourseId()).containsExactly(course.getCourseId());
 
         assertThat(result).isEqualTo(new ChairSeedImportResult(2, 0, 0, 0, 0, 2, 0));
     }

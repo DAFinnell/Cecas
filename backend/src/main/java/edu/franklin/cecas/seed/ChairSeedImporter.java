@@ -1,18 +1,5 @@
 package edu.franklin.cecas.seed;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Set;
-import java.util.function.Function;
-import java.util.stream.Collectors;
-
-import org.springframework.stereotype.Component;
-import org.springframework.transaction.annotation.Transactional;
-
 import edu.franklin.cecas.domain.ChairCourseAssignment;
 import edu.franklin.cecas.domain.Course;
 import edu.franklin.cecas.domain.User;
@@ -22,6 +9,17 @@ import edu.franklin.cecas.repository.ChairCourseAssignmentRepository;
 import edu.franklin.cecas.repository.CourseRepository;
 import edu.franklin.cecas.repository.UserRepository;
 import edu.franklin.cecas.service.PasswordService;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
+import java.util.function.Function;
+import java.util.stream.Collectors;
+import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 
 @Component
 public class ChairSeedImporter {
@@ -30,8 +28,11 @@ public class ChairSeedImporter {
     private final ChairCourseAssignmentRepository assignmentRepository;
     private final PasswordService passwordService;
 
-    public ChairSeedImporter(UserRepository userRepository, CourseRepository courseRepository,
-            ChairCourseAssignmentRepository assignmentRepository, PasswordService passwordService) {
+    public ChairSeedImporter(
+            UserRepository userRepository,
+            CourseRepository courseRepository,
+            ChairCourseAssignmentRepository assignmentRepository,
+            PasswordService passwordService) {
         this.userRepository = userRepository;
         this.courseRepository = courseRepository;
         this.assignmentRepository = assignmentRepository;
@@ -43,13 +44,12 @@ public class ChairSeedImporter {
         // Fast lookup maps so the importer can match chairs by normalized email
         // and expand each course code into all active course records with that code.
         Map<String, User> usersByEmail = userRepository.findAll().stream()
-                .collect(Collectors.toMap(
-                        user -> user.getEmail().trim().toLowerCase(Locale.ROOT),
-                        Function.identity()));
+                .collect(
+                        Collectors.toMap(user -> user.getEmail().trim().toLowerCase(Locale.ROOT), Function.identity()));
 
-        Map<String, List<Course>> activeCoursesByCode = courseRepository.findAllByIsActiveTrue().stream()
-                .collect(Collectors.groupingBy(Course::getCourseCode));
-        
+        Map<String, List<Course>> activeCoursesByCode =
+                courseRepository.findAllByIsActiveTrue().stream().collect(Collectors.groupingBy(Course::getCourseCode));
+
         // Tracks which chair emails are still present in the current seed file so we can
         // deactivate removed chairs after the main import pass.
         Set<String> seedEmails = new HashSet<>();
@@ -70,7 +70,7 @@ public class ChairSeedImporter {
             List<Course> expectedCourses = resolveExpectedCourses(row, activeCoursesByCode);
 
             User existing = usersByEmail.get(row.email());
-            
+
             // chairs.csv is not allowed to take over an email that already belongs to a non-chair user.
             if (existing != null && existing.getRole() != UserRole.CHAIR) {
                 throw new SeedSynchronizationException("Seed synchronization failed: email '" + row.email()
@@ -116,14 +116,14 @@ public class ChairSeedImporter {
                     && Boolean.TRUE.equals(user.getIsActive())
                     && !seedEmails.contains(user.getEmail().trim().toLowerCase(Locale.ROOT))) {
                 // Chairs missing from the latest seed are deactivated and lose current
-                // assignments, but historical request records still keep their chair reference.        
+                // assignments, but historical request records still keep their chair reference.
                 user.setIsActive(false);
                 assignmentRepository.deleteAllByChairId(user.getId());
                 deactivated++;
             }
         }
-        return new ChairSeedImportResult(inserted, updated, unchanged, reactivated, deactivated, assignmentsAdded,
-                assignmentsRemoved);
+        return new ChairSeedImportResult(
+                inserted, updated, unchanged, reactivated, deactivated, assignmentsAdded, assignmentsRemoved);
     }
 
     private User buildNewChair(ChairSeedRow row) {
@@ -163,16 +163,21 @@ public class ChairSeedImporter {
         // keep assignments that still belong,
         // remove assignments no longer represented by the csv.
         Set<Integer> currentCourseIds = currentAssignments.stream()
-                .map(assignment -> assignment.getCourse().getCourseId()).collect(Collectors.toSet());
+                .map(assignment -> assignment.getCourse().getCourseId())
+                .collect(Collectors.toSet());
 
-        Set<Integer> expectedCourseIds = expectedCourses.stream().map(Course::getCourseId).collect(Collectors.toSet());
+        Set<Integer> expectedCourseIds =
+                expectedCourses.stream().map(Course::getCourseId).collect(Collectors.toSet());
 
         List<ChairCourseAssignment> toAdd = expectedCourses.stream()
                 .filter(course -> !currentCourseIds.contains(course.getCourseId()))
-                .map(course -> new ChairCourseAssignment(chair, course)).toList();
+                .map(course -> new ChairCourseAssignment(chair, course))
+                .toList();
 
         List<ChairCourseAssignment> toRemove = currentAssignments.stream()
-                .filter(assignment -> !expectedCourseIds.contains(assignment.getCourse().getCourseId())).toList();
+                .filter(assignment ->
+                        !expectedCourseIds.contains(assignment.getCourse().getCourseId()))
+                .toList();
 
         assignmentRepository.saveAll(toAdd);
         assignmentRepository.deleteAll(toRemove);

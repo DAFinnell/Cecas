@@ -1,16 +1,5 @@
 package edu.franklin.cecas.web;
 
-import java.util.HashMap;
-import java.util.Map;
-
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ProblemDetail;
-import org.springframework.security.access.AccessDeniedException;
-import org.springframework.web.bind.MethodArgumentNotValidException;
-import org.springframework.web.bind.annotation.ExceptionHandler;
-import org.springframework.web.bind.annotation.RestControllerAdvice;
-import org.springframework.web.multipart.MaxUploadSizeExceededException;
-
 import edu.franklin.cecas.exception.ChairNotAssignedException;
 import edu.franklin.cecas.exception.EmailAlreadyExistsException;
 import edu.franklin.cecas.exception.EvidenceUploadException;
@@ -27,6 +16,15 @@ import edu.franklin.cecas.exception.ResourceNotFoundException;
 import edu.franklin.cecas.exception.StudentNotFoundException;
 import edu.franklin.cecas.exception.UnauthorizedRoleException;
 import edu.franklin.cecas.exception.UserNotFoundException;
+import java.util.HashMap;
+import java.util.Map;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ProblemDetail;
+import org.springframework.security.access.AccessDeniedException;
+import org.springframework.web.bind.MethodArgumentNotValidException;
+import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.multipart.MaxUploadSizeExceededException;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
@@ -65,7 +63,8 @@ public class GlobalExceptionHandler {
         problem.setDetail("One or more request fields are invalid.");
 
         Map<String, String> errors = new HashMap<>();
-        ex.getBindingResult().getFieldErrors()
+        ex.getBindingResult()
+                .getFieldErrors()
                 .forEach(error -> errors.put(error.getField(), error.getDefaultMessage()));
 
         problem.setProperty("errorCode", "VALIDATION_FAILED");

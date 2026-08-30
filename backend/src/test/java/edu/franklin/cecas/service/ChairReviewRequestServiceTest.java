@@ -12,17 +12,6 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
-import java.time.LocalDateTime;
-import java.util.Optional;
-
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.core.io.Resource;
-import org.springframework.http.MediaType;
-import org.springframework.test.util.ReflectionTestUtils;
-
 import edu.franklin.cecas.domain.Category;
 import edu.franklin.cecas.domain.Course;
 import edu.franklin.cecas.domain.ExtraCreditRequest;
@@ -38,6 +27,15 @@ import edu.franklin.cecas.repository.ChairCourseAssignmentRepository;
 import edu.franklin.cecas.repository.ExtraCreditRequestRepository;
 import edu.franklin.cecas.repository.UserRepository;
 import edu.franklin.cecas.service.EvidenceStorageService.StoredEvidence;
+import java.time.LocalDateTime;
+import java.util.Optional;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.core.io.Resource;
+import org.springframework.http.MediaType;
+import org.springframework.test.util.ReflectionTestUtils;
 
 @ExtendWith(MockitoExtension.class)
 class ChairReviewRequestServiceTest {
@@ -88,9 +86,7 @@ class ChairReviewRequestServiceTest {
         studentUser.setRole(UserRole.STUDENT);
     }
 
-    private ExtraCreditRequest createRequest(
-            ExtraCreditRequestStatus status,
-            String evidenceFilePath) {
+    private ExtraCreditRequest createRequest(ExtraCreditRequestStatus status, String evidenceFilePath) {
 
         Course course = new Course();
         ReflectionTestUtils.setField(course, "courseId", 3);
@@ -118,11 +114,9 @@ class ChairReviewRequestServiceTest {
     }
 
     private void setUpAssignedRequest(ExtraCreditRequest request) {
-        when(userRepository.findByEmailIgnoreCase("derek-chair@derek.com"))
-                .thenReturn(Optional.of(chairUser));
+        when(userRepository.findByEmailIgnoreCase("derek-chair@derek.com")).thenReturn(Optional.of(chairUser));
         when(requestRepository.findById(42)).thenReturn(Optional.of(request));
-        when(assignmentRepository.existsByChair_IdAndCourse_CourseId(7, 3))
-                .thenReturn(true);
+        when(assignmentRepository.existsByChair_IdAndCourse_CourseId(7, 3)).thenReturn(true);
     }
 
     /**
@@ -132,21 +126,15 @@ class ChairReviewRequestServiceTest {
     @Test
     void testGetRequestForReviewReturnsApplicationAndEvidenceDetails() {
         String evidencePath = "evidence/request-42/test.pdf";
-        ExtraCreditRequest request = createRequest(
-                ExtraCreditRequestStatus.EVIDENCE_SUBMITTED,
-                evidencePath);
+        ExtraCreditRequest request = createRequest(ExtraCreditRequestStatus.EVIDENCE_SUBMITTED, evidencePath);
         StudentPointsDTO pointsSummary = new StudentPointsDTO(10, 5, 35);
 
         setUpAssignedRequest(request);
         when(pointAllocationService.getStudentPoints(11, "26/FA")).thenReturn(pointsSummary);
-        when(evidenceStorageService.evidenceFileName(42, evidencePath))
-                .thenReturn("evidence-request-42.pdf");
-        when(evidenceStorageService.contentTypeFor(evidencePath))
-                .thenReturn(MediaType.APPLICATION_PDF);
+        when(evidenceStorageService.evidenceFileName(42, evidencePath)).thenReturn("evidence-request-42.pdf");
+        when(evidenceStorageService.contentTypeFor(evidencePath)).thenReturn(MediaType.APPLICATION_PDF);
 
-        ChairReviewDTO response = chairReviewRequestService.getRequestForReview(
-                "derek-chair@derek.com",
-                42);
+        ChairReviewDTO response = chairReviewRequestService.getRequestForReview("derek-chair@derek.com", 42);
 
         assertEquals(42, response.getRequestId());
         assertEquals("EVIDENCE_SUBMITTED", response.getStatus());
@@ -161,8 +149,7 @@ class ChairReviewRequestServiceTest {
         assertEquals("H1WW", response.getSection());
         assertEquals(9, response.getCategoryId());
         assertEquals("Seminar Attendance", response.getCategoryName());
-        assertEquals("Approved attendance at an academic or professional seminar",
-                response.getCategoryDescription());
+        assertEquals("Approved attendance at an academic or professional seminar", response.getCategoryDescription());
         assertEquals(5, response.getDefaultPoints());
         assertSame(pointsSummary, response.getPointsSummary());
         assertEquals(LocalDateTime.of(2026, 7, 1, 10, 30), response.getCreatedAt());
@@ -181,12 +168,9 @@ class ChairReviewRequestServiceTest {
         ExtraCreditRequest request = createRequest(ExtraCreditRequestStatus.PENDING, null);
 
         setUpAssignedRequest(request);
-        when(pointAllocationService.getStudentPoints(11, "26/FA"))
-                .thenReturn(new StudentPointsDTO(0, 5, 45));
+        when(pointAllocationService.getStudentPoints(11, "26/FA")).thenReturn(new StudentPointsDTO(0, 5, 45));
 
-        ChairReviewDTO response = chairReviewRequestService.getRequestForReview(
-                "derek-chair@derek.com",
-                42);
+        ChairReviewDTO response = chairReviewRequestService.getRequestForReview("derek-chair@derek.com", 42);
 
         assertFalse(response.getEvidenceAvailable());
         assertNull(response.getEvidenceFileName());
@@ -200,23 +184,18 @@ class ChairReviewRequestServiceTest {
      */
     @Test
     void testGetRequestForReviewReturnsFinalDecisionDetails() {
-        ExtraCreditRequest request = createRequest(
-                ExtraCreditRequestStatus.APPROVED,
-                "evidence/request-42/test.pdf");
+        ExtraCreditRequest request = createRequest(ExtraCreditRequestStatus.APPROVED, "evidence/request-42/test.pdf");
         request.setAwardedPoints(5);
         request.setChairFeedback("Evidence verified.");
 
         setUpAssignedRequest(request);
-        when(pointAllocationService.getStudentPoints(11, "26/FA"))
-                .thenReturn(new StudentPointsDTO(15, 0, 35));
+        when(pointAllocationService.getStudentPoints(11, "26/FA")).thenReturn(new StudentPointsDTO(15, 0, 35));
         when(evidenceStorageService.evidenceFileName(42, request.getEvidenceFilePath()))
                 .thenReturn("evidence-request-42.pdf");
         when(evidenceStorageService.contentTypeFor(request.getEvidenceFilePath()))
                 .thenReturn(MediaType.APPLICATION_PDF);
 
-        ChairReviewDTO response = chairReviewRequestService.getRequestForReview(
-                "derek-chair@derek.com",
-                42);
+        ChairReviewDTO response = chairReviewRequestService.getRequestForReview("derek-chair@derek.com", 42);
 
         assertEquals("APPROVED", response.getStatus());
         assertEquals(5, response.getAwardedPoints());
@@ -233,24 +212,17 @@ class ChairReviewRequestServiceTest {
         String evidencePath = "evidence/request-42/test.pdf";
         ExtraCreditRequest request = createRequest(ExtraCreditRequestStatus.APPROVED, evidencePath);
         Resource resource = mock(Resource.class);
-        StoredEvidence storedEvidence = new StoredEvidence(
-                resource,
-                MediaType.APPLICATION_PDF,
-                "evidence-request-42.pdf",
-                100L);
+        StoredEvidence storedEvidence =
+                new StoredEvidence(resource, MediaType.APPLICATION_PDF, "evidence-request-42.pdf", 100L);
 
         setUpAssignedRequest(request);
         when(evidenceStorageService.loadEvidence(42, evidencePath)).thenReturn(storedEvidence);
 
-        StoredEvidence approvedEvidence = chairReviewRequestService.getEvidence(
-                "derek-chair@derek.com",
-                42);
+        StoredEvidence approvedEvidence = chairReviewRequestService.getEvidence("derek-chair@derek.com", 42);
 
         request.setStatus(ExtraCreditRequestStatus.REJECTED);
 
-        StoredEvidence rejectedEvidence = chairReviewRequestService.getEvidence(
-                "derek-chair@derek.com",
-                42);
+        StoredEvidence rejectedEvidence = chairReviewRequestService.getEvidence("derek-chair@derek.com", 42);
 
         assertSame(storedEvidence, approvedEvidence);
         assertSame(storedEvidence, rejectedEvidence);
@@ -262,15 +234,12 @@ class ChairReviewRequestServiceTest {
      */
     @Test
     void testGetRequestForReviewThrowsWhenChairIsNotAssigned() {
-        ExtraCreditRequest request = createRequest(
-                ExtraCreditRequestStatus.EVIDENCE_SUBMITTED,
-                "evidence/request-42/test.pdf");
+        ExtraCreditRequest request =
+                createRequest(ExtraCreditRequestStatus.EVIDENCE_SUBMITTED, "evidence/request-42/test.pdf");
 
-        when(userRepository.findByEmailIgnoreCase("derek-chair@derek.com"))
-                .thenReturn(Optional.of(chairUser));
+        when(userRepository.findByEmailIgnoreCase("derek-chair@derek.com")).thenReturn(Optional.of(chairUser));
         when(requestRepository.findById(42)).thenReturn(Optional.of(request));
-        when(assignmentRepository.existsByChair_IdAndCourse_CourseId(7, 3))
-                .thenReturn(false);
+        when(assignmentRepository.existsByChair_IdAndCourse_CourseId(7, 3)).thenReturn(false);
 
         assertThrows(
                 ChairNotAssignedException.class,
@@ -285,15 +254,12 @@ class ChairReviewRequestServiceTest {
      */
     @Test
     void testGetEvidenceThrowsWhenChairIsNotAssigned() {
-        ExtraCreditRequest request = createRequest(
-                ExtraCreditRequestStatus.EVIDENCE_SUBMITTED,
-                "evidence/request-42/test.pdf");
+        ExtraCreditRequest request =
+                createRequest(ExtraCreditRequestStatus.EVIDENCE_SUBMITTED, "evidence/request-42/test.pdf");
 
-        when(userRepository.findByEmailIgnoreCase("derek-chair@derek.com"))
-                .thenReturn(Optional.of(chairUser));
+        when(userRepository.findByEmailIgnoreCase("derek-chair@derek.com")).thenReturn(Optional.of(chairUser));
         when(requestRepository.findById(42)).thenReturn(Optional.of(request));
-        when(assignmentRepository.existsByChair_IdAndCourse_CourseId(7, 3))
-                .thenReturn(false);
+        when(assignmentRepository.existsByChair_IdAndCourse_CourseId(7, 3)).thenReturn(false);
 
         assertThrows(
                 ChairNotAssignedException.class,
@@ -308,8 +274,7 @@ class ChairReviewRequestServiceTest {
      */
     @Test
     void testGetRequestForReviewThrowsWhenRequestIsMissing() {
-        when(userRepository.findByEmailIgnoreCase("derek-chair@derek.com"))
-                .thenReturn(Optional.of(chairUser));
+        when(userRepository.findByEmailIgnoreCase("derek-chair@derek.com")).thenReturn(Optional.of(chairUser));
         when(requestRepository.findById(42)).thenReturn(Optional.empty());
 
         assertThrows(
@@ -327,39 +292,26 @@ class ChairReviewRequestServiceTest {
      */
     @Test
     void testApproveReturnsUpdatedRequestDetails() {
-        ExtraCreditRequest request = createRequest(
-                ExtraCreditRequestStatus.EVIDENCE_SUBMITTED,
-                "evidence/request-42/test.pdf");
-        ExtraCreditRequest updatedRequest = createRequest(
-                ExtraCreditRequestStatus.APPROVED,
-                "evidence/request-42/test.pdf");
+        ExtraCreditRequest request =
+                createRequest(ExtraCreditRequestStatus.EVIDENCE_SUBMITTED, "evidence/request-42/test.pdf");
+        ExtraCreditRequest updatedRequest =
+                createRequest(ExtraCreditRequestStatus.APPROVED, "evidence/request-42/test.pdf");
         updatedRequest.setAwardedPoints(5);
         updatedRequest.setChairFeedback("Evidence verified.");
 
         setUpAssignedRequest(request);
-        when(stateMachineService.approveWithPointsRequest(
-                42,
-                5,
-                "Evidence verified.",
-                chairUser))
-            .thenReturn(updatedRequest);
+        when(stateMachineService.approveWithPointsRequest(42, 5, "Evidence verified.", chairUser))
+                .thenReturn(updatedRequest);
 
-        ChairRequestActionDTO response = chairReviewRequestService.approve(
-                "derek-chair@derek.com",
-                42,
-                5,
-                "Evidence verified.");
+        ChairRequestActionDTO response =
+                chairReviewRequestService.approve("derek-chair@derek.com", 42, 5, "Evidence verified.");
 
         assertEquals(42, response.getRequestId());
         assertEquals("APPROVED", response.getStatus());
         assertEquals(5, response.getAwardedPoints());
         assertEquals("Evidence verified.", response.getChairFeedback());
         assertEquals(LocalDateTime.of(2026, 7, 2, 11, 45), response.getUpdatedAt());
-        verify(stateMachineService).approveWithPointsRequest(
-                42,
-                5,
-                "Evidence verified.",
-                chairUser);
+        verify(stateMachineService).approveWithPointsRequest(42, 5, "Evidence verified.", chairUser);
     }
 
     /**
@@ -368,22 +320,18 @@ class ChairReviewRequestServiceTest {
      */
     @Test
     void testRejectReturnsUpdatedRequestDetails() {
-        ExtraCreditRequest request = createRequest(
-                ExtraCreditRequestStatus.EVIDENCE_SUBMITTED,
-                "evidence/request-42/test.pdf");
-        ExtraCreditRequest updatedRequest = createRequest(
-                ExtraCreditRequestStatus.REJECTED,
-                "evidence/request-42/test.pdf");
+        ExtraCreditRequest request =
+                createRequest(ExtraCreditRequestStatus.EVIDENCE_SUBMITTED, "evidence/request-42/test.pdf");
+        ExtraCreditRequest updatedRequest =
+                createRequest(ExtraCreditRequestStatus.REJECTED, "evidence/request-42/test.pdf");
         updatedRequest.setChairFeedback("Insufficient evidence");
 
         setUpAssignedRequest(request);
         when(stateMachineService.rejectRequest(42, "Insufficient evidence", chairUser))
                 .thenReturn(updatedRequest);
 
-        ChairRequestActionDTO response = chairReviewRequestService.reject(
-                "derek-chair@derek.com",
-                42,
-                "Insufficient evidence");
+        ChairRequestActionDTO response =
+                chairReviewRequestService.reject("derek-chair@derek.com", 42, "Insufficient evidence");
 
         assertEquals(42, response.getRequestId());
         assertEquals("REJECTED", response.getStatus());

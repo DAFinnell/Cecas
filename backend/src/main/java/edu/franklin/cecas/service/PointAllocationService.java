@@ -1,16 +1,14 @@
 package edu.franklin.cecas.service;
 
-import java.util.List;
-
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
+import edu.franklin.cecas.config.ExtraCreditProperties;
 import edu.franklin.cecas.domain.ExtraCreditRequest;
 import edu.franklin.cecas.domain.ExtraCreditRequestStatus;
 import edu.franklin.cecas.dto.StudentPointsDTO;
 import edu.franklin.cecas.exception.PointCapExceededException;
 import edu.franklin.cecas.repository.ExtraCreditRequestRepository;
-import edu.franklin.cecas.config.ExtraCreditProperties;
+import java.util.List;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class PointAllocationService {
@@ -18,15 +16,15 @@ public class PointAllocationService {
     private final ExtraCreditRequestRepository requestRepository;
     private final ExtraCreditProperties extraCreditProperties;
 
-    public PointAllocationService(ExtraCreditRequestRepository requestRepository,
-            ExtraCreditProperties extraCreditProperties) {
+    public PointAllocationService(
+            ExtraCreditRequestRepository requestRepository, ExtraCreditProperties extraCreditProperties) {
         this.requestRepository = requestRepository;
         this.extraCreditProperties = extraCreditProperties;
     }
 
     public int getUsedPoints(Integer studentId, String term) {
-        List<ExtraCreditRequest> approvedRequests = requestRepository.findByStudent_IdAndCourse_TermAndStatus(studentId,
-                term, ExtraCreditRequestStatus.APPROVED);
+        List<ExtraCreditRequest> approvedRequests = requestRepository.findByStudent_IdAndCourse_TermAndStatus(
+                studentId, term, ExtraCreditRequestStatus.APPROVED);
 
         int usedPoints = 0;
 
@@ -45,7 +43,11 @@ public class PointAllocationService {
 
     public int getPendingPoints(Integer studentId, String term) {
         List<ExtraCreditRequest> pendingRequests = requestRepository.findByStudent_IdAndCourse_TermAndStatusIn(
-                studentId, term, List.of(ExtraCreditRequestStatus.PENDING, ExtraCreditRequestStatus.PRE_APPROVED,
+                studentId,
+                term,
+                List.of(
+                        ExtraCreditRequestStatus.PENDING,
+                        ExtraCreditRequestStatus.PRE_APPROVED,
                         ExtraCreditRequestStatus.EVIDENCE_SUBMITTED));
 
         int pendingPoints = 0;
@@ -70,8 +72,8 @@ public class PointAllocationService {
     }
 
     public boolean canSubmitPendingRequest(Integer studentId, String term, int requestedPoints) {
-        return getUsedPoints(studentId, term) + getPendingPoints(studentId, term)
-                + requestedPoints <= extraCreditProperties.cap();
+        return getUsedPoints(studentId, term) + getPendingPoints(studentId, term) + requestedPoints
+                <= extraCreditProperties.cap();
     }
 
     @Transactional

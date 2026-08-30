@@ -28,6 +28,10 @@ jobs:
         working-directory: ./backend
         run: chmod +x mvnw
 
+      - name: Check backend formatting
+        working-directory: ./backend
+        run: ./mvnw -B spotless:check
+
       - name: Run backend tests
         working-directory: ./backend
         run: ./mvnw -B test 
@@ -62,6 +66,10 @@ jobs:
       - name: Install dependencies
         working-directory: ./frontend
         run: npm ci
+
+      - name: Check frontend formatting
+        working-directory: ./frontend
+        run: npm run format:check
 
       - name: Run frontend tests
         working-directory: ./frontend

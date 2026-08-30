@@ -1,9 +1,8 @@
 package edu.franklin.cecas.dto;
 
-import java.time.LocalDateTime;
-
 import edu.franklin.cecas.domain.ExtraCreditRequest;
 import edu.franklin.cecas.domain.ExtraCreditRequestStatus;
+import java.time.LocalDateTime;
 
 public class StudentRequestSummaryDTO {
     private Integer id;
@@ -30,9 +29,10 @@ public class StudentRequestSummaryDTO {
         this.awardedPoints = request.getAwardedPoints();
         this.updatedAt = request.getUpdatedAt();
         this.dueDate = request.getDueDate();
-        this.evidenceFileUploaded = request.getEvidenceFilePath() != null && !request.getEvidenceFilePath().isBlank();
-        this.evidenceUploadAvailable = request.getStatus() == ExtraCreditRequestStatus.PRE_APPROVED
-                && !this.evidenceFileUploaded;
+        this.evidenceFileUploaded = request.getEvidenceFilePath() != null
+                && !request.getEvidenceFilePath().isBlank();
+        this.evidenceUploadAvailable =
+                request.getStatus() == ExtraCreditRequestStatus.PRE_APPROVED && !this.evidenceFileUploaded;
     }
 
     public Integer getId() {

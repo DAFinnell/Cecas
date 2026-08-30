@@ -1,5 +1,6 @@
 package edu.franklin.cecas.seed;
 
+import edu.franklin.cecas.exception.SeedValidationException;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -9,12 +10,9 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
-
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVParser;
 import org.apache.commons.csv.CSVRecord;
-
-import edu.franklin.cecas.exception.SeedValidationException;
 
 abstract class AbstractSeedCsvReader<T> {
 
@@ -32,8 +30,8 @@ abstract class AbstractSeedCsvReader<T> {
             String headerLine = reader.readLine();
 
             if (headerLine == null) {
-                throw new SeedValidationException(List.of(
-                        new SeedValidationError(fileName(), 1, "header", "Header row is missing.")));
+                throw new SeedValidationException(
+                        List.of(new SeedValidationError(fileName(), 1, "header", "Header row is missing.")));
             }
 
             // Parse and validate the raw header line separately so we can reject duplicate
@@ -43,18 +41,17 @@ abstract class AbstractSeedCsvReader<T> {
             List<String> actualHeaders = headerRecords.get(0).toList();
 
             if (actualHeaders.size() != new HashSet<>(actualHeaders).size()) {
-                throw new SeedValidationException(List.of(
-                        new SeedValidationError(fileName(), 1, "header",
-                                "Header row contains duplicate column names.")));
+                throw new SeedValidationException(List.of(new SeedValidationError(
+                        fileName(), 1, "header", "Header row contains duplicate column names.")));
             }
 
             if (!actualHeaders.equals(expectedHeaders())) {
-                throw new SeedValidationException(List.of(
-                        new SeedValidationError(fileName(), 1, "header",
-                                "Header row does not match expected columns.")));
+                throw new SeedValidationException(List.of(new SeedValidationError(
+                        fileName(), 1, "header", "Header row does not match expected columns.")));
             }
 
-            CSVFormat dataFormat = CSVFormat.DEFAULT.builder()
+            CSVFormat dataFormat = CSVFormat.DEFAULT
+                    .builder()
                     .setHeader(expectedHeaders().toArray(String[]::new))
                     .setSkipHeaderRecord(false)
                     .get();
@@ -66,8 +63,11 @@ abstract class AbstractSeedCsvReader<T> {
                     long physicalRow = record.getRecordNumber() + 1;
 
                     if (record.size() != expectedHeaders().size()) {
-                        errors.add(new SeedValidationError(fileName(), physicalRow,
-                                "row", "Malformed row: expected %d columns but found %d."
+                        errors.add(new SeedValidationError(
+                                fileName(),
+                                physicalRow,
+                                "row",
+                                "Malformed row: expected %d columns but found %d."
                                         .formatted(expectedHeaders().size(), record.size())));
                         continue;
                     }
@@ -80,11 +80,11 @@ abstract class AbstractSeedCsvReader<T> {
             }
 
         } catch (NoSuchFileException e) {
-            throw new SeedValidationException(List.of(
-                    new SeedValidationError(fileName(), 0, "file", "File is missing.")));
+            throw new SeedValidationException(
+                    List.of(new SeedValidationError(fileName(), 0, "file", "File is missing.")));
         } catch (IOException e) {
-            throw new SeedValidationException(List.of(
-                    new SeedValidationError(fileName(), 0, "file", "File is missing or unreadable.")));
+            throw new SeedValidationException(
+                    List.of(new SeedValidationError(fileName(), 0, "file", "File is missing or unreadable.")));
         }
 
         if (!errors.isEmpty()) {
