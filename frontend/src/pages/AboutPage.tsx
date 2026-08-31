@@ -3,7 +3,7 @@ export default function AboutPage() {
     <section className="space-y-8">
       <header className="rounded-3xl bg-white p-8 shadow-sm ring-1 ring-slate-200 sm:p-10">
         <p className="text-sm font-semibold uppercase tracking-[0.2em] text-sky-700">
-          About the project
+          Team capstone · Portfolio demonstration
         </p>
 
         <h1 className="mt-3 text-3xl font-semibold tracking-tight text-slate-950 sm:text-4xl">
