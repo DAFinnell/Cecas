@@ -1,4 +1,5 @@
 import { Link } from 'react-router-dom'
+import { routes } from '../app/routes'
 
 export default function Footer() {
   return (
@@ -14,23 +15,33 @@ export default function Footer() {
         className="mt-4 flex flex-wrap justify-center gap-x-4 gap-y-2"
       >
         <Link
+          to={routes.demo}
+          className="rounded-sm transition hover:text-sky-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-600 focus-visible:ring-offset-2"
+        >
+          Guided Demo
+        </Link>
+
+        <Link
           to="/about"
           className="rounded-sm transition hover:text-sky-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-600 focus-visible:ring-offset-2"
         >
           About
         </Link>
+
         <Link
           to="/contact"
           className="rounded-sm transition hover:text-sky-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-600 focus-visible:ring-offset-2"
         >
           Contact
         </Link>
+
         <Link
           to="/privacy-policy"
           className="rounded-sm transition hover:text-sky-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-600 focus-visible:ring-offset-2"
         >
           Privacy and Demo Data
         </Link>
+
         <a
           href="https://github.com/DAFinnell/Cecas"
           className="rounded-sm transition hover:text-sky-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-600 focus-visible:ring-offset-2"

@@ -22,6 +22,7 @@ import StudentApplicationDetailPage from './pages/StudentApplicationDetailPage'
 import StudentApplicationsPage from './pages/StudentApplicationsPage'
 import ChairReviewPage from './pages/ChairReviewPage'
 import EvidenceUploadPage from './pages/EvidenceUploadPage'
+import DemoPage from './pages/DemoPage'
 
 export function RootPage() {
   const { user, loading } = useCurrentUser()
@@ -76,6 +77,7 @@ export default function App() {
           <Route path={routePath(routes.register)} element={<RegisterPage />} />
           <Route path="privacy-policy" element={<PrivacyPolicyPage />} />
           <Route path={routePath(routes.howItWorks)} element={<HowItWorksPage />} />
+          <Route path={routePath(routes.demo)} element={<DemoPage />} />
 
           <Route element={<RequireRole allowedRoles={['STUDENT']} />}>
             <Route path={routePath(routes.student.dashboard)} element={<StudentPage />} />

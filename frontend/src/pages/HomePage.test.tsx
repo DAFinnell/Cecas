@@ -71,6 +71,12 @@ describe('HomePage', () => {
 
     expect(
       screen.getByRole('link', {
+        name: 'Explore the Guided Demo',
+      }),
+    ).toHaveAttribute('href', '/demo')
+
+    expect(
+      screen.getByRole('link', {
         name: 'How It Works',
       }),
     ).toHaveAttribute('href', '/how-it-works')
@@ -82,7 +88,7 @@ describe('HomePage', () => {
     ).toHaveAttribute('href', 'https://github.com/DAFinnell/Cecas')
   })
 
-  it('does not present authentication or a guided demo as its main calls to action', () => {
+  it('does not present authentication as a main call to action', () => {
     renderHomePage()
 
     expect(
@@ -100,12 +106,6 @@ describe('HomePage', () => {
     expect(
       screen.queryByRole('link', {
         name: 'Program Chair Login',
-      }),
-    ).not.toBeInTheDocument()
-
-    expect(
-      screen.queryByRole('link', {
-        name: 'View Demo',
       }),
     ).not.toBeInTheDocument()
   })
