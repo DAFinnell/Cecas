@@ -1,138 +1,65 @@
-import React, { useState } from 'react'
+const contactLinks = [
+  {
+    label: 'dafinnell.com',
+    href: 'https://dafinnell.com',
+    description: 'Visit Derek Finnell’s portfolio and contact information.',
+  },
+  {
+    label: 'DAFinnell on GitHub',
+    href: 'https://github.com/DAFinnell',
+    description: 'View Derek’s GitHub profile and other development work.',
+  },
+  {
+    label: 'CECAS project source on GitHub',
+    href: 'https://github.com/DAFinnell/Cecas',
+    description: 'Review the source code and project documentation for CECAS.',
+  },
+]
 
 export default function ContactPage() {
-  const [name, setName] = useState('')
-  const [email, setEmail] = useState('')
-  const [message, setMessage] = useState('')
-
-  const handleSubmit = (e: React.SubmitEvent<HTMLFormElement>) => {
-    e.preventDefault()
-    alert(`Thank you for reaching out, ${name}! This form is currently a mockup.`)
-  }
-
   return (
-    <div className="min-h-screen bg-slate-50 py-12 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-5xl mx-auto">
-        {/* Page Title & Intro text */}
-        <div className="text-center mb-12">
-          <h1 className="text-4xl font-extrabold tracking-tight text-slate-900 sm:text-5xl">
-            Contact Us
-          </h1>
-          <p className="mt-4 text-lg text-slate-600 max-w-2xl mx-auto">
-            Have questions about your extra credit tracking or need assistance with the system? Our
-            support team is here to help.
-          </p>
-        </div>
+    <section className="mx-auto max-w-5xl space-y-8">
+      {/* Page Title & Intro text */}
+      <header className="rounded-3xl bg-white p-8 shadow-sm ring-1 ring-slate-200 sm:p-10">
+        <p className="text-sm font-semibold uppercase tracking-[0.2em] text-sky-700">
+          Project contact
+        </p>
 
-        {/* Two Column Layout Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 bg-white p-8 rounded-2xl shadow-sm border border-slate-100">
-          {/* Left Column: Contact Information Placeholders */}
-          <div className="space-y-6 pr-0 md:pr-6 border-b border-slate-100 md:border-b-0 md:border-r border-slate-100 pb-8 md:pb-0">
-            <div>
-              <h2 className="text-xl font-bold text-slate-900 mb-4">Support Information</h2>
-              <p className="text-slate-600 text-sm">
-                Reach out to the department directly or visit during administrative office hours.
-              </p>
-            </div>
+        <h1 className="mt-3 text-3xl font-semibold tracking-tight text-slate-950 sm:text-4xl">
+          Contact and Project Links
+        </h1>
 
-            <div className="space-y-4">
-              {/* Support Email */}
-              <div className="flex items-start space-x-3">
-                <div className="text-xl">✉️</div>
-                <div>
-                  <h3 className="text-sm font-semibold text-slate-900">Support Email</h3>
-                  <p className="text-sm text-blue-900 font-medium">support@cecas.edu</p>
-                </div>
-              </div>
+        <p className="mt-4 max-w-3xl text-lg leading-8 text-slate-600">
+          CECAS is a portfolio project, so there is no support department or service desk. Use the
+          links below to learn more about the project or get in touch.
+        </p>
+      </header>
 
-              {/* Department Name */}
-              <div className="flex items-start space-x-3">
-                <div className="text-xl">🏢</div>
-                <div>
-                  <h3 className="text-sm font-semibold text-slate-900">Department</h3>
-                  <p className="text-sm text-slate-600">
-                    Computer Science & Information Technology
-                  </p>
-                </div>
-              </div>
+      {/* Project Links */}
+      <section
+        aria-labelledby="project-links-heading"
+        className="rounded-3xl bg-white p-8 shadow-sm ring-1 ring-slate-200"
+      >
+        <h2 id="project-links-heading" className="text-xl font-semibold text-slate-950">
+          Project Links
+        </h2>
 
-              {/* Office Hours */}
-              <div className="flex items-start space-x-3">
-                <div className="text-xl">🕒</div>
-                <div>
-                  <h3 className="text-sm font-semibold text-slate-900">Office Hours</h3>
-                  <p className="text-sm text-slate-600">Monday - Friday: 8:00 AM – 5:00 PM CST</p>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Right Column: Contact Form Mockup */}
-          <div className="pl-0 md:pl-6">
-            <h2 className="text-xl font-bold text-slate-900 mb-4">Send a Message</h2>
-            <form onSubmit={handleSubmit} className="space-y-4">
-              {/* Name Field */}
-              <div>
-                <label htmlFor="name" className="block text-sm font-semibold text-slate-700 mb-1">
-                  Name
-                </label>
-                <input
-                  type="text"
-                  id="name"
-                  required
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  className="w-full px-4 py-2 text-sm bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-900/20 focus:border-blue-900 transition-all"
-                  placeholder="Your full name"
-                />
-              </div>
-
-              {/* Email Field */}
-              <div>
-                <label htmlFor="email" className="block text-sm font-semibold text-slate-700 mb-1">
-                  Email Field
-                </label>
-                <input
-                  type="email"
-                  id="email"
-                  required
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  className="w-full px-4 py-2 text-sm bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-900/20 focus:border-blue-900 transition-all"
-                  placeholder="your.email@example.com"
-                />
-              </div>
-
-              {/* Message Field */}
-              <div>
-                <label
-                  htmlFor="message"
-                  className="block text-sm font-semibold text-slate-700 mb-1"
-                >
-                  Message Field
-                </label>
-                <textarea
-                  id="message"
-                  rows={4}
-                  required
-                  value={message}
-                  onChange={(e) => setMessage(e.target.value)}
-                  className="w-full px-4 py-2 text-sm bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-900/20 focus:border-blue-900 transition-all resize-none"
-                  placeholder="How can we help you?"
-                />
-              </div>
-
-              {/* Submit Button */}
-              <button
-                type="submit"
-                className="w-full px-4 py-2.5 text-sm font-bold text-white bg-blue-900 rounded-xl hover:bg-blue-800 shadow-md shadow-blue-900/10 hover:shadow-blue-900/20 transition-all"
+        <ul className="mt-6 grid gap-4 md:grid-cols-3">
+          {contactLinks.map((link) => (
+            <li key={link.href}>
+              <a
+                href={link.href}
+                className="block h-full rounded-2xl bg-slate-50 p-5 ring-1 ring-slate-200 transition hover:bg-sky-50 hover:ring-sky-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-600 focus-visible:ring-offset-2"
               >
-                Submit Button
-              </button>
-            </form>
-          </div>
-        </div>
-      </div>
-    </div>
+                <span className="block font-semibold text-sky-800">{link.label}</span>
+                <span className="mt-2 block text-sm leading-6 text-slate-600">
+                  {link.description}
+                </span>
+              </a>
+            </li>
+          ))}
+        </ul>
+      </section>
+    </section>
   )
 }

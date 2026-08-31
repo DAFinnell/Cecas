@@ -9,7 +9,10 @@ export default function NotFoundPage() {
       </p>
       <p>
         Go back to the{' '}
-        <Link to="/" className="text-sky-600 hover:underline">
+        <Link
+          to="/"
+          className="rounded-sm text-sky-700 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-600 focus-visible:ring-offset-2"
+        >
           home page
         </Link>
         .

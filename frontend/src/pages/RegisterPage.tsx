@@ -42,8 +42,8 @@ export default function RegisterPage() {
               type="text"
               value={fullName}
               onChange={(e) => setFullName(e.target.value)}
-              className={`w-full rounded-md border px-3 py-2 focus:outline-none 
-                        ${fieldErrors.fullName ? 'border-red-500 focus:border-red-500' : 'border-slate-300 focus:border-blue-500'}`}
+              className={`w-full rounded-md border px-3 py-2 focus:outline-none focus:ring-2 focus:ring-offset-1 
+                        ${fieldErrors.fullName ? 'border-red-500 focus:border-red-500 focus:ring-red-200' : 'border-slate-300 focus:border-sky-500 focus:ring-sky-200'}`}
               placeholder="Enter your full name"
               required
             />
@@ -61,8 +61,8 @@ export default function RegisterPage() {
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className={`w-full rounded-md border px-3 py-2 focus:outline-none 
-                        ${fieldErrors.email ? 'border-red-500 focus:border-red-500' : 'border-slate-300 focus:border-blue-500'}`}
+              className={`w-full rounded-md border px-3 py-2 focus:outline-none focus:ring-2 focus:ring-offset-1
+                        ${fieldErrors.email ? 'border-red-500 focus:border-red-500 focus:ring-red-200' : 'border-slate-300 focus:border-sky-500 focus:ring-sky-200'}`}
               placeholder="Enter your email"
               required
             />
@@ -80,8 +80,8 @@ export default function RegisterPage() {
               type="text"
               value={program}
               onChange={(e) => setProgram(e.target.value)}
-              className={`w-full rounded-md border px-3 py-2 focus:outline-none 
-            ${fieldErrors.program ? 'border-red-500 focus:border-red-500' : 'border-slate-300 focus:border-blue-500'}`}
+              className={`w-full rounded-md border px-3 py-2 focus:outline-none focus:ring-2 focus:ring-offset-1
+            ${fieldErrors.program ? 'border-red-500 focus:border-red-500 focus:ring-red-200' : 'border-slate-300 focus:border-sky-500 focus:ring-sky-200'}`}
               placeholder="Enter your program"
               required
             />
@@ -99,8 +99,8 @@ export default function RegisterPage() {
               type="number"
               value={studentId}
               onChange={(e) => setStudentId(e.target.value)}
-              className={`w-full rounded-md border px-3 py-2 focus:outline-none 
-            ${fieldErrors.studentId ? 'border-red-500 focus:border-red-500' : 'border-slate-300 focus:border-blue-500'}`}
+              className={`w-full rounded-md border px-3 py-2 focus:outline-none focus:ring-2 focus:ring-offset-1
+            ${fieldErrors.studentId ? 'border-red-500 focus:border-red-500 focus:ring-red-200' : 'border-slate-300 focus:border-sky-500 focus:ring-sky-200'}`}
               placeholder="Enter your student ID"
               required
             />
@@ -118,8 +118,8 @@ export default function RegisterPage() {
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className={`w-full rounded-md border px-3 py-2 focus:outline-none 
-            ${fieldErrors.password ? 'border-red-500 focus:border-red-500' : 'border-slate-300 focus:border-blue-500'}`}
+              className={`w-full rounded-md border px-3 py-2 focus:outline-none focus:ring-2 focus:ring-offset-1
+            ${fieldErrors.password ? 'border-red-500 focus:border-red-500 focus:ring-red-200' : 'border-slate-300 focus:border-sky-500 focus:ring-sky-200'}`}
               placeholder="Enter your password"
               required
             />
@@ -137,7 +137,7 @@ export default function RegisterPage() {
               type="password"
               value={confirmPassword}
               onChange={(e) => setConfirmPassword(e.target.value)}
-              className="w-full rounded-md border px-3 py-2 focus:border-blue-500 focus:outline-none"
+              className="w-full rounded-md border border-slate-300 px-3 py-2 focus:border-sky-500 focus:outline-none focus:ring-2 focus:ring-sky-200 focus:ring-offset-1"
               placeholder="Re-enter your password"
               required
             />

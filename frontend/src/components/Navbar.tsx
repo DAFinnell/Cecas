@@ -261,7 +261,7 @@ export default function Navbar() {
                   end={item.end}
                   onClick={closeDisclosures}
                   className={({ isActive }) =>
-                    `rounded-md px-3 py-2 text-sm font-medium transition
+                    `rounded-md px-3 py-2 text-sm font-medium transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-600 focus-visible:ring-offset-2
                       ${
                         isActive
                           ? 'bg-sky-100 text-sky-800'
