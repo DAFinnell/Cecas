@@ -23,11 +23,27 @@ import StudentApplicationsPage from './pages/StudentApplicationsPage'
 import ChairReviewPage from './pages/ChairReviewPage'
 import EvidenceUploadPage from './pages/EvidenceUploadPage'
 
-function RootPage() {
+export function RootPage() {
   const { user, loading } = useCurrentUser()
 
   if (loading) {
-    return <p className="text-sm text-slate-600">Loading...</p>
+    return (
+      <div className="flex min-h-64 items-center justify-center">
+        <div
+          role="status"
+          aria-live="polite"
+          aria-atomic="true"
+          className="flex items-center gap-3 rounded-2xl bg-white px-6 py-5 text-slate-700 shadow-sm ring-1 ring-slate-200"
+        >
+          <span
+            aria-hidden="true"
+            className="h-5 w-5 animate-spin rounded-full border-2 border-slate-300 border-t-sky-700 motion-reduce:animate-none"
+          />
+
+          <span className="font-medium">Loading CECAS...</span>
+        </div>
+      </div>
+    )
   }
 
   if (user.authenticated && user.role === 'STUDENT') {
@@ -94,7 +110,8 @@ export default function App() {
             />
           </Route>
 
-          <Route path="debug" element={<DebugPage />} />
+          {import.meta.env.DEV && <Route path="debug" element={<DebugPage />} />}
+
           <Route path="*" element={<NotFoundPage />} />
         </Route>
       </Routes>
