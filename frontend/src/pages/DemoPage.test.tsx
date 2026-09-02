@@ -17,6 +17,29 @@ function renderDemoPage() {
   )
 }
 
+const walkthroughScreens = [
+  {
+    alt: 'Student dashboard with semester point totals and a request table showing approved, pending, and rejected requests.',
+    caption:
+      'The student view combines point tracking with the status and next action for each request.',
+  },
+  {
+    alt: 'Pre-approved student request showing request details, the Chair Feedback section, and the Upload Evidence action.',
+    caption:
+      'After pre-approval, the request detail guides the student to submit supporting evidence.',
+  },
+  {
+    alt: 'Program chair dashboard with summary counts and the Evidence Submitted review queue.',
+    caption:
+      'The chair dashboard separates requests by status so initial and final reviews can be handled from one queue.',
+  },
+  {
+    alt: 'Program chair review page with submitted image evidence, awarded-points input, feedback field, and Reject and Approve actions.',
+    caption:
+      'The final review brings evidence, feedback, point assignment, and approval or rejection controls together.',
+  },
+]
+
 describe('DemoPage', () => {
   it('presents page as a clean demo', () => {
     renderDemoPage()
@@ -272,5 +295,25 @@ describe('DemoPage', () => {
         name: 'Flyway and Seed Data',
       }),
     ).toBeInTheDocument()
+  })
+
+  it('shows four accessible portfolio screenshots with visible captions', () => {
+    renderDemoPage()
+
+    expect(screen.getAllByRole('figure')).toHaveLength(4)
+
+    for (const screenshot of walkthroughScreens) {
+      const image = screen.getByRole('img', {
+        name: screenshot.alt,
+      })
+
+      expect(image).toHaveAttribute('src', expect.stringMatching(/\.webp$/))
+      expect(image).toHaveAttribute('loading', 'lazy')
+      expect(image).toHaveAttribute('decoding', 'async')
+      expect(Number(image.getAttribute('width'))).toBeGreaterThan(0)
+      expect(Number(image.getAttribute('height'))).toBeGreaterThan(0)
+
+      expect(screen.getByText(screenshot.caption)).toBeInTheDocument()
+    }
   })
 })

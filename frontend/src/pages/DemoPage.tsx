@@ -1,6 +1,21 @@
 import { Link } from 'react-router-dom'
 import { routes } from '../app/routes'
 
+import studentDashboardScreenshot from '../assets/demo/student-dashboard.webp'
+import studentRequestScreenshot from '../assets/demo/student-request.webp'
+import chairDashboardScreenshot from '../assets/demo/chair-dashboard.webp'
+import chairReviewScreenshot from '../assets/demo/chair-review.webp'
+
+type WalkthroughScreen = {
+  title: string
+  description: string
+  image: string
+  alt: string
+  caption: string
+  width: number
+  height: number
+}
+
 const workflowSteps = [
   {
     title: 'Register and Submit',
@@ -34,29 +49,53 @@ const workflowSteps = [
   },
 ]
 
-const studentWalkthrough = [
+const studentWalkthrough: WalkthroughScreen[] = [
   {
     title: 'Student Dashboard',
     description:
       'The student dashboard combines semester point totals with a request list showing status, requested points, and the next available action.',
+    image: studentDashboardScreenshot,
+    alt: 'Student dashboard with semester point totals and a request table showing approved, pending, and rejected requests.',
+    caption:
+      'The student view combines point tracking with the status and next action for each request.',
+    width: 1440,
+    height: 720,
   },
   {
     title: 'Pre-Approved Request',
     description:
-      'A pre-approved request displays chair feedback and makes the Upload Evidence action available when the request is ready for the next step.',
+      'A pre-approved request keeps the Chair Feedback section visible and makes the Upload Evidence action available when the request is ready for the next step.',
+    image: studentRequestScreenshot,
+    alt: 'Pre-approved student request showing request details, the Chair Feedback section, and the Upload Evidence action.',
+    caption:
+      'After pre-approval, the request detail guides the student to submit supporting evidence.',
+    width: 1440,
+    height: 1280,
   },
 ]
 
-const chairWalkthrough = [
+const chairWalkthrough: WalkthroughScreen[] = [
   {
     title: 'Chair Dashboard',
     description:
       'The chair dashboard separates requests awaiting initial review from requests whose evidence is ready for a final decision.',
+    image: chairDashboardScreenshot,
+    alt: 'Program chair dashboard with summary counts and the Evidence Submitted review queue.',
+    caption:
+      'The chair dashboard separates requests by status so initial and final reviews can be handled from one queue.',
+    width: 1440,
+    height: 1180,
   },
   {
     title: 'Evidence Review and Decision',
     description:
       'The review page brings the request details, submitted evidence, feedback, and approval or rejection actions together in one place.',
+    image: chairReviewScreenshot,
+    alt: 'Program chair review page with submitted image evidence, awarded-points input, feedback field, and Reject and Approve actions.',
+    caption:
+      'The final review brings evidence, feedback, point assignment, and approval or rejection controls together.',
+    width: 1440,
+    height: 1180,
   },
 ]
 
@@ -191,8 +230,8 @@ export default function DemoPage() {
             </h3>
 
             <p className="mt-3 leading-7 text-slate-700">
-              Follow the chair workflow through the guided walkthrough below without receiving
-              access to the shared chair account.
+              Follow the chair workflow through written explanations and screenshots without
+              receiving access to the shared chair accounts.
             </p>
 
             <div className="mt-6 rounded-xl bg-white p-5 ring-1 ring-slate-200">
@@ -258,8 +297,8 @@ export default function DemoPage() {
         </h2>
 
         <p className="mt-3 max-w-3xl leading-7 text-slate-600">
-          Visitors may try this role using a demo-only student account. The written walkthrough also
-          explains the experience without requiring registration.
+          Visitors may try this role using a demo-only student account. The screenshots and captions
+          below also explain the experience without requiring registration.
         </p>
 
         <div className="mt-6 grid gap-4 md:grid-cols-2">
@@ -273,6 +312,22 @@ export default function DemoPage() {
 
                 <p className="mt-2 text-sm leading-6 text-slate-600">{screen.description}</p>
               </div>
+
+              <figure className="mt-auto border-t border-slate-200 bg-white">
+                <img
+                  src={screen.image}
+                  alt={screen.alt}
+                  width={screen.width}
+                  height={screen.height}
+                  loading="lazy"
+                  decoding="async"
+                  className="block h-auto w-full"
+                />
+
+                <figcaption className="border-t border-slate-200 px-6 py-4 text-sm leading-6 text-slate-600">
+                  {screen.caption}
+                </figcaption>
+              </figure>
             </article>
           ))}
         </div>
@@ -306,14 +361,29 @@ export default function DemoPage() {
 
                 <p className="mt-2 text-sm leading-6 text-slate-600">{screen.description}</p>
               </div>
+
+              <figure className="mt-auto border-t border-slate-200 bg-white">
+                <img
+                  src={screen.image}
+                  alt={screen.alt}
+                  width={screen.width}
+                  height={screen.height}
+                  loading="lazy"
+                  decoding="async"
+                  className="block h-auto w-full"
+                />
+
+                <figcaption className="border-t border-slate-200 px-6 py-4 text-sm leading-6 text-slate-600">
+                  {screen.caption}
+                </figcaption>
+              </figure>
             </article>
           ))}
         </div>
 
         <p className="mt-6 max-w-3xl leading-7 text-slate-600">
-          Together, these walkthrough sections demonstrate queue review, pre-approval, evidence
-          review, approval or rejection, written feedback, and awarded-point tracking without
-          publishing chair credentials.
+          Together, these screenshots and captions demonstrate queue review, pre-approval, evidence
+          review, approval or rejection, written feedback, and awarded-point tracking.
         </p>
       </section>
 
