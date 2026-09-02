@@ -84,7 +84,7 @@ const chairWalkthrough: WalkthroughScreen[] = [
     caption:
       'The chair dashboard separates requests by status so initial and final reviews can be handled from one queue.',
     width: 1440,
-    height: 1180,
+    height: 695,
   },
   {
     title: 'Evidence Review and Decision',
@@ -301,11 +301,11 @@ export default function DemoPage() {
           below also explain the experience without requiring registration.
         </p>
 
-        <div className="mt-6 grid gap-4 md:grid-cols-2">
+        <div className="mt-6 grid items-start gap-6 lg:grid-cols-2">
           {studentWalkthrough.map((screen) => (
             <article
               key={screen.title}
-              className="h-full overflow-hidden rounded-2xl bg-slate-50 ring-1 ring-slate-200"
+              className="overflow-hidden rounded-2xl bg-slate-50 ring-1 ring-slate-200"
             >
               <div className="p-6">
                 <h3 className="text-lg font-semibold text-slate-950">{screen.title}</h3>
@@ -314,15 +314,23 @@ export default function DemoPage() {
               </div>
 
               <figure className="mt-auto border-t border-slate-200 bg-white">
-                <img
-                  src={screen.image}
-                  alt={screen.alt}
-                  width={screen.width}
-                  height={screen.height}
-                  loading="lazy"
-                  decoding="async"
-                  className="block h-auto w-full"
-                />
+                <a
+                  href={screen.image}
+                  target="_blank"
+                  rel="noreferrer"
+                  aria-label={`Open full-size ${screen.title} screenshot in a new tab`}
+                  className="block focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-sky-600"
+                >
+                  <img
+                    src={screen.image}
+                    alt={screen.alt}
+                    width={screen.width}
+                    height={screen.height}
+                    loading="lazy"
+                    decoding="async"
+                    className="block h-auto w-full cursor-zoom-in"
+                  />
+                </a>
 
                 <figcaption className="border-t border-slate-200 px-6 py-4 text-sm leading-6 text-slate-600">
                   {screen.caption}
@@ -350,11 +358,11 @@ export default function DemoPage() {
           state from anonymous changes.
         </p>
 
-        <div className="mt-6 grid gap-4 md:grid-cols-2">
+        <div className="mt-6 grid items-start gap-6 lg:grid-cols-2">
           {chairWalkthrough.map((screen) => (
             <article
               key={screen.title}
-              className="h-full overflow-hidden rounded-2xl bg-slate-50 ring-1 ring-slate-200"
+              className="overflow-hidden rounded-2xl bg-slate-50 ring-1 ring-slate-200"
             >
               <div className="p-6">
                 <h3 className="text-lg font-semibold text-slate-950">{screen.title}</h3>
@@ -363,15 +371,23 @@ export default function DemoPage() {
               </div>
 
               <figure className="mt-auto border-t border-slate-200 bg-white">
-                <img
-                  src={screen.image}
-                  alt={screen.alt}
-                  width={screen.width}
-                  height={screen.height}
-                  loading="lazy"
-                  decoding="async"
-                  className="block h-auto w-full"
-                />
+                <a
+                  href={screen.image}
+                  target="_blank"
+                  rel="noreferrer"
+                  aria-label={`Open full-size ${screen.title} screenshot in a new tab`}
+                  className="block focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-sky-600"
+                >
+                  <img
+                    src={screen.image}
+                    alt={screen.alt}
+                    width={screen.width}
+                    height={screen.height}
+                    loading="lazy"
+                    decoding="async"
+                    className="block h-auto w-full cursor-zoom-in"
+                  />
+                </a>
 
                 <figcaption className="border-t border-slate-200 px-6 py-4 text-sm leading-6 text-slate-600">
                   {screen.caption}

@@ -143,48 +143,6 @@ describe('DemoPage', () => {
 
     expect(steps).toHaveLength(6)
 
-    expect(
-      within(workflow).getByRole('heading', {
-        level: 3,
-        name: 'Register and Submit',
-      }),
-    ).toBeInTheDocument()
-
-    expect(
-      within(workflow).getByRole('heading', {
-        level: 3,
-        name: 'Enter the Chair Queue',
-      }),
-    ).toBeInTheDocument()
-
-    expect(
-      within(workflow).getByRole('heading', {
-        level: 3,
-        name: 'Receive Pre-Approval or Feedback',
-      }),
-    ).toBeInTheDocument()
-
-    expect(
-      within(workflow).getByRole('heading', {
-        level: 3,
-        name: 'Upload Evidence',
-      }),
-    ).toBeInTheDocument()
-
-    expect(
-      within(workflow).getByRole('heading', {
-        level: 3,
-        name: 'Complete Final Review',
-      }),
-    ).toBeInTheDocument()
-
-    expect(
-      within(workflow).getByRole('heading', {
-        level: 3,
-        name: 'Track Awarded Points',
-      }),
-    ).toBeInTheDocument()
-
     const stepTitles = steps.map(
       (step) => within(step).getByRole('heading', { level: 3 }).textContent,
     )
@@ -247,6 +205,9 @@ describe('DemoPage', () => {
     expect(
       within(chairWalkthrough).getByText(/queue review, pre-approval, evidence review/i),
     ).toBeInTheDocument()
+
+    expect(within(studentWalkthrough).getAllByRole('figure')).toHaveLength(2)
+    expect(within(chairWalkthrough).getAllByRole('figure')).toHaveLength(2)
   })
 
   it('describes the architecture and supporting system cards', () => {
@@ -312,6 +273,15 @@ describe('DemoPage', () => {
       expect(image).toHaveAttribute('decoding', 'async')
       expect(Number(image.getAttribute('width'))).toBeGreaterThan(0)
       expect(Number(image.getAttribute('height'))).toBeGreaterThan(0)
+
+      const screenshotLink = image.parentElement
+
+      expect(screenshotLink).toHaveAttribute('href', image.getAttribute('src'))
+      expect(screenshotLink).toHaveAttribute('target', '_blank')
+      expect(screenshotLink).toHaveAttribute('rel', 'noreferrer')
+      expect(screenshotLink).toHaveAccessibleName(
+        /open full-size .+ screenshot in a new tab/i,
+      )
 
       expect(screen.getByText(screenshot.caption)).toBeInTheDocument()
     }
