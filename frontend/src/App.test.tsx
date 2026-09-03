@@ -89,4 +89,22 @@ describe('App', () => {
       }),
     ).not.toBeInTheDocument()
   })
+
+  it('makes the guided demo publicly available', () => {
+    renderApp('/demo')
+
+    expect(
+      screen.getByRole('heading', {
+        level: 1,
+        name: 'Explore the CECAS Guided Demo',
+      }),
+    ).toBeInTheDocument()
+
+    expect(
+      screen.queryByRole('heading', {
+        level: 1,
+        name: '404 Not Found',
+      }),
+    ).not.toBeInTheDocument()
+  })
 })

@@ -182,6 +182,12 @@ describe('Navbar', () => {
       }),
     ).not.toBeInTheDocument()
 
+    expect(
+      screen.queryByRole('link', {
+        name: 'Guided Demo',
+      }),
+    ).not.toBeInTheDocument()
+
     await actor.click(menuButton)
 
     expect(menuButton).toHaveAttribute('aria-expanded', 'true')

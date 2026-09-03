@@ -33,6 +33,12 @@ describe('Footer', () => {
 
     expect(
       screen.getByRole('link', {
+        name: 'Guided Demo',
+      }),
+    ).toHaveAttribute('href', '/demo')
+
+    expect(
+      screen.getByRole('link', {
         name: 'About',
       }),
     ).toHaveAttribute('href', '/about')
