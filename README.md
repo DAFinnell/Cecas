@@ -1,64 +1,110 @@
-# Summer Team 5
+# CECAS
 
-This is the team repository for Summer Team 5.
+**Canvas Extra Credit Automation System**
 
-## Project
+CECAS brings the full extra credit request process into one place. Students can submit activities, follow their request status, upload evidence, and see awarded points. Program chairs can review requests, leave feedback, and make both pre-approval and final decisions.
 
-Project details follow. 
+[Explore the guided demo locally](http://localhost:5173/demo) · [Derek Finnell’s portfolio](https://dafinnell.com) · [GitHub profile](https://github.com/DAFinnell) · [Project source](https://github.com/DAFinnell/Cecas)
 
-### Project Name
- Canvas Extra Credit Automation System (CECAS)
+> CECAS is a team-built capstone presented as a portfolio project. It is not a live university service.
 
-### Project Description  
-CECAS is a web application that allows students to apply for extra credit based on eligible academic activities such as seminars, competitions, and certifications. Program chairs can review, approve, or reject applications and provide feedback. The system replaces the manual email-based process with centralized request, status, evidence, feedback, and point tracking from submission through final review.
+## The Problem
 
-## Team
+Extra credit requests can be difficult to follow when activity details, evidence, feedback, and decisions are spread across email threads and separate records. Students may not know what happens next, while program chairs have to keep track of requests at several different stages.
 
-Team details follow
+## The Solution
 
-### 495 Students 
+CECAS keeps the complete request in one system:
 
-Derek Finnell
+- Students submit proposed activities and follow each request from start to finish.
+- Program chairs review new requests, explain rejections, and pre-approve eligible activities.
+- Students upload evidence after receiving pre-approval.
+- Program chairs review the evidence and make the final decision.
+- Approved points are added to the student’s semester total.
 
-Nica Kelley
+## How a Request Moves Through CECAS
 
-### 394 Students
+1. A student registers and submits an extra credit request.
+2. The assigned program chair reviews the proposed activity.
+3. The chair either pre-approves the request or rejects it with feedback.
+4. After pre-approval, the student uploads evidence that they completed the activity.
+5. The chair reviews the evidence, leaves feedback, and approves or rejects the request.
+6. Approved points are added to the student’s semester total.
 
-Emmy Solokha
+## Guided Demo
 
-Burt Snyder
+The guided demo provides two ways to explore the project.
 
-### 294 Students
+### Student Demo
 
-Rafael Ramirez-Gaston
+After starting CECAS locally, open the [guided demo](http://localhost:5173/demo) and select **Register a Demo Student Account**. You can create a student account, submit a request, and explore the student dashboard.
 
-Alec Johnson
+When using the demo:
 
-## Tech Stack
-### Frontend
-- React with TypeScript
-- Vite for local development and production builds
-- Nginx for serving the production frontend and proxying API requests
+- Use a password you do not use anywhere else.
+- Enter sample information only.
+- Do not upload private or sensitive files.
+- Demo accounts and requests may be deleted during a reset.
 
-### Backend
-- Spring Boot
+### Program Chair Walkthrough
 
-### Database
-- MySQL + Flyway for schema migrations
+Chair accounts are not shared publicly because one visitor could change the requests, feedback, and points seen by everyone else. The guided demo uses screenshots to show the chair workflow without publishing a chair password.
 
-### Local Email Testing
-- Mailpit
+### Student Dashboard
 
-### Styling
-- Tailwind CSS
+![Student dashboard with semester point totals and a request table showing approved, pending, and rejected requests.](frontend/src/assets/demo/student-dashboard.webp)
 
-## Public Deployment
+*The student dashboard keeps semester points, request statuses, and next actions in one place.*
 
-The CECAS demo application is deployed on an Amazon Web Services EC2 instance.
+### Pre-Approved Student Request
 
-- Application: [http://3.18.107.16/](http://3.18.107.16/)
+![Pre-approved student request showing request details, the Chair Feedback section, and the Upload Evidence action.](frontend/src/assets/demo/student-request.webp)
 
-The deployment is intended only for course evaluation and demonstration. It is currently served over HTTP and should not be used with real credentials or sensitive information. Do not use the same password as your bank app, for example.
+*After pre-approval, the student can read the chair’s feedback and upload evidence.*
+
+### Program Chair Dashboard
+
+![Program chair dashboard with summary counts and a list of requests that have submitted evidence.](frontend/src/assets/demo/chair-dashboard.webp)
+
+*The chair dashboard separates new requests from requests that are ready for evidence review.*
+
+### Evidence Review and Final Decision
+
+![Program chair review page showing submitted image evidence, a field for awarded points, a feedback field, and Reject and Approve buttons.](frontend/src/assets/demo/chair-review.webp)
+
+*The final review records the evidence, feedback, decision, and awarded points.*
+
+## How CECAS Is Built
+
+```mermaid
+flowchart LR
+    frontend["React + Vite frontend"] --> backend["Spring Boot backend"]
+    backend --> database[("MySQL database")]
+
+    docker["Docker Compose"] -.-> frontend
+    docker -.-> backend
+    docker -.-> database
+    docker -.-> mailpit["Mailpit"]
+
+    databaseSetup["Flyway migrations + seed system"] -.-> database
+```
+
+The React frontend displays the student and chair pages. It sends requests to the Spring Boot backend, which handles authentication, workflow rules, and database access. MySQL stores accounts, courses, requests, feedback, and awarded points.
+
+Docker Compose starts the local services together. Flyway prepares the database structure, while the seed system adds sample courses, categories, and chair assignments. Mailpit is included in the local Docker setup for email testing, although the current request workflow does not send notification emails.
+
+## Technology Stack
+
+- **Frontend:** React, TypeScript, Vite, and Tailwind CSS
+- **Backend:** Java 21, Spring Boot, Spring Security, and Spring Data JPA
+- **Database:** MySQL with Flyway migrations
+- **Local development:** Docker Compose, CSV seed data, and Mailpit
+- **Production frontend:** Nginx configuration for serving the built React application
+- **Testing:** Vitest and React Testing Library on the frontend; JUnit, Spring Boot Test, and Testcontainers on the backend
+
+## Project Background
+
+CECAS began as a six-student Franklin University capstone project. The application and repository history reflect that shared work. This version is maintained by Derek Finnell and presented as part of his software development portfolio.
 
 ## Prerequisites
 
