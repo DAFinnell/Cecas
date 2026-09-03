@@ -20,32 +20,31 @@ const workflowSteps = [
   {
     title: 'Register and Submit',
     description:
-      'A student creates a demonstration account, selects a course and activity category, and describes the proposed extra credit activity.',
+      'A student creates a demo account, chooses a course and activity, and explains what they plan to do.',
   },
   {
-    title: 'Enter the Chair Queue',
+    title: 'Chair Reviews the Request',
     description:
-      'The request appears in the assigned program chair’s queue for an initial eligibility review.',
+      'The request is sent to the program chair, who checks whether the activity qualifies.',
   },
   {
     title: 'Receive Pre-Approval or Feedback',
-    description:
-      'The chair either pre-approves the activity or rejects the request with feedback explaining the decision.',
+    description: 'The chair either pre-approves the request or rejects it with an explanation.',
   },
   {
     title: 'Upload Evidence',
     description:
-      'After pre-approval, the student uploads supporting evidence for the completed activity.',
+      'If the request is pre-approved, the student uploads a file showing that they completed the activity.',
   },
   {
-    title: 'Complete Final Review',
+    title: 'Chair Reviews the Evidence',
     description:
-      'The chair reviews the submitted evidence and makes a final approval or rejection decision with feedback.',
+      'The chair reviews the uploaded evidence, leaves feedback, and approves or rejects the request.',
   },
   {
-    title: 'Track Awarded Points',
+    title: 'See Awarded Points',
     description:
-      'An approved request records the awarded points so the student can see them in the semester total.',
+      'When a request is approved, the awarded points are added to the student’s semester total.',
   },
 ]
 
@@ -53,22 +52,20 @@ const studentWalkthrough: WalkthroughScreen[] = [
   {
     title: 'Student Dashboard',
     description:
-      'The student dashboard combines semester point totals with a request list showing status, requested points, and the next available action.',
+      'The dashboard shows the student’s semester point total and all requests in one place.',
     image: studentDashboardScreenshot,
     alt: 'Student dashboard with semester point totals and a request table showing approved, pending, and rejected requests.',
-    caption:
-      'The student view combines point tracking with the status and next action for each request.',
+    caption: 'Each request shows its status, point value, last update, and next available action.',
     width: 1440,
     height: 720,
   },
   {
     title: 'Pre-Approved Request',
     description:
-      'A pre-approved request keeps the Chair Feedback section visible and makes the Upload Evidence action available when the request is ready for the next step.',
+      'Once a request is pre-approved, the student can review any chair feedback and upload evidence.',
     image: studentRequestScreenshot,
     alt: 'Pre-approved student request showing request details, the Chair Feedback section, and the Upload Evidence action.',
-    caption:
-      'After pre-approval, the request detail guides the student to submit supporting evidence.',
+    caption: 'The Upload Evidence button makes the next step clear.',
     width: 1440,
     height: 1280,
   },
@@ -78,22 +75,20 @@ const chairWalkthrough: WalkthroughScreen[] = [
   {
     title: 'Chair Dashboard',
     description:
-      'The chair dashboard separates requests awaiting initial review from requests whose evidence is ready for a final decision.',
+      'The dashboard shows which requests need a first review and which have evidence ready for a final decision.',
     image: chairDashboardScreenshot,
-    alt: 'Program chair dashboard with summary counts and the Evidence Submitted review queue.',
-    caption:
-      'The chair dashboard separates requests by status so initial and final reviews can be handled from one queue.',
+    alt: 'Program chair dashboard with summary counts and a list of requests that have submitted evidence.',
+    caption: 'Status tabs help the chair find requests that need attention.',
     width: 1440,
     height: 695,
   },
   {
     title: 'Evidence Review and Decision',
     description:
-      'The review page brings the request details, submitted evidence, feedback, and approval or rejection actions together in one place.',
+      'The chair sees the request details and uploaded evidence, then assigns points, writes feedback, and approves or rejects the request.',
     image: chairReviewScreenshot,
-    alt: 'Program chair review page with submitted image evidence, awarded-points input, feedback field, and Reject and Approve actions.',
-    caption:
-      'The final review brings evidence, feedback, point assignment, and approval or rejection controls together.',
+    alt: 'Program chair review page showing submitted image evidence, a field for awarded points, a feedback field, and Reject and Approve buttons.',
+    caption: 'The final decision records the outcome, feedback, and awarded points.',
     width: 1440,
     height: 1180,
   },
@@ -101,22 +96,21 @@ const chairWalkthrough: WalkthroughScreen[] = [
 
 const architectureLayers = [
   {
-    label: 'Interface layer',
+    label: 'What visitors use',
     title: 'React and Vite Frontend',
     description:
-      'React and TypeScript provide the pages and interactions used by students and program chairs. Vite supports local development and creates the production frontend build.',
+      'React and TypeScript power the pages used by students and program chairs. Vite helps run the project locally and prepares the frontend for deployment.',
   },
   {
-    label: 'Application layer',
+    label: 'What runs the process',
     title: 'Spring Boot Backend',
     description:
-      'Spring Boot provides the API, session-based authentication, validation, request lifecycle rules, evidence handling, chair feedback, and point decisions.',
+      'Spring Boot provides the API behind the site. It handles sign-in, checks submitted information, moves requests through each review step, and records decisions.',
   },
   {
-    label: 'Data layer',
+    label: 'Where information is saved',
     title: 'MySQL Database',
-    description:
-      'MySQL stores accounts, course and category data, requests, workflow statuses, feedback, awarded points, and references to uploaded evidence files.',
+    description: 'MySQL stores account, course, request, feedback, and awarded-point information.',
   },
 ]
 
@@ -124,12 +118,12 @@ const supportingSystems = [
   {
     title: 'Docker Compose',
     description:
-      'Docker Compose runs the local frontend, backend, and MySQL database together with the networking, health checks, environment variables, and persistent volumes they need.',
+      'Docker Compose starts the frontend, backend, and database together so the project is easy to run locally.',
   },
   {
     title: 'Flyway and Seed Data',
     description:
-      'Flyway applies versioned database schema changes when the backend starts. After the database is ready, the seed system validates and synchronizes local reference data for courses, categories, and chair assignments.',
+      'Flyway keeps the database structure up to date. Seed data provides sample courses, categories, and chair assignments for local demonstrations.',
   },
 ]
 
@@ -142,8 +136,8 @@ export default function DemoPage() {
         </h1>
 
         <p className="mt-4 max-w-3xl text-lg leading-8 text-slate-600">
-          CECAS is a team-built capstone presented as a portfolio demonstration. It shows a
-          completed extra credit workflow, but it is not a live university service.
+          CECAS was built as a team capstone and is presented here as a portfolio project. It
+          demonstrates a complete extra credit process, but it is not a live university service.
         </p>
       </header>
 
@@ -156,12 +150,12 @@ export default function DemoPage() {
             id="demo-paths-heading"
             className="text-2xl font-semibold tracking-tight text-slate-950"
           >
-            Choose a Demo Path
+            Choose How to Explore
           </h2>
 
           <p className="mt-3 leading-7 text-slate-600">
-            Choose the student path to interact with the application, or follow the protected chair
-            walkthrough to see the completed review workflow.
+            Try the student experience with a demo account, or view the program chair experience
+            through screenshots.
           </p>
         </div>
 
@@ -171,19 +165,19 @@ export default function DemoPage() {
             className="flex h-full flex-col rounded-2xl bg-sky-50 p-6 ring-1 ring-sky-200"
           >
             <p className="text-sm font-semibold uppercase tracking-[0.16em] text-sky-700">
-              Interactive path
+              Try it yourself
             </p>
 
             <h3
               id="student-path-heading"
               className="mt-3 text-xl font-semibold tracking-tight text-slate-950"
             >
-              Student: Try the Live Path
+              Student: Try the Demo
             </h3>
 
             <p className="mt-3 leading-7 text-slate-700">
-              Create a demo-only student account to submit a request and explore status tracking,
-              evidence upload, chair feedback, and point totals.
+              Create a demo student account to submit a request and explore the student dashboard.
+              The walkthrough below shows what happens after a chair reviews the request.
             </p>
 
             <div className="mt-6 rounded-xl bg-white p-5 ring-1 ring-sky-200">
@@ -193,9 +187,9 @@ export default function DemoPage() {
                 role="list"
                 className="mt-3 list-disc space-y-2 pl-5 text-sm leading-6 text-slate-700"
               >
-                <li>Create a password only for this demonstration.</li>
-                <li>Do not enter real student records or upload private files.</li>
-                <li>Demo accounts, requests, and evidence may be reset at any time.</li>
+                <li>Use a password you do not use anywhere else.</li>
+                <li>Use sample information only, and do not upload private files.</li>
+                <li>Demo accounts and requests may be deleted during a reset.</li>
               </ul>
             </div>
 
@@ -208,8 +202,7 @@ export default function DemoPage() {
               </Link>
 
               <p className="mt-3 text-sm leading-6 text-slate-600">
-                Registration is optional. The walkthrough below explains the complete workflow
-                without an account.
+                You can also view the full student workflow below without creating an account.
               </p>
             </div>
           </article>
@@ -219,26 +212,27 @@ export default function DemoPage() {
             className="flex h-full flex-col rounded-2xl bg-slate-50 p-6 ring-1 ring-slate-200"
           >
             <p className="text-sm font-semibold uppercase tracking-[0.16em] text-slate-600">
-              Guided path
+              Screenshot walkthrough
             </p>
 
             <h3
               id="chair-path-heading"
               className="mt-3 text-xl font-semibold tracking-tight text-slate-950"
             >
-              Program Chair: Follow the Guided Path
+              Program Chair: View the Walkthrough
             </h3>
 
             <p className="mt-3 leading-7 text-slate-700">
-              Follow the chair workflow through written explanations and screenshots without
-              receiving access to the shared chair accounts.
+              See how a program chair reviews requests and makes decisions without signing in to a
+              chair account.
             </p>
 
             <div className="mt-6 rounded-xl bg-white p-5 ring-1 ring-slate-200">
-              <h4 className="font-semibold text-slate-950">Why Chair Access Is Guided</h4>
+              <h4 className="font-semibold text-slate-950">Why the Chair Demo Uses Screenshots</h4>
               <p className="mt-3 text-sm leading-6 text-slate-700">
-                Chair passwords are not published or shared because unrestricted access could change
-                the review queues, feedback, decisions, and points shown in the demo.
+                Giving every visitor the same chair account would allow one person to change the
+                requests, feedback, and points that others see. Screenshots keep the example
+                consistent, and no chair password is published.
               </p>
             </div>
 
@@ -251,8 +245,8 @@ export default function DemoPage() {
               </a>
 
               <p className="mt-3 text-sm leading-6 text-slate-600">
-                No chair account is needed. The walkthrough covers initial review, evidence review,
-                feedback, approval or rejection, and awarded points.
+                You’ll see the first review, evidence review, feedback, final decisions, and awarded
+                points.
               </p>
             </div>
           </article>
@@ -264,12 +258,12 @@ export default function DemoPage() {
         className="rounded-3xl bg-white p-8 shadow-sm ring-1 ring-slate-200"
       >
         <h2 id="workflow-heading" className="text-2xl font-semibold tracking-tight text-slate-950">
-          Follow the Request Workflow
+          Follow a Request from Start to Finish
         </h2>
 
         <p className="mt-3 max-w-3xl leading-7 text-slate-600">
-          Each request moves through the same lifecycle, with clear responsibilities for the
-          student, program chair, and application.
+          A request moves between the student and program chair until a final decision is made and
+          points are awarded.
         </p>
 
         <ol role="list" className="mt-6 grid gap-4 md:grid-cols-2 lg:grid-cols-3">
@@ -297,8 +291,8 @@ export default function DemoPage() {
         </h2>
 
         <p className="mt-3 max-w-3xl leading-7 text-slate-600">
-          Visitors may try this role using a demo-only student account. The screenshots and captions
-          below also explain the experience without requiring registration.
+          You can try the student role with a demo account or use these screenshots to see the full
+          experience without registering.
         </p>
 
         <div className="mt-6 grid items-start gap-6 lg:grid-cols-2">
@@ -354,8 +348,8 @@ export default function DemoPage() {
         </h2>
 
         <p className="mt-3 max-w-3xl leading-7 text-slate-600">
-          The guided chair path demonstrates both review stages while protecting the shared demo
-          state from anonymous changes.
+          These screenshots show both parts of the chair’s work: reviewing a new request and
+          reviewing the student’s evidence.
         </p>
 
         <div className="mt-6 grid items-start gap-6 lg:grid-cols-2">
@@ -398,8 +392,9 @@ export default function DemoPage() {
         </div>
 
         <p className="mt-6 max-w-3xl leading-7 text-slate-600">
-          Together, these screenshots and captions demonstrate queue review, pre-approval, evidence
-          review, approval or rejection, written feedback, and awarded-point tracking.
+          Together, the screenshots show the complete chair workflow: reviewing requests,
+          pre-approving activities, reviewing evidence, leaving feedback, making final decisions,
+          and awarding points.
         </p>
       </section>
 
@@ -412,15 +407,14 @@ export default function DemoPage() {
         </h2>
 
         <p className="mt-3 max-w-3xl leading-7 text-slate-600">
-          CECAS separates the user interface, application rules, and stored data so each part of the
-          system has a clear responsibility.
+          The frontend, backend, and database each have a clear job.
         </p>
 
         <p className="mt-8 text-sm font-semibold uppercase tracking-[0.16em] text-sky-700">
-          Primary application flow
+          How the parts work together
         </p>
         <ol
-          aria-label="Primary application flow"
+          aria-label="How the parts work together"
           role="list"
           className="mt-4 grid gap-4 md:grid-cols-3"
         >
@@ -441,12 +435,11 @@ export default function DemoPage() {
 
         <div className="mt-8 border-t border-slate-200 pt-8">
           <h3 id="supporting-systems-heading" className="text-xl font-semibold text-slate-950">
-            Supporting Development Systems
+            Local Development Tools
           </h3>
 
           <p className="mt-2 max-w-3xl leading-7 text-slate-600">
-            These tools make the local environment and database setup repeatable, but they are not
-            additional layers in the application request flow.
+            These tools make the project easier to run and fill it with useful sample data.
           </p>
         </div>
 

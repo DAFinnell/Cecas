@@ -20,23 +20,19 @@ function renderDemoPage() {
 const walkthroughScreens = [
   {
     alt: 'Student dashboard with semester point totals and a request table showing approved, pending, and rejected requests.',
-    caption:
-      'The student view combines point tracking with the status and next action for each request.',
+    caption: 'Each request shows its status, point value, last update, and next available action.',
   },
   {
     alt: 'Pre-approved student request showing request details, the Chair Feedback section, and the Upload Evidence action.',
-    caption:
-      'After pre-approval, the request detail guides the student to submit supporting evidence.',
+    caption: 'The Upload Evidence button makes the next step clear.',
   },
   {
-    alt: 'Program chair dashboard with summary counts and the Evidence Submitted review queue.',
-    caption:
-      'The chair dashboard separates requests by status so initial and final reviews can be handled from one queue.',
+    alt: 'Program chair dashboard with summary counts and a list of requests that have submitted evidence.',
+    caption: 'Status tabs help the chair find requests that need attention.',
   },
   {
-    alt: 'Program chair review page with submitted image evidence, awarded-points input, feedback field, and Reject and Approve actions.',
-    caption:
-      'The final review brings evidence, feedback, point assignment, and approval or rejection controls together.',
+    alt: 'Program chair review page showing submitted image evidence, a field for awarded points, a feedback field, and Reject and Approve buttons.',
+    caption: 'The final decision records the outcome, feedback, and awarded points.',
   },
 ]
 
@@ -57,7 +53,7 @@ describe('DemoPage', () => {
       }),
     ).toHaveLength(1)
 
-    expect(screen.getByText(/presented as a portfolio demonstration/i)).toBeInTheDocument()
+    expect(screen.getByText(/presented here as a portfolio project/i)).toBeInTheDocument()
     expect(screen.getByText(/not a live university service/i)).toBeInTheDocument()
   })
 
@@ -65,10 +61,8 @@ describe('DemoPage', () => {
     renderDemoPage()
 
     const studentPath = screen.getByRole('article', {
-      name: 'Student: Try the Live Path',
+      name: 'Student: Try the Demo',
     })
-
-    expect(within(studentPath).getByText('Interactive path')).toBeInTheDocument()
 
     expect(
       within(studentPath).getByRole('link', {
@@ -76,42 +70,32 @@ describe('DemoPage', () => {
       }),
     ).toHaveAttribute('href', '/register')
 
+    expect(within(studentPath).getByText('Try it yourself')).toBeInTheDocument()
     expect(
-      within(studentPath).getByText(/password only for this demonstration/i),
+      within(studentPath).getByText(/password you do not use anywhere else/i),
     ).toBeInTheDocument()
-
-    expect(within(studentPath).getByText(/do not enter real student records/i)).toBeInTheDocument()
-
-    expect(within(studentPath).getByText(/may be reset/i)).toBeInTheDocument()
-
-    expect(within(studentPath).getByText(/registration is optional/i)).toBeInTheDocument()
+    expect(within(studentPath).getByText(/sample information only/i)).toBeInTheDocument()
+    expect(within(studentPath).getByText(/may be deleted during a reset/i)).toBeInTheDocument()
   })
 
-  it('provides a protected chair walkthrough', () => {
+  it('provides a screenshot based chair walkthrough', () => {
     renderDemoPage()
 
     const chairPath = screen.getByRole('article', {
-      name: 'Program Chair: Follow the Guided Path',
+      name: 'Program Chair: View the Walkthrough',
     })
 
-    expect(within(chairPath).getByText('Guided path')).toBeInTheDocument()
-
-    expect(
-      within(chairPath).getByText(/without receiving access to the shared chair account/i),
-    ).toBeInTheDocument()
+    expect(within(chairPath).getByText('Screenshot walkthrough')).toBeInTheDocument()
 
     expect(
       within(chairPath).getByRole('heading', {
         level: 4,
-        name: 'Why Chair Access Is Guided',
+        name: 'Why the Chair Demo Uses Screenshots',
       }),
     ).toBeInTheDocument()
 
-    expect(
-      within(chairPath).getByText(/chair passwords are not published or shared/i),
-    ).toBeInTheDocument()
-
-    expect(within(chairPath).getByText(/could change the review queues/i)).toBeInTheDocument()
+    expect(within(chairPath).getByText(/one person to change the requests/i)).toBeInTheDocument()
+    expect(within(chairPath).getByText(/no chair password is published/i)).toBeInTheDocument()
 
     expect(
       within(chairPath).getByRole('link', {
@@ -136,7 +120,7 @@ describe('DemoPage', () => {
     renderDemoPage()
 
     const workflow = screen.getByRole('region', {
-      name: 'Follow the Request Workflow',
+      name: 'Follow a Request from Start to Finish',
     })
 
     const steps = within(workflow).getAllByRole('listitem')
@@ -149,11 +133,11 @@ describe('DemoPage', () => {
 
     expect(stepTitles).toEqual([
       'Register and Submit',
-      'Enter the Chair Queue',
+      'Chair Reviews the Request',
       'Receive Pre-Approval or Feedback',
       'Upload Evidence',
-      'Complete Final Review',
-      'Track Awarded Points',
+      'Chair Reviews the Evidence',
+      'See Awarded Points',
     ])
   })
 
@@ -202,10 +186,6 @@ describe('DemoPage', () => {
       }),
     ).toBeInTheDocument()
 
-    expect(
-      within(chairWalkthrough).getByText(/queue review, pre-approval, evidence review/i),
-    ).toBeInTheDocument()
-
     expect(within(studentWalkthrough).getAllByRole('figure')).toHaveLength(2)
     expect(within(chairWalkthrough).getAllByRole('figure')).toHaveLength(2)
   })
@@ -236,13 +216,13 @@ describe('DemoPage', () => {
     ).toBeInTheDocument()
 
     const primaryFlow = within(architecture).getByRole('list', {
-      name: 'Primary application flow',
+      name: 'How the parts work together',
     })
 
     expect(within(primaryFlow).getAllByRole('listitem')).toHaveLength(3)
 
     const supportingSystemsList = within(architecture).getByRole('list', {
-      name: 'Supporting Development Systems',
+      name: 'Local Development Tools',
     })
 
     expect(within(supportingSystemsList).getAllByRole('listitem')).toHaveLength(2)
@@ -279,9 +259,7 @@ describe('DemoPage', () => {
       expect(screenshotLink).toHaveAttribute('href', image.getAttribute('src'))
       expect(screenshotLink).toHaveAttribute('target', '_blank')
       expect(screenshotLink).toHaveAttribute('rel', 'noreferrer')
-      expect(screenshotLink).toHaveAccessibleName(
-        /open full-size .+ screenshot in a new tab/i,
-      )
+      expect(screenshotLink).toHaveAccessibleName(/open full-size .+ screenshot in a new tab/i)
 
       expect(screen.getByText(screenshot.caption)).toBeInTheDocument()
     }
