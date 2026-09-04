@@ -145,46 +145,62 @@ docker compose up --build -d
 - Backend health check: [http://localhost:8080/actuator/health](http://localhost:8080/actuator/health)
 - Mailpit: [http://localhost:8025](http://localhost:8025)
 
-### Using Docker
+### Common Docker Commands
 
-To start services:
+Start the application after completing the first-time setup:
+
 ```bash
 docker compose up -d
 ```
 
-To stop services:
+Rebuild the frontend and backend images after changing application code or dependencies:
+
+```bash
+docker compose up --build -d
+```
+
+Stop the application without deleting its local data:
+
 ```bash
 docker compose down
 ```
 
-For a full local database rebuild
-```bash
-make reset-db
+### Seed Data
+
+During local startup, Flyway prepares the database structure before the seed system loads sample reference data. Startup seeding is controlled by `APP_SEED_ENABLED` in the local `.env` file.
+
+The seed files are stored in:
+
+```text
+backend/src/main/resources/seed/
+├── categories.csv
+├── chairs.csv
+└── courses.csv
 ```
 
-### Seed Data
-A clean Docker startup will run Flyway migrations first and then load the seed files when startup seeding is enabled.
+These files provide:
 
-The backend reads seed files from the repository `seed/` directory:
-- `courses.csv`
-- `categories.csv`
-- `chairs.csv`
+- Activity categories and their default point values
+- Chair accounts and course assignments
+- Available courses, terms, and sections
 
-Important behavior:
-- Editing a CSV file by itself does not change the running database.
-- Seed changes are only applied when the backend starts with seeding enabled, or when you run the manual reseed command.
-- The seed directory is mounted into the backend container as read-only, so seed file updates do not require Java code changes or rebuilding the backend image.
+The seed directory is mounted into the backend container as read-only. Editing a CSV file changes the file available to the container, but it does not immediately update records already stored in MySQL.
 
-To apply updated seed files without resetting the database:
+After editing a seed file, synchronize the current local database with the new reference data:
+
 ```bash
 make seed
 ```
-Use this command for normal reseeding after editing a seed CSV.
-To completely reset the local database and rebuild it from Flyway migrations plus the current seed files:
+
+Use `make seed` for normal seed updates. It synchronizes courses, categories, chair accounts, and chair assignments without intentionally deleting student requests or rebuilding the database.
+
+To completely rebuild the local environment from the current Flyway migrations and seed files:
+
 ```bash
 make reset-db
 ```
-make reset-db is destructive and is only meant for local development. It is not the normal way to apply seed file changes.
+
+> **Warning:** `make reset-db` runs `docker compose down -v`. It deletes this project’s local MySQL database, uploaded evidence, and named frontend dependency volume before rebuilding the application. Only use it when you intentionally want a clean local environment.
 
 ## Git Workflow
 Follow these steps to ensure your local code is synchronized with the team's progress.
