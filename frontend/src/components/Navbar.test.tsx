@@ -5,6 +5,7 @@ import userEvent from '@testing-library/user-event'
 import { MemoryRouter, useLocation } from 'react-router-dom'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import Navbar from './Navbar'
+import { routes } from '../app/routes'
 
 import UserService from '../services/UserService'
 import authService from '../services/AuthService'
@@ -464,7 +465,7 @@ describe('Navbar', () => {
     )
   })
 
-  it('disables logout while pending and closes the menu after success', async () => {
+  it('disables logout while pending, then closes the menu and navigates home', async () => {
     const actor = userEvent.setup()
 
     mockCurrentUser(studentUser)
@@ -473,13 +474,18 @@ describe('Navbar', () => {
 
     const logoutRequest = createDeferred<void>()
 
-    vi.mocked(authService.logout).mockReturnValue(logoutRequest.promise)
+    vi.mocked(authService.logout).mockImplementation(async () => {
+      await logoutRequest.promise
+      window.dispatchEvent(new Event('auth-changed'))
+    })
 
-    renderNavbar()
+    renderNavbar(routes.student.dashboard)
 
     await screen.findByRole('button', {
       name: /open account options for Derek Student/i,
     })
+
+    vi.mocked(UserService.getUserProfile).mockClear()
 
     const menuButton = screen.getByRole('button', {
       name: 'Open navigation',
@@ -515,9 +521,15 @@ describe('Navbar', () => {
 
     await waitFor(() => {
       expect(
-        screen.queryByRole('navigation', { name: 'Mobile navigation' }),
+        screen.queryByRole('navigation', {
+          name: 'Mobile navigation',
+        }),
       ).not.toBeInTheDocument()
+
+      expect(screen.getByLabelText('Current path')).toHaveTextContent(routes.home)
     })
+
+    expect(UserService.getUserProfile).not.toHaveBeenCalled()
   })
 
   it('failed logout does not log the user out', async () => {

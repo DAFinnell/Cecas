@@ -118,13 +118,9 @@ export default function Navbar() {
       setProfile(null)
       setProfileOpen(false)
       setMobileOpen(false)
-      UserService.getUserProfile()
-        .then((data) => setProfile(data))
-        .catch(() => setProfile(null))
     }
 
     const onSessionExpired = () => {
-      // clear UI and do a hard redirect to fully reset app state (this clears any cached state in memory, including auth state)
       setProfile(null)
       setProfileOpen(false)
       setMobileOpen(false)
@@ -133,11 +129,12 @@ export default function Navbar() {
 
     window.addEventListener('auth-changed', onAuthChanged)
     window.addEventListener('session-expired', onSessionExpired)
+
     return () => {
       window.removeEventListener('auth-changed', onAuthChanged)
       window.removeEventListener('session-expired', onSessionExpired)
     }
-  }, [isAuthenticated, navigate])
+  }, [])
 
   useEffect(() => {
     if (!mobileOpen && !profileOpen) {
