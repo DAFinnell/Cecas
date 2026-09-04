@@ -202,44 +202,42 @@ make reset-db
 
 > **Warning:** `make reset-db` runs `docker compose down -v`. It deletes this project’s local MySQL database, uploaded evidence, and named frontend dependency volume before rebuilding the application. Only use it when you intentionally want a clean local environment.
 
-## Git Workflow
-Follow these steps to ensure your local code is synchronized with the team's progress.
+## Testing
 
-Update Develop and Create Feature Branch
-Always start by pulling the latest changes from the shared develop branch before starting new work.
+### Frontend
+
+From the `frontend` directory:
 
 ```bash
-git checkout develop
+npm ci
+npm run format:check
+npm test
+npm run build
 ```
-```bash
-git pull
-```
-```bash
-git checkout -b feature/your-ticket-name
-```
-## Finished Work: Commit and Push
-Once your ticket is complete, stage your changes and push them to the remote repository.
-```bash
-git add .
-```
-```bash
-git commit -m "ticket name"
-```
-```bash
-git push -u origin feature/your-ticket-name
-```
-## Open Pull Request into develop on GitHub
-Go to the GitHub repository website to open a Pull Request (PR) from your feature branch into develop for review.
 
-## Testing Notes
-We are testing against the MySQL database rather than using in memory for consistency and expected behavior.
-We have created some custom annotations for testing to streamline things. Use:
-- @MySqlDataJpaTest for repository/entity tests
-- @MySqlServiceTest for service-layer tests with real Spring + MySQL
-- @MySqlMockMvcTest for auth/web integration tests with real Spring + MySQL + MockMvc
-- @WebMvcTest for lightweight controller-slice tests
+These commands install the versions recorded in `package-lock.json`, check formatting without rewriting files, run the frontend test suite, and create a production build.
 
-## Documentation
-Design and implementation notes for all shared project subsystems.
+### Backend
 
+Docker Desktop must be running because the database-backed tests use MySQL Testcontainers.
+
+From the `backend` directory:
+
+```bash
+./mvnw spotless:check
+./mvnw test
+```
+
+The first command checks Java formatting without changing files. The second runs the backend test suite.
+
+The backend includes reusable test annotations for different levels of database-backed testing:
+
+- `@MySqlDataJpaTest` for repository and entity tests
+- `@MySqlServiceTest` for service tests using Spring and MySQL
+- `@MySqlMockMvcTest` for authentication and web integration tests using Spring, MySQL, and MockMvc
+- `@WebMvcTest` for smaller controller tests that do not require the complete application
+
+## Technical Documentation
+
+- [Request Lifecycle](docs/request-lifecycle.md)
 - [Seed System Overview](docs/seed-system.md)
