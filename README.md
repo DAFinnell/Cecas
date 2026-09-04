@@ -106,54 +106,44 @@ Docker Compose starts the local services together. Flyway prepares the database 
 
 CECAS began as a six-student Franklin University capstone project. The application and repository history reflect that shared work. This version is maintained by Derek Finnell and presented as part of his software development portfolio.
 
-## Prerequisites
+## Run CECAS Locally
 
-- Docker Desktop (recommended for running all services)
+### Prerequisites
 
-- Git (for version control)
+Install:
 
-> **Note:**  
+- [Docker Desktop](https://www.docker.com/products/docker-desktop/)
+- [Git](https://git-scm.com/downloads)
 
-> All required services (Spring Boot 4.0.6, React 19.2.6, Tailwind CSS 4.3.0, Mailpit 1.30.0, MySQL 8.4, Flyway 11.14.1) are managed by Docker Compose. 
+Docker Compose runs the frontend, backend, MySQL database, and supporting local services. You do not need to install Java, Maven, Node.js, or MySQL separately just to run the complete application.
 
-> You do **not** need to install Java, Maven, Node.js, or MySQL locally unless you want to run services outside Docker for development.
+### First-Time Setup
 
-## Set Up and Installation
-
-Details on how to set up the project follow.
-
-Docker Compose runs the following services:
-
-- React frontend
-- Spring Boot backend
-- MySQL database
-- Mailpit for local email testing
-
-### First Time Setup
-1. Clone the repository and check out the final release.
+1. Clone this repository and enter the project directory:
 
 ```bash
-git clone https://github.com/2026-Summer-Franklin-CS-Practicum/2026_Summer_Team5_Repo.git
-cd 2026_Summer_Team5_Repo
-git checkout v1.0.0
+git clone https://github.com/DAFinnell/Cecas.git
+cd Cecas
 ```
 
-2. Create local environment file from the example.
+2. Create your local environment file:
 
 ```bash
 cp .env.example .env
 ```
 
-3. Build and start the application
+3. Build and start the application:
 
 ```bash
 docker compose up --build -d
 ```
 
-4. Open the application and supporting services
-- Application: http://localhost:5173
-- Backend health check: http://localhost:8080/actuator/health
-- Mailpit: http://localhost:8025
+4. Open the application and local tools:
+
+- Application: [http://localhost:5173](http://localhost:5173)
+- Guided demo: [http://localhost:5173/demo](http://localhost:5173/demo)
+- Backend health check: [http://localhost:8080/actuator/health](http://localhost:8080/actuator/health)
+- Mailpit: [http://localhost:8025](http://localhost:8025)
 
 ### Using Docker
 
