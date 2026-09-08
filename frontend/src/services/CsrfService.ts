@@ -37,7 +37,9 @@ class CsrfService {
       if (res.status === 401) {
         window.dispatchEvent(new Event('session-expired'))
       }
-    } catch {}
+    } catch {
+      // Return HTTP response even if session-expired fails.
+    }
 
     return res
   }
