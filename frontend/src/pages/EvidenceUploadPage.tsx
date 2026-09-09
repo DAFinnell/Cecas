@@ -67,8 +67,8 @@ export default function EvidenceUploadPage() {
       // refresh request to get updated status/feedback from server
       const refreshed = await extraCreditRequestService.getStudentRequestDetail(request.id)
       setRequest(refreshed)
-    } catch (err: any) {
-      setError(err?.message ?? 'Upload failed')
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : 'Upload failled')
     } finally {
       setSubmitting(false)
     }
