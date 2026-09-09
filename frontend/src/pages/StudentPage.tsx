@@ -23,7 +23,6 @@ export default function StudentPage() {
 
   useEffect(() => {
     let active = true
-    setLoading(true)
 
     ;(async () => {
       try {
