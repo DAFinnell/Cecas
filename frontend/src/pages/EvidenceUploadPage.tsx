@@ -48,9 +48,9 @@ function EvidenceUploadContent({ requestId }: { requestId: string }) {
         }
       })
 
-      return () => {
-        active = false
-      }
+    return () => {
+      active = false
+    }
   }, [requestId])
 
   const validate = (file: File) => {
@@ -93,7 +93,7 @@ function EvidenceUploadContent({ requestId }: { requestId: string }) {
       const refreshed = await extraCreditRequestService.getStudentRequestDetail(request.id)
       setRequest(refreshed)
     } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : 'Upload failled')
+      setError(err instanceof Error ? err.message : 'Upload failed')
     } finally {
       setSubmitting(false)
     }
