@@ -23,7 +23,6 @@ export default function StudentPage() {
 
   useEffect(() => {
     let active = true
-    setLoading(true)
 
     ;(async () => {
       try {
@@ -36,10 +35,11 @@ export default function StudentPage() {
         if (!active) return
 
         if (profile) setProfile(profile)
+
         if (requests) setRequests(requests)
-      } catch (e: any) {
+      } catch (e: unknown) {
         if (!active) return
-        setError(e?.message ?? String(e))
+        setError(e instanceof Error ? e.message : String(e))
       } finally {
         if (active) setLoading(false)
       }
@@ -65,9 +65,9 @@ export default function StudentPage() {
         if (active) {
           setPoints(termPoints)
         }
-      } catch (e: any) {
+      } catch (e: unknown) {
         if (active) {
-          setError(e?.message ?? String(e))
+          setError(e instanceof Error ? e.message : String(e))
         }
       }
     }

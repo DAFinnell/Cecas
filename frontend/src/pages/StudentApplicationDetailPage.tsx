@@ -9,23 +9,54 @@ export default function StudentApplicationDetailPage() {
   const navigate = useNavigate()
   const { requestId } = useParams()
 
+  if (!requestId) {
+    return (
+      <main className="text-center mx-auto max-w-6xl px-6 py-10">
+        <p className="text-red-600">missing request id</p>
+        <button
+          onClick={() => navigate(routes.student.dashboard)}
+          className="cursor-pointer text-sm font-medium text-blue-600 hover:underline"
+        >
+          {'< '}Back to Applications
+        </button>
+      </main>
+    )
+  }
+
+  return <StudentApplicationDetailContent key={requestId} requestId={requestId} />
+}
+
+function StudentApplicationDetailContent({ requestId }: { requestId: string }) {
+  const navigate = useNavigate()
+
   const [request, setRequest] = useState<StudentRequestDetail | null>(null)
-  const [loading, setLoading] = useState(false)
+  const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
-    if (!requestId) {
-      setError('missing request id')
-      return
-    }
-
-    setLoading(true)
+    let active = true
 
     extraCreditRequestService
       .getStudentRequestDetail(Number(requestId))
-      .then(setRequest)
-      .catch((err) => setError(err.message))
-      .finally(() => setLoading(false))
+      .then((loadedRequest) => {
+        if (active) {
+          setRequest(loadedRequest)
+        }
+      })
+      .catch((err: unknown) => {
+        if (active) {
+          setError(err instanceof Error ? err.message : 'Failed to load request')
+        }
+      })
+      .finally(() => {
+        if (active) {
+          setLoading(false)
+        }
+      })
+
+    return () => {
+      active = false
+    }
   }, [requestId])
 
   if (loading) {

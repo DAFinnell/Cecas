@@ -10,6 +10,15 @@ const MAX_BYTES = 10 * 1024 * 1024 // 10 MB
 
 export default function EvidenceUploadPage() {
   const { requestId } = useParams<{ requestId: string }>()
+
+  if (!requestId) {
+    return <div>Request not found</div>
+  }
+
+  return <EvidenceUploadContent key={requestId} requestId={requestId} />
+}
+
+function EvidenceUploadContent({ requestId }: { requestId: string }) {
   const navigate = useNavigate()
   const [request, setRequest] = useState<StudentRequestDetail | null>(null)
   const [file, setFile] = useState<File | null>(null)
@@ -19,13 +28,29 @@ export default function EvidenceUploadPage() {
   const fileInputRef = useRef<HTMLInputElement | null>(null)
 
   useEffect(() => {
-    if (!requestId) return
-    setLoading(true)
+    let active = true
+
     extraCreditRequestService
       .getStudentRequestDetail(Number(requestId))
-      .then((r) => setRequest(r))
-      .catch(() => setRequest(null))
-      .finally(() => setLoading(false))
+      .then((loadedRequest) => {
+        if (active) {
+          setRequest(loadedRequest)
+        }
+      })
+      .catch(() => {
+        if (active) {
+          setRequest(null)
+        }
+      })
+      .finally(() => {
+        if (active) {
+          setLoading(false)
+        }
+      })
+
+    return () => {
+      active = false
+    }
   }, [requestId])
 
   const validate = (file: File) => {
@@ -67,8 +92,8 @@ export default function EvidenceUploadPage() {
       // refresh request to get updated status/feedback from server
       const refreshed = await extraCreditRequestService.getStudentRequestDetail(request.id)
       setRequest(refreshed)
-    } catch (err: any) {
-      setError(err?.message ?? 'Upload failed')
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : 'Upload failed')
     } finally {
       setSubmitting(false)
     }
