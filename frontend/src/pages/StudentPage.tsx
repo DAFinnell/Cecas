@@ -66,9 +66,9 @@ export default function StudentPage() {
         if (active) {
           setPoints(termPoints)
         }
-      } catch (e: any) {
+      } catch (e: unknown) {
         if (active) {
-          setError(e?.message ?? String(e))
+          setError(e instanceof Error ? e.message : String(e))
         }
       }
     }
