@@ -11,7 +11,7 @@ export default function StudentApplicationDetailPage() {
 
   if (!requestId) {
     return (
-      <main className="text-cent mx-auto max-w-6xl px-6 py-10">
+      <main className="text-center mx-auto max-w-6xl px-6 py-10">
         <p className="text-red-600">missing request id</p>
         <button
           onClick={() => navigate(routes.student.dashboard)}
@@ -30,7 +30,7 @@ function StudentApplicationDetailContent({ requestId }: { requestId: string }) {
   const navigate = useNavigate()
 
   const [request, setRequest] = useState<StudentRequestDetail | null>(null)
-  const [loading, setLoading] = useState(false)
+  const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {

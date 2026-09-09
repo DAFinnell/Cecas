@@ -12,7 +12,7 @@ export default function EvidenceUploadPage() {
   const { requestId } = useParams<{ requestId: string }>()
 
   if (!requestId) {
-    return <div>Request note found</div>
+    return <div>Request not found</div>
   }
 
   return <EvidenceUploadContent key={requestId} requestId={requestId} />
