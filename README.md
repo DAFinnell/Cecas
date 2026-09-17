@@ -211,11 +211,12 @@ From the `frontend` directory:
 ```bash
 npm ci
 npm run format:check
+npm run lint
 npm test
 npm run build
 ```
 
-These commands install the versions recorded in `package-lock.json`, check formatting without rewriting files, run the frontend test suite, and create a production build.
+These commands install the versions recorded in `package-lock.json`, check formatting, run ESLint, run the frontend test suite, and create a production build.
 
 ### Backend
 
@@ -236,6 +237,27 @@ The backend includes reusable test annotations for different levels of database-
 - `@MySqlServiceTest` for service tests using Spring and MySQL
 - `@MySqlMockMvcTest` for authentication and web integration tests using Spring, MySQL, and MockMvc
 - `@WebMvcTest` for smaller controller tests that do not require the complete application
+
+### Containers
+
+Docker Desktop must be running. From the repository root:
+
+```bash
+docker compose --env-file .env.example -f docker-compose.yml config --quiet
+
+BACKEND_IMAGE=cecas-backend:ci \
+FRONTEND_IMAGE=cecas-frontend:ci \
+DB_HOST=database.example.invalid \
+DB_NAME=cecas \
+DB_USER=cecas \
+DB_PASSWORD=ci-placeholder \
+docker compose -f docker-compose.prod.yml config --quiet
+
+docker build --file backend/Dockerfile --tag cecas-backend:ci ./backend
+docker build --file frontend/Dockerfile.prod --tag cecas-frontend:ci ./frontend
+```
+
+The placeholder values here are used only for variable interpolation.
 
 ## Technical Documentation
 
