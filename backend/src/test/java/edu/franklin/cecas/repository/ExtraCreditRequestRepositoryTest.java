@@ -9,8 +9,8 @@ import edu.franklin.cecas.domain.ExtraCreditRequestStatus;
 import edu.franklin.cecas.domain.User;
 import edu.franklin.cecas.domain.UserRole;
 import edu.franklin.cecas.support.MySqlDataJpaTest;
+import jakarta.persistence.EntityManager;
 import java.time.LocalDateTime;
-import java.time.temporal.ChronoUnit;
 import java.util.List;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,6 +29,9 @@ public class ExtraCreditRequestRepositoryTest {
 
     @Autowired
     private CategoryRepository categoryRepository;
+
+    @Autowired
+    private EntityManager entityManager;
 
     private User createTestStudent() {
         User user = new User();
@@ -212,32 +215,60 @@ public class ExtraCreditRequestRepositoryTest {
 
         Category category = createTestCategory();
         categoryRepository.save(category);
-        LocalDateTime now = LocalDateTime.now().truncatedTo(ChronoUnit.SECONDS);
-        ExtraCreditRequest request1 = new ExtraCreditRequest();
-        request1.setDescription("Test request 1");
-        request1.setStudent(student);
-        request1.setCourse(course);
-        request1.setCategory(category);
-        request1.setStatus(ExtraCreditRequestStatus.PENDING);
-        request1.setUpdatedAt(now.minusHours(1));
-        extraCreditRequestRepository.save(request1);
 
-        ExtraCreditRequest request2 = new ExtraCreditRequest();
-        request2.setDescription("Test request 2");
-        request2.setStudent(student);
-        request2.setCourse(course);
-        request2.setCategory(category);
-        request2.setStatus(ExtraCreditRequestStatus.PENDING);
-        request2.setUpdatedAt(now);
-        extraCreditRequestRepository.save(request2);
+        ExtraCreditRequest firstRequest = new ExtraCreditRequest();
+        firstRequest.setDescription("Older");
+        firstRequest.setStudent(student);
+        firstRequest.setCourse(course);
+        firstRequest.setCategory(category);
+        firstRequest.setStatus(ExtraCreditRequestStatus.PENDING);
+
+        Integer firstRequestId =
+                extraCreditRequestRepository.saveAndFlush(firstRequest).getId();
+
+        ExtraCreditRequest secondRequest = new ExtraCreditRequest();
+        secondRequest.setDescription("Newer");
+        secondRequest.setStudent(student);
+        secondRequest.setCourse(course);
+        secondRequest.setCategory(category);
+        secondRequest.setStatus(ExtraCreditRequestStatus.PENDING);
+
+        Integer secondRequestId =
+                extraCreditRequestRepository.saveAndFlush(secondRequest).getId();
+
+        LocalDateTime olderTimestamp = LocalDateTime.of(2026, 1, 1, 1, 0);
+        LocalDateTime newerTimestamp = LocalDateTime.of(2026, 1, 1, 2, 0);
+
+        int olderRowsUpdated = entityManager
+                .createQuery("""
+                    UPDATE ExtraCreditRequest request
+                    SET request.updatedAt = :updatedAt
+                    WHERE request.id = :id
+                    """)
+                .setParameter("updatedAt", olderTimestamp)
+                .setParameter("id", firstRequestId)
+                .executeUpdate();
+
+        int newerRowsUpdated = entityManager
+                .createQuery("""
+                    UPDATE ExtraCreditRequest request
+                    SET request.updatedAt = :updatedAt
+                    WHERE request.id = :id
+                    """)
+                .setParameter("updatedAt", newerTimestamp)
+                .setParameter("id", secondRequestId)
+                .executeUpdate();
+
+        assertThat(olderRowsUpdated).isEqualTo(1);
+        assertThat(newerRowsUpdated).isEqualTo(1);
+
+        entityManager.clear();
 
         List<ExtraCreditRequest> result =
                 extraCreditRequestRepository.findByCourse_CourseIdInAndStatusOrderByUpdatedAtDesc(
                         List.of(course.getCourseId()), ExtraCreditRequestStatus.PENDING);
 
-        assertThat(result).hasSize(2);
-        assertThat(result.get(0).getUpdatedAt())
-                .isAfterOrEqualTo(result.get(1).getUpdatedAt().truncatedTo(ChronoUnit.SECONDS));
+        assertThat(result).extracting(ExtraCreditRequest::getId).containsExactly(secondRequestId, firstRequestId);
     }
 
     @Test
