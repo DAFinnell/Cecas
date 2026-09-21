@@ -69,7 +69,7 @@ services:
     networks:
       - edge
     healthcheck:
-      test: ["CMD", "wget", "-q0", "/dev/null", "http://127.0.0.1:2019/config/"]
+      test: ["CMD", "wget", "-qO", "/dev/null", "http://127.0.0.1:2019/config/"]
       interval: 10s
       timeout: 5s
       retries: 12
