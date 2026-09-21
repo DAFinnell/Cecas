@@ -88,11 +88,26 @@ jobs:
         env:
           BACKEND_IMAGE: cecas-backend:ci
           FRONTEND_IMAGE: cecas-frontend:ci
-          DB_HOST: database.example.invalid
-          DB_NAME: cecas
-          DB_USER: cecas
-          DB_PASSWORD: ci-placeholder
+          DB_HOST: mysql
+          MYSQL_DATABASE: cecas
+          MYSQL_USER: cecas
+          MYSQL_PASSWORD: ci-placeholder
+          MYSQL_ROOT_PASSWORD: ci-root-placeholder
+          APP_SEED_ENABLED: "false"
+          SESSION_COOKIE_SECURE: "true"
         run: docker compose -f docker-compose.prod.yml config --quiet
+
+      - name: Validate EC2 deployment script syntax
+        run: bash -n deploy/remote-deploy.sh
+
+      - name: Validate Caddy configuration
+        run: |
+          docker run --rm \
+            --volume "${GITHUB_WORKSPACE}/deploy/Caddyfile:/etc/caddy/Caddyfile:ro" \
+            caddy:2-alpine \
+            caddy validate \
+              --config /etc/caddy/Caddyfile \
+              --adapter caddyfile
 
       - name: Build backend production image
         run: docker build --file backend/Dockerfile --tag cecas-backend:ci ./backend

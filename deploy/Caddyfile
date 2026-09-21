@@ -1,0 +1,11 @@
+cecas.dafinnell.com {
+    @backend path /api /api/* /actuator/health
+
+    handle @backend {
+        reverse_proxy backend:8080
+    }
+
+    handle {
+        reverse_proxy frontend:80
+    }
+}
