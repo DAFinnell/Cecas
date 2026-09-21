@@ -102,9 +102,6 @@ preflight() {
   [[ -f "${RELEASE_DIR}/docker-compose.prod.yml" ]] ||
     die "The release is missing docker-compose.prod.yml."
 
-  [[ -f "${SCRIPT_DIR}/Caddyfile" ]] ||
-    die "The release is missing deploy/Caddyfile."
-
   [[ -f "${SCRIPT_DIR}/remote-deploy.sh" ]] ||
     die "The release is missing deploy/remote-deploy.sh."
 
@@ -119,11 +116,10 @@ preflight() {
     "${RELEASE_DIR}" \
     "${RELEASE_DIR}/docker-compose.prod.yml" \
     "${SCRIPT_DIR}" \
-    "${SCRIPT_DIR}/Caddyfile" \
     "${SCRIPT_DIR}/remote-deploy.sh"
 
   chmod 0750 "${RELEASE_DIR}" "${SCRIPT_DIR}"
-  chmod 0640 "${RELEASE_DIR}/docker-compose.prod.yml" "${SCRIPT_DIR}/Caddyfile"
+  chmod 0640 "${RELEASE_DIR}/docker-compose.prod.yml"
   chmod 0750 "${SCRIPT_DIR}/remote-deploy.sh"
 
   docker info >/dev/null
@@ -148,7 +144,7 @@ valid_release_dir() {
 
   [[ "${release_dir}" == "${RELEASES_DIR}/"* ]] &&
     [[ -f "${release_dir}/docker-compose.prod.yml" ]] &&
-    [[ -f "${release_dir}/deploy/Caddyfile" ]] &&
+    [[ -f "${release_dir}/deploy/remote-deploy.sh" ]] &&
     [[ -f "${release_dir}/images.env" ]]
 }
 
@@ -475,7 +471,7 @@ print_safe_diagnostics() {
     printf 'Container status\n'
     compose_for_release "${release_dir}" ps --all || true
 
-    for service_name in mysql backend frontend caddy; do
+    for service_name in mysql backend frontend; do
       printf '\nLast 100 %s log lines\n' "${service_name}"
       compose_for_release "${release_dir}" \
         logs \

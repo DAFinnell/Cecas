@@ -57,32 +57,22 @@ services:
 
   frontend:
     image: ${FRONTEND_IMAGE:?FRONTEND_IMAGE is required}
-    networks:
-      - edge
-    healthcheck:
-      test: ["CMD", "wget", "-q", "--spider", "http://127.0.0.1/"]
-      interval: 10s
-      timeout: 5s
-      retries: 12
-    restart: unless-stopped
-    logging: *default-logging
-
-  caddy:
-    image: caddy:2-alpine
     depends_on:
       backend:
-        condition: service_healthy
-      frontend:
         condition: service_healthy
     ports:
       - "80:80"
       - "443:443"
     volumes:
-      - ./deploy/Caddyfile:/etc/caddy/Caddyfile:ro
       - caddy_data:/data
       - caddy_config:/config
     networks:
       - edge
+    healthcheck:
+      test: ["CMD", "wget", "-qO", "/dev/null", "http://127.0.0.1:2019/config/"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
     restart: unless-stopped
     logging: *default-logging
 

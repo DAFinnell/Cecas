@@ -259,8 +259,8 @@ docker compose -f docker-compose.prod.yml config --quiet
 bash -n deploy/remote-deploy.sh
 
 docker run --rm \
-  --volume "$PWD/deploy/Caddyfile:/etc/caddy/Caddyfile:ro" \
-  caddy:2-alpine \
+  --volume "$PWD/frontend/Caddyfile:/etc/caddy/Caddyfile:ro" \
+  caddy:2.11.4-alpine \
   caddy validate \
     --config /etc/caddy/Caddyfile \
     --adapter caddyfile
