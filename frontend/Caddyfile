@@ -1,15 +1,15 @@
 cecas.dafinnell.com {
-    encode zstd gzip
+	encode zstd gzip
 
-    @backend path /api /api/* /actuator/health
+	@backend path /api /api/* /actuator/health
 
-    handle @backend {
-        reverse_proxy backend:8080
-    }
+	handle @backend {
+		reverse_proxy backend:8080
+	}
 
-    handle {
-        root * /srv
-        try_files {path} /index.html
-        file_server
-    }
+	handle {
+		root * /srv
+		try_files {path} /index.html
+		file_server
+	}
 }

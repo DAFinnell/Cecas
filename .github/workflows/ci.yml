@@ -103,8 +103,8 @@ jobs:
       - name: Validate Caddy configuration
         run: |
           docker run --rm \
-            --volume "${GITHUB_WORKSPACE}/deploy/Caddyfile:/etc/caddy/Caddyfile:ro" \
-            caddy:2-alpine \
+            --volume "${GITHUB_WORKSPACE}/frontend/Caddyfile:/etc/caddy/Caddyfile:ro" \
+            caddy:2.11.4-alpine \
             caddy validate \
               --config /etc/caddy/Caddyfile \
               --adapter caddyfile
