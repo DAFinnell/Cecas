@@ -247,17 +247,29 @@ docker compose --env-file .env.example -f docker-compose.yml config --quiet
 
 BACKEND_IMAGE=cecas-backend:ci \
 FRONTEND_IMAGE=cecas-frontend:ci \
-DB_HOST=database.example.invalid \
-DB_NAME=cecas \
-DB_USER=cecas \
-DB_PASSWORD=ci-placeholder \
+DB_HOST=mysql \
+MYSQL_DATABASE=cecas \
+MYSQL_USER=cecas \
+MYSQL_PASSWORD=ci-placeholder \
+MYSQL_ROOT_PASSWORD=ci-root-placeholder \
+APP_SEED_ENABLED=false \
+SESSION_COOKIE_SECURE=true \
 docker compose -f docker-compose.prod.yml config --quiet
+
+bash -n deploy/remote-deploy.sh
+
+docker run --rm \
+  --volume "$PWD/deploy/Caddyfile:/etc/caddy/Caddyfile:ro" \
+  caddy:2-alpine \
+  caddy validate \
+    --config /etc/caddy/Caddyfile \
+    --adapter caddyfile
 
 docker build --file backend/Dockerfile --tag cecas-backend:ci ./backend
 docker build --file frontend/Dockerfile.prod --tag cecas-frontend:ci ./frontend
 ```
 
-The placeholder values here are used only for variable interpolation.
+The production values shown here are non-secret placeholders used only to validate variable interpolation. These do not start the production stack or contact AWS.
 
 ## Technical Documentation
 
