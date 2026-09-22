@@ -284,7 +284,7 @@ jobs:
             frontend_source="built and pushed"
           fi
 
-          digest_pattern='sha256:[0-9a-f]{64}$'
+          digest_pattern='^sha256:[0-9a-f]{64}$'
 
           if [[ ! "${backend_digest}" =~ ${digest_pattern} ]]; then
             echo "::error::A valid backend image digest was not produced."
