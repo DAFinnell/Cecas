@@ -53,6 +53,7 @@ jobs:
       AWS_ROLE_ARN: ${{ vars.AWS_ROLE_ARN }}
       EC2_INSTANCE_ID: ${{ vars.EC2_INSTANCE_ID }}
       ECR_REGISTRY: "${{ vars.AWS_ACCOUNT_ID }}.dkr.ecr.${{ vars.AWS_REGION }}.amazonaws.com"
+      PUBLIC_URL: https://cecas.dafinnell.com
 
     steps:
       - name: Validate deployment inputs
@@ -439,7 +440,7 @@ jobs:
         run: |
           set -euo pipefail
           set +x
-          
+
           readonly max_attempts=210
           readonly polling_delay_seconds=10
           readonly lookup_retry_seconds=5
@@ -549,3 +550,164 @@ jobs:
           fi
 
           echo "The EC2 deployment completed successfully."
+
+      - name: Verify public HTTPS
+        id: public-smoke
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          readonly max_attempts=12
+          readonly retry_delay_seconds=10
+
+          public_https_url="${PUBLIC_URL}/"
+          public_health_url="${PUBLIC_URL}/actuator/health"
+          public_http_url="${PUBLIC_URL/https:/http:}/"
+
+          site_ready="false"
+
+          for ((attempt = 1; attempt <= max_attempts; attempt++)); do
+            root_ready="false"
+            health_ready="false"
+            redirect_ready="false"
+
+            if curl \
+              --fail \
+              --silent \
+              --proto '=https' \
+              --tlsv1.2 \
+              --connect-timeout 5 \
+              --max-time 15 \
+              --output /dev/null \
+              "${public_https_url}" \
+              2>/dev/null; then
+              root_ready="true"
+            fi
+
+            health_body=""
+
+            if health_body="$(
+              curl \
+                --fail \
+                --silent \
+                --proto '=https' \
+                --tlsv1.2 \
+                --connect-timeout 5 \
+                --max-time 15 \
+                "${public_health_url}" \
+                2>/dev/null
+            )" &&
+              jq --exit-status '.status == "UP"' \
+                <<< "${health_body}" \
+                >/dev/null 2>&1; then
+              health_ready="true"
+            fi
+
+            redirect_result="$(
+              curl \
+                --silent \
+                --connect-timeout 5 \
+                --max-time 15 \
+                --output /dev/null \
+                --write-out '%{http_code} %{redirect_url}' \
+                "${public_http_url}" \
+                2>/dev/null ||
+                true
+            )"
+
+            redirect_code="${redirect_result%% *}"
+            redirect_target="${redirect_result#* }"
+
+            if [[ "${redirect_code}" =~ ^30[1278]$ &&
+                  "${redirect_target}" == "${public_https_url}" ]]; then
+              redirect_ready="true"
+            fi
+
+            if [[ "${root_ready}" == "true" &&
+                  "${health_ready}" == "true" &&
+                  "${redirect_ready}" == "true" ]]; then
+              site_ready="true"
+              break
+            fi
+
+            echo "Public production verification is not ready yet (${attempt}/${max_attempts})."
+
+            if (( attempt < max_attempts )); then
+              sleep "${retry_delay_seconds}"
+            fi
+          done
+
+          if [[ "${site_ready}" != "true" ]]; then
+            echo "::error::Public production verification did not pass before the timeout."
+
+            curl \
+              --silent \
+              --show-error \
+              --proto '=https' \
+              --tlsv1.2 \
+              --connect-timeout 5 \
+              --max-time 15 \
+              --output /dev/null \
+              --write-out 'Frontend HTTPS status: %{http_code}\n' \
+              "${public_https_url}" ||
+              true
+
+            curl \
+              --silent \
+              --show-error \
+              --proto '=https' \
+              --tlsv1.2 \
+              --connect-timeout 5 \
+              --max-time 15 \
+              --output /dev/null \
+              --write-out 'Backend health status: %{http_code}\n' \
+              "${public_health_url}" ||
+              true
+
+            curl \
+              --silent \
+              --show-error \
+              --connect-timeout 5 \
+              --max-time 15 \
+              --output /dev/null \
+              --write-out 'HTTP redirect status: %{http_code}; target: %{redirect_url}\n' \
+              "${public_http_url}" ||
+              true
+
+            exit 1
+          fi
+
+          echo "Public HTTPS, backend health, and HTTP redirect verification passed."
+
+      - name: Summarize deployment results
+        if: ${{ !cancelled() }}
+        shell: bash
+        env:
+          SSM_COMMAND_ID: ${{ steps.ssm-command.outputs.command_id }}
+          SSM_DISPATCH_OUTCOME: ${{ steps.ssm-command.outcome }}
+          SSM_STATUS: ${{ steps.ec2-deployment.outputs.status }}
+          SSM_RESPONSE_CODE: ${{ steps.ec2-deployment.outputs.response_code }}
+          EC2_DEPLOYMENT_OUTCOME: ${{ steps.ec2-deployment.outcome }}
+          PUBLIC_SMOKE_OUTCOME: ${{ steps.public-smoke.outcome }}
+        run: |
+          set -euo pipefail
+
+          command_id="${SSM_COMMAND_ID:-not-created}"
+          dispatch_outcome="${SSM_DISPATCH_OUTCOME:-not-run}"
+          ssm_status="${SSM_STATUS:-unavailable}"
+          response_code="${SSM_RESPONSE_CODE:-unavailable}"
+          ec2_outcome="${EC2_DEPLOYMENT_OUTCOME:-not-run}"
+          public_outcome="${PUBLIC_SMOKE_OUTCOME:-not-run}"
+
+          {
+            echo
+            echo "### Prod deployment result"
+            echo
+            echo "- SSM dispatch: \`${dispatch_outcome}\`"
+            echo "- SSM command: \`${command_id}\`"
+            echo "- EC2 deployment step: \`${ec2_outcome}\`"
+            echo "- EC2 command status: \`${ssm_status}\`"
+            echo "- EC2 response code: \`${response_code}\`"
+            echo "- Public verification: \`${public_outcome}\`"
+            echo "- Public URL: [${PUBLIC_URL}](${PUBLIC_URL})"
+          } >> "${GITHUB_STEP_SUMMARY}"
