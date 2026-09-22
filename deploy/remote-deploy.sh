@@ -28,8 +28,8 @@ if [[ "$#" -ne 3 ]]; then
 fi
 
 readonly COMMIT_SHA="$1"
-readonly BACKEND_IMAGE="$2"
-readonly FRONTEND_IMAGE="$3"
+readonly REQUESTED_BACKEND_IMAGE="$2"
+readonly REQUESTED_FRONTEND_IMAGE="$3"
 
 SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd -P)"
 RELEASE_DIR="$(cd -- "${SCRIPT_DIR}/.." && pwd -P)"
@@ -70,15 +70,15 @@ validate_inputs() {
   backend_pattern="^[0-9]{12}[.]dkr[.]ecr[.]${AWS_REGION}[.]amazonaws[.]com/cecas-backend@sha256:[0-9a-f]{64}$"
   frontend_pattern="^[0-9]{12}[.]dkr[.]ecr[.]${AWS_REGION}[.]amazonaws[.]com/cecas-frontend@sha256:[0-9a-f]{64}$"
 
-  [[ "${BACKEND_IMAGE}" =~ ${backend_pattern} ]] ||
+  [[ "${REQUESTED_BACKEND_IMAGE}" =~ ${backend_pattern} ]] ||
     die "The backend image must be an immutable cecas-backend ECR digest in ${AWS_REGION}."
 
-  [[ "${FRONTEND_IMAGE}" =~ ${frontend_pattern} ]] ||
+  [[ "${REQUESTED_FRONTEND_IMAGE}" =~ ${frontend_pattern} ]] ||
     die "The frontend image must be an immutable cecas-frontend ECR digest in ${AWS_REGION}."
 
-  ECR_REGISTRY="${BACKEND_IMAGE%%/*}"
+  ECR_REGISTRY="${REQUESTED_BACKEND_IMAGE%%/*}"
 
-  [[ "${FRONTEND_IMAGE%%/*}" == "${ECR_REGISTRY}" ]] ||
+  [[ "${REQUESTED_FRONTEND_IMAGE%%/*}" == "${ECR_REGISTRY}" ]] ||
     die "The backend and frontend images must use the same ECR registry."
 }
 
@@ -278,8 +278,8 @@ write_images_env() {
   TEMP_IMAGES="$(mktemp "${RELEASE_DIR}/.images.env.XXXXXX")"
   chmod 0600 "${TEMP_IMAGES}"
 
-  append_export "${TEMP_IMAGES}" "BACKEND_IMAGE" "${BACKEND_IMAGE}"
-  append_export "${TEMP_IMAGES}" "FRONTEND_IMAGE" "${FRONTEND_IMAGE}"
+  append_export "${TEMP_IMAGES}" "BACKEND_IMAGE" "${REQUESTED_BACKEND_IMAGE}"
+  append_export "${TEMP_IMAGES}" "FRONTEND_IMAGE" "${REQUESTED_FRONTEND_IMAGE}"
 
   install \
     -o root \
