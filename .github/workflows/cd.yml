@@ -36,7 +36,7 @@ jobs:
           github.ref == 'refs/heads/main')
       }}
     runs-on: ubuntu-latest
-    timeout-minutes: 45
+    timeout-minutes: 60
 
     environment:
       name: production
@@ -336,3 +336,216 @@ jobs:
             echo "- Frontend digest: \`${FRONTEND_DIGEST}\`"
             echo "- Frontend action: \`${FRONTEND_SOURCE}\`"
           } >> "${GITHUB_STEP_SUMMARY}"
+
+      - name: Dispatch deployment through SSM
+        id: ssm-command
+        shell: bash
+        run: |
+          set -euo pipefail
+          set +x
+
+          bundle_archive="$(mktemp)"
+          request_file="$(mktemp)"
+
+          cleanup() {
+            rm -f -- "${bundle_archive}" "${request_file}"
+          }
+
+          trap cleanup EXIT
+
+          tar \
+            --create \
+            --gzip \
+            --file "${bundle_archive}" \
+            docker-compose.prod.yml \
+            deploy/remote-deploy.sh
+
+          bundle_base64="$(base64 --wrap=0 "${bundle_archive}")"
+          bundle_sha256="$(sha256sum "${bundle_archive}" | awk '{print $1}')"
+          bundle_encoded_size="${#bundle_base64}"
+
+          if (( bundle_encoded_size > 20000 )); then
+            echo "::error::The encoded deployment bundle exceeds the workflow's 20 KB safety limit."
+            exit 1
+          fi
+
+          jq -n \
+            --arg instance_id "${EC2_INSTANCE_ID}" \
+            --arg commit_sha "${DEPLOY_SHA}" \
+            --arg backend_image "${BACKEND_IMAGE}" \
+            --arg frontend_image "${FRONTEND_IMAGE}" \
+            --arg bundle_base64 "${bundle_base64}" \
+            --arg bundle_sha256 "${bundle_sha256}" \
+            '{
+              DocumentName: "AWS-RunShellScript",
+              InstanceIds: [$instance_id],
+              Comment: ("Deploy CECAS " + $commit_sha),
+              TimeoutSeconds: 300,
+              Parameters: {
+                executionTimeout: ["1800"],
+                commands: [
+                  "set -euo pipefail",
+                  "set +x",
+                  "umask 077",
+                  ("readonly COMMIT_SHA=" + ($commit_sha | @sh)),
+                  ("readonly BACKEND_IMAGE=" + ($backend_image | @sh)),
+                  ("readonly FRONTEND_IMAGE=" + ($frontend_image | @sh)),
+                  ("readonly BUNDLE_BASE64=" + ($bundle_base64 | @sh)),
+                  ("readonly BUNDLE_SHA256=" + ($bundle_sha256 | @sh)),
+                  "readonly APP_ROOT=/opt/cecas",
+                  "[[ \"${EUID}\" -eq 0 ]] || { echo \"Deployment must run as root.\" >&2; exit 1; }",
+                  "[[ \"${COMMIT_SHA}\" =~ ^[0-9a-f]{40}$ ]] || { echo \"Invalid deployment commit SHA.\" >&2; exit 64; }",
+                  "for command_name in base64 install mktemp sha256sum tar; do command -v \"${command_name}\" >/dev/null 2>&1 || { echo \"Required command is unavailable: ${command_name}\" >&2; exit 1; }; done",
+                  "install -d -o root -g root -m 0750 \"${APP_ROOT}\" \"${APP_ROOT}/releases\"",
+                  "readonly RELEASE_DIR=\"${APP_ROOT}/releases/${COMMIT_SHA}\"",
+                  "readonly STAGING_DIR=\"$(mktemp -d \"${APP_ROOT}/.release-${COMMIT_SHA}.XXXXXX\")\"",
+                  "readonly ARCHIVE_PATH=\"${STAGING_DIR}/release.tar.gz\"",
+                  "cleanup_release_bundle() { rm -rf -- \"${STAGING_DIR}\"; }",
+                  "trap cleanup_release_bundle EXIT",
+                  "printf %s \"${BUNDLE_BASE64}\" | base64 --decode > \"${ARCHIVE_PATH}\"",
+                  "printf \"%s  %s\\n\" \"${BUNDLE_SHA256}\" \"${ARCHIVE_PATH}\" | sha256sum --check --status || { echo \"Release bundle checksum verification failed.\" >&2; exit 1; }",
+                  "tar --extract --gzip --file \"${ARCHIVE_PATH}\" --directory \"${STAGING_DIR}\"",
+                  "[[ -f \"${STAGING_DIR}/docker-compose.prod.yml\" ]] || { echo \"The release bundle is missing docker-compose.prod.yml.\" >&2; exit 1; }",
+                  "[[ -f \"${STAGING_DIR}/deploy/remote-deploy.sh\" ]] || { echo \"The release bundle is missing deploy/remote-deploy.sh.\" >&2; exit 1; }",
+                  "install -d -o root -g root -m 0750 \"${RELEASE_DIR}\" \"${RELEASE_DIR}/deploy\"",
+                  "install -o root -g root -m 0640 \"${STAGING_DIR}/docker-compose.prod.yml\" \"${RELEASE_DIR}/docker-compose.prod.yml\"",
+                  "install -o root -g root -m 0750 \"${STAGING_DIR}/deploy/remote-deploy.sh\" \"${RELEASE_DIR}/deploy/remote-deploy.sh\"",
+                  "\"${RELEASE_DIR}/deploy/remote-deploy.sh\" \"${COMMIT_SHA}\" \"${BACKEND_IMAGE}\" \"${FRONTEND_IMAGE}\""
+                ]
+              }
+            }' > "${request_file}"
+
+          command_id="$(
+            aws ssm send-command \
+              --region "${AWS_REGION}" \
+              --cli-input-json "file://${request_file}" \
+              --query 'Command.CommandId' \
+              --output text
+          )"
+
+          if [[ ! "${command_id}" =~ ^[0-9a-f-]{36}$ ]]; then
+            echo "::error::Systems Manager did not return a valid command ID."
+            exit 1
+          fi
+
+          echo "command_id=${command_id}" >> "${GITHUB_OUTPUT}"
+          echo "Systems Manager accepted the production deployment command."
+
+      - name: Wait for EC2 deployment
+        id: ec2-deployment
+        shell: bash
+        env:
+          COMMAND_ID: ${{ steps.ssm-command.outputs.command_id }}
+        run: |
+          set -euo pipefail
+          set +x
+          
+          readonly max_attempts=210
+          readonly polling_delay_seconds=10
+          readonly lookup_retry_seconds=5
+
+          status=""
+          previous_status=""
+          consecutive_lookup_failures=0
+
+          for ((attempt = 1; attempt <= max_attempts; attempt++)); do
+            if status="$(
+              aws ssm get-command-invocation \
+                --region "${AWS_REGION}" \
+                --command-id "${COMMAND_ID}" \
+                --instance-id "${EC2_INSTANCE_ID}" \
+                --query 'Status' \
+                --output text \
+                2>/dev/null
+            )"; then
+              consecutive_lookup_failures=0
+            else
+              ((consecutive_lookup_failures += 1))
+
+              if (( consecutive_lookup_failures > 12 )); then
+                echo "::error::Unable to read the SSM command status after repeated attempts."
+                exit 1
+              fi
+
+              sleep "${lookup_retry_seconds}"
+              continue
+            fi
+
+            if [[ "${status}" != "${previous_status}" ]]; then
+              echo "SSM deployment status: ${status}"
+              previous_status="${status}"
+            fi
+
+            case "${status}" in
+              Success|Failed|TimedOut|Cancelled)
+                break
+                ;;
+              Pending|InProgress|Delayed|Cancelling)
+                sleep "${polling_delay_seconds}"
+                ;;
+              *)
+                echo "::error::Unexpected SSM command status: ${status}"
+                exit 1
+                ;;
+            esac
+          done
+
+          if [[ "${status}" != "Success" &&
+                "${status}" != "Failed" &&
+                "${status}" != "TimedOut" &&
+                "${status}" != "Cancelled" ]]; then
+            echo "::error::The SSM deployment did not reach a terminal state before the polling timeout."
+            exit 1
+          fi
+
+          standard_output="$(
+            aws ssm get-command-invocation \
+              --region "${AWS_REGION}" \
+              --command-id "${COMMAND_ID}" \
+              --instance-id "${EC2_INSTANCE_ID}" \
+              --query 'StandardOutputContent' \
+              --output text
+          )"
+
+          standard_error="$(
+            aws ssm get-command-invocation \
+              --region "${AWS_REGION}" \
+              --command-id "${COMMAND_ID}" \
+              --instance-id "${EC2_INSTANCE_ID}" \
+              --query 'StandardErrorContent' \
+              --output text
+          )"
+
+          response_code="$(
+            aws ssm get-command-invocation \
+              --region "${AWS_REGION}" \
+              --command-id "${COMMAND_ID}" \
+              --instance-id "${EC2_INSTANCE_ID}" \
+              --query 'ResponseCode' \
+              --output text
+          )"
+
+          if [[ -n "${standard_output}" && "${standard_output}" != "None" ]]; then
+            echo "::group::EC2 deployment output"
+            printf '%s\n' "${standard_output}"
+            echo "::endgroup::"
+          fi
+
+          if [[ -n "${standard_error}" && "${standard_error}" != "None" ]]; then
+            echo "::group::EC2 deployment errors"
+            printf '%s\n' "${standard_error}"
+            echo "::endgroup::"
+          fi
+
+          {
+            echo "command_id=${COMMAND_ID}"
+            echo "status=${status}"
+            echo "response_code=${response_code}"
+          } >> "${GITHUB_OUTPUT}"
+
+          if [[ "${status}" != "Success" || "${response_code}" != "0" ]]; then
+            echo "::error::The EC2 deployment failed with SSM status ${status} and response code ${response_code}."
+            exit 1
+          fi
+
+          echo "The EC2 deployment completed successfully."
