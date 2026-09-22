@@ -52,6 +52,7 @@ jobs:
       AWS_ACCOUNT_ID: ${{ vars.AWS_ACCOUNT_ID }}
       AWS_ROLE_ARN: ${{ vars.AWS_ROLE_ARN }}
       EC2_INSTANCE_ID: ${{ vars.EC2_INSTANCE_ID }}
+      ECR_REGISTRY: "${{ vars.AWS_ACCOUNT_ID }}.dkr.ecr.${{ vars.AWS_REGION }}.amazonaws.com"
 
     steps:
       - name: Validate deployment inputs
@@ -82,6 +83,13 @@ jobs:
 
           if [[ ! "${AWS_ACCOUNT_ID}" =~ ^[0-9]{12}$ ]]; then
             echo "::error::AWS_ACCOUNT_ID must contain exactly 12 digits."
+            exit 1
+          fi
+
+          expected_ecr_registry="${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com"
+
+          if [[ "${ECR_REGISTRY}" != "${expected_ecr_registry}" ]]; then
+            echo "::error::The derived ECR registry does not match the expected AWS account and region."
             exit 1
           fi
 
@@ -136,14 +144,195 @@ jobs:
           mask-aws-account-id: true
           unset-current-credentials: true
 
-      - name: Summarize deployment identity
+      - name: Inspect release images in ECR
+        id: image-state
         shell: bash
         run: |
+          set -euo pipefail
+
+          lookup_digest() {
+            local repository_name="$1"
+
+            aws ecr batch-get-image \
+              --region "${AWS_REGION}" \
+              --repository-name "${repository_name}" \
+              --image-ids "imageTag=${DEPLOY_SHA}" \
+              --query 'images[0].imageId.imageDigest' \
+              --output text
+          }
+
+          backend_digest="$(lookup_digest "cecas-backend")"
+          frontend_digest="$(lookup_digest "cecas-frontend")"
+
+          if [[ "${backend_digest}" == "None" ]]; then
+            backend_digest=""
+          fi
+
+          if [[ "${frontend_digest}" == "None" ]]; then
+            frontend_digest=""
+          fi
+
+          digest_pattern='^sha256:[0-9a-f]{64}$'
+
+          if [[ -n "${backend_digest}" && ! "${backend_digest}" =~ ${digest_pattern} ]]; then
+            echo "::error::ECR returned an invalid backend image digest."
+            exit 1
+          fi
+
+          if [[ -n "${frontend_digest}" && ! "${frontend_digest}" =~ ${digest_pattern} ]]; then
+            echo "::error::ECR returned an invalid frontend image digest."
+            exit 1
+          fi
+
+          backend_exists="false"
+          frontend_exists="false"
+
+          if [[ -n "${backend_digest}" ]]; then
+            backend_exists="true"
+          fi
+
+          if [[ -n "${frontend_digest}" ]]; then
+            frontend_exists="true"
+          fi
+
+          if [[ "${GITHUB_EVENT_NAME}" == "workflow_dispatch" ]]; then
+            if [[ "${backend_exists}" != "true" || "${frontend_exists}" != "true" ]]; then
+              echo "::error::Manual redeployment requires both SHA-tagged images to already exist in ECR."
+              exit 1
+            fi
+          fi
+
           {
-            echo "### Production deployment identity"
+            echo "backend_exists=${backend_exists}"
+            echo "backend_digest=${backend_digest}"
+            echo "frontend_exists=${frontend_exists}"
+            echo "frontend_digest=${frontend_digest}"
+          } >> "${GITHUB_OUTPUT}"
+
+          if [[ "${backend_exists}" == "true" && "${frontend_exists}" == "true" ]]; then
+            echo "Both release images already exist and will be reused."
+          else
+            echo "Any missing release images will be built and published."
+          fi
+
+      - name: Login to Amazon ECR
+        if: >-
+          ${{
+            steps.image-state.outputs.backend_exists == 'false' ||
+            steps.image-state.outputs.frontend_exists == 'false'
+          }}
+        uses: aws-actions/amazon-ecr-login@v2.1.6
+        with:
+          mask-password: true
+
+      - name: Set up Docker Buildx
+        if: >-
+          ${{
+            steps.image-state.outputs.backend_exists == 'false' ||
+            steps.image-state.outputs.frontend_exists == 'false'
+          }}
+        uses: docker/setup-buildx-action@v4.3.0
+
+      - name: Build and push backend image
+        id: backend-image
+        if: steps.image-state.outputs.backend_exists == 'false'
+        uses: docker/build-push-action@v7.4.0
+        with:
+          context: ./backend
+          file: ./backend/Dockerfile
+          platforms: linux/amd64
+          pull: true
+          push: true
+          tags: ${{ env.ECR_REGISTRY }}/cecas-backend:${{ env.DEPLOY_SHA }}
+
+      - name: Build and push frontend image
+        id: frontend-image
+        if: steps.image-state.outputs.frontend_exists == 'false'
+        uses: docker/build-push-action@v7.4.0
+        with:
+          context: ./frontend
+          file: ./frontend/Dockerfile.prod
+          platforms: linux/amd64
+          pull: true
+          push: true
+          tags: ${{ env.ECR_REGISTRY }}/cecas-frontend:${{ env.DEPLOY_SHA }}
+
+      - name: Record immutable image references
+        id: release-images
+        shell: bash
+        env:
+          EXISTING_BACKEND_DIGEST: ${{ steps.image-state.outputs.backend_digest }}
+          BUILT_BACKEND_DIGEST: ${{ steps.backend-image.outputs.digest }}
+          EXISTING_FRONTEND_DIGEST: ${{ steps.image-state.outputs.frontend_digest }}
+          BUILT_FRONTEND_DIGEST: ${{ steps.frontend-image.outputs.digest }}
+        run: |
+          set -euo pipefail
+
+          backend_digest="${EXISTING_BACKEND_DIGEST}"
+          backend_source="reused from ECR"
+
+          if [[ -z "${backend_digest}" ]]; then
+            backend_digest="${BUILT_BACKEND_DIGEST}"
+            backend_source="built and pushed"
+          fi
+
+          frontend_digest="${EXISTING_FRONTEND_DIGEST}"
+          frontend_source="reused from ECR"
+
+          if [[ -z "${frontend_digest}" ]]; then
+            frontend_digest="${BUILT_FRONTEND_DIGEST}"
+            frontend_source="built and pushed"
+          fi
+
+          digest_pattern='sha256:[0-9a-f]{64}$'
+
+          if [[ ! "${backend_digest}" =~ ${digest_pattern} ]]; then
+            echo "::error::A valid backend image digest was not produced."
+            exit 1
+          fi
+
+          if [[ ! "${frontend_digest}" =~ ${digest_pattern} ]]; then
+            echo "::error::A valid frontend image digest was not produced."
+            exit 1
+          fi
+
+          backend_image="${ECR_REGISTRY}/cecas-backend@${backend_digest}"
+          frontend_image="${ECR_REGISTRY}/cecas-frontend@${frontend_digest}"
+
+          {
+            echo "BACKEND_IMAGE=${backend_image}"
+            echo "FRONTEND_IMAGE=${frontend_image}"
+          } >> "${GITHUB_ENV}"
+
+          {
+            echo "backend_digest=${backend_digest}"
+            echo "backend_source=${backend_source}"
+            echo "frontend_digest=${frontend_digest}"
+            echo "frontend_source=${frontend_source}"
+          } >> "${GITHUB_OUTPUT}"
+
+      - name: Summarize release identity
+        shell: bash
+        env:
+          BACKEND_DIGEST: ${{ steps.release-images.outputs.backend_digest }}
+          BACKEND_SOURCE: ${{ steps.release-images.outputs.backend_source }}
+          FRONTEND_DIGEST: ${{ steps.release-images.outputs.frontend_digest }}
+          FRONTEND_SOURCE: ${{ steps.release-images.outputs.frontend_source }}
+        run: |
+          {
+            echo "### Production release info"
             echo
             echo "- Commit: \`${DEPLOY_SHA}\`"
             echo "- Trigger: \`${GITHUB_EVENT_NAME}\`"
             echo "- Environment: \`production\`"
             echo "- AWS authentication: GitHub OIDC"
+            echo
+            echo "### Published images"
+            echo
+            echo "- Backend tag: \`cecas-backend:${DEPLOY_SHA}\`"
+            echo "- Backend digest: \`${BACKEND_DIGEST}\`"
+            echo "- Backend action: \`${BACKEND_SOURCE}\`"
+            echo "- Frontend tag: \`cecas-frontend:${DEPLOY_SHA}\`"
+            echo "- Frontend digest: \`${FRONTEND_DIGEST}\`"
+            echo "- Frontend action: \`${FRONTEND_SOURCE}\`"
           } >> "${GITHUB_STEP_SUMMARY}"
