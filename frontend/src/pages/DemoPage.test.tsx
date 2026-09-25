@@ -53,7 +53,7 @@ describe('DemoPage', () => {
       }),
     ).toHaveLength(1)
 
-    expect(screen.getByText(/portfolio demo, not a live service/i)).toBeInTheDocument()
+    expect(screen.getByText(/portfolio demo, not a university service/i)).toBeInTheDocument()
   })
 
   it('offers a live student path with clear demo-data guidance', () => {

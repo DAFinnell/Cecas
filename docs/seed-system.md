@@ -1,7 +1,6 @@
 # Seed System Overview
-This document explains how the seed system works in CECAS.
 
-The goal of the seed system is to keep important reference data consistent across environments without relying on manual database inserts. This is mainly meant for data that changes occasionally, should be shared, and needs to be synchronized in a predictable way.
+This document explains how CECAS loads and updates sample courses, categories, and chair accounts. Seeding is enabled for local development. The production deployment keeps it off.
 
 ## What the Seed System Covers
 The seed system is responsible for synchronizing three kinds of reference data:

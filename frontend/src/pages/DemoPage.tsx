@@ -104,7 +104,7 @@ export default function DemoPage() {
 
         <p className="mt-4 max-w-3xl text-lg leading-8 text-slate-600">
           Try the student side with sample information, or see the chair side in screenshots. CECAS
-          is a portfolio demo, not a live service.
+          is a portfolio demo, not a university service.
         </p>
       </header>
 
@@ -248,8 +248,7 @@ export default function DemoPage() {
         </h2>
 
         <p className="mt-3 max-w-3xl leading-7 text-slate-600">
-          You can try the student role with a demo account or use these screenshots to see the full
-          experience without registering.
+          These show the student dashboard and a request after pre-approval.
         </p>
 
         <div className="mt-6 grid items-start gap-6 lg:grid-cols-2">
@@ -305,8 +304,7 @@ export default function DemoPage() {
         </h2>
 
         <p className="mt-3 max-w-3xl leading-7 text-slate-600">
-          These screenshots show both parts of the chair’s work: reviewing a new request and
-          reviewing the student’s evidence.
+          These show the chair dashboard and an evidence review.
         </p>
 
         <div className="mt-6 grid items-start gap-6 lg:grid-cols-2">
@@ -347,12 +345,6 @@ export default function DemoPage() {
             </article>
           ))}
         </div>
-
-        <p className="mt-6 max-w-3xl leading-7 text-slate-600">
-          Together, the screenshots show the complete chair workflow: reviewing requests,
-          pre-approving activities, reviewing evidence, leaving feedback, making final decisions,
-          and awarding points.
-        </p>
       </section>
     </section>
   )

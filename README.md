@@ -4,9 +4,11 @@
 
 CECAS is a demo app for handling extra credit requests. Students propose activities, upload evidence after pre-approval, and track their points. Program chairs review requests and give feedback.
 
+CECAS does not connect to Canvas. Requests and points are stored in the app's own database.
+
 [Live app](https://cecas.dafinnell.com) · [Source code](https://github.com/DAFinnell/Cecas) · [Derek Finnell's portfolio](https://dafinnell.com)
 
-> This is a portfolio demo, not an official live service.
+> This is a portfolio demo, not a university service.
 
 ## How a Request Moves Through CECAS
 
