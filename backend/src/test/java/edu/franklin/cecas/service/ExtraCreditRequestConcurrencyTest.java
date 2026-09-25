@@ -23,6 +23,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -49,6 +50,14 @@ class ExtraCreditRequestConcurrencyTest {
 
     @Autowired
     private UserService userService;
+
+    @AfterEach
+    void cleanDatabaseState() {
+        requestRepository.deleteAll();
+        userRepository.deleteAll();
+        categoryRepository.deleteAll();
+        courseRepository.deleteAll();
+    }
 
     private Course saveCourse(String code, String section) {
         Course course = new Course();

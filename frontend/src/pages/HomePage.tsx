@@ -41,7 +41,8 @@ export default function HomePage() {
               <p className="max-w-2xl text-lg leading-8 text-slate-600">
                 CECAS is a team-built capstone and portfolio demonstration. It shows how students
                 submit extra credit requests and evidence while program chairs make pre-approval and
-                final decisions, with approved points tracked in one place.
+                final decisions, with approved points tracked in one place. It does not connect to
+                Canvas.
               </p>
             </div>
 

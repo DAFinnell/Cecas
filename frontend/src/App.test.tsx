@@ -96,7 +96,7 @@ describe('App', () => {
     expect(
       screen.getByRole('heading', {
         level: 1,
-        name: 'Explore the CECAS Guided Demo',
+        name: 'CECAS Demo',
       }),
     ).toBeInTheDocument()
 

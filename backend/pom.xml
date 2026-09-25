@@ -11,21 +11,27 @@
 	<groupId>edu.franklin</groupId>
 	<artifactId>cecas-api</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
-	<name/>
-	<description/>
-	<url/>
-	<licenses>
-		<license/>
-	</licenses>
-	<developers>
-		<developer/>
-	</developers>
-	<scm>
-		<connection/>
-		<developerConnection/>
-		<tag/>
-		<url/>
-	</scm>
+	<name>CECAS API</name>
+    <description>Spring Boot backend for the CECAS extra credit demo.</description>
+    <url>https://github.com/DAFinnell/Cecas</url>
+    <!-- Prevent the Spring Boot parent's Apache license from being inherited as CECAS's license. -->
+    <licenses>
+	    <license/>
+    </licenses>
+    <developers>
+	    <developer>
+		    <name>Derek Finnell</name>
+		    <roles>
+			    <role>Maintainer</role>
+		    </roles>
+	    </developer>
+    </developers>
+    <scm>
+	    <connection>scm:git:https://github.com/DAFinnell/Cecas.git</connection>
+	        <developerConnection>scm:git:ssh://git@github.com/DAFinnell/Cecas.git</developerConnection>
+	    <tag>HEAD</tag>
+	    <url>https://github.com/DAFinnell/Cecas</url>
+    </scm>
 	<properties>
 		<java.version>21</java.version>
         <spotless.version>3.9.0</spotless.version>

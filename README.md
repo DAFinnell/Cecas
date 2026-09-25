@@ -2,25 +2,13 @@
 
 **Canvas Extra Credit Automation System**
 
-CECAS brings the full extra credit request process into one place. Students can submit activities, follow their request status, upload evidence, and see awarded points. Program chairs can review requests, leave feedback, and make both pre-approval and final decisions.
+CECAS is a demo app for handling extra credit requests. Students propose activities, upload evidence after pre-approval, and track their points. Program chairs review requests and give feedback.
 
-[Explore the guided demo locally](http://localhost:5173/demo) · [Derek Finnell’s portfolio](https://dafinnell.com) · [GitHub profile](https://github.com/DAFinnell) · [Project source](https://github.com/DAFinnell/Cecas)
+CECAS does not connect to Canvas. Requests and points are stored in the app's own database.
 
-> CECAS is a team-built capstone presented as a portfolio project. It is not a live university service.
+[Live app](https://cecas.dafinnell.com) · [Source code](https://github.com/DAFinnell/Cecas) · [Derek Finnell's portfolio](https://dafinnell.com)
 
-## The Problem
-
-Extra credit requests can be difficult to follow when activity details, evidence, feedback, and decisions are spread across email threads and separate records. Students may not know what happens next, while program chairs have to keep track of requests at several different stages.
-
-## The Solution
-
-CECAS keeps the complete request in one system:
-
-- Students submit proposed activities and follow each request from start to finish.
-- Program chairs review new requests, explain rejections, and pre-approve eligible activities.
-- Students upload evidence after receiving pre-approval.
-- Program chairs review the evidence and make the final decision.
-- Approved points are added to the student’s semester total.
+> This is a portfolio demo, not a university service.
 
 ## How a Request Moves Through CECAS
 
@@ -33,11 +21,11 @@ CECAS keeps the complete request in one system:
 
 ## Guided Demo
 
-The guided demo provides two ways to explore the project.
+The [live demo](https://cecas.dafinnell.com/demo) lets you try the student side and see screenshots of the program chair side.
 
 ### Student Demo
 
-After starting CECAS locally, open the [guided demo](http://localhost:5173/demo) and select **Register a Demo Student Account**. You can create a student account, submit a request, and explore the student dashboard.
+Open the live demo and select **Register a Demo Student Account**. You can submit a request and explore the student dashboard.
 
 When using the demo:
 
@@ -48,7 +36,7 @@ When using the demo:
 
 ### Program Chair Walkthrough
 
-Chair accounts are not shared publicly because one visitor could change the requests, feedback, and points seen by everyone else. The guided demo uses screenshots to show the chair workflow without publishing a chair password.
+The chair walkthrough uses screenshots. A shared chair login would let visitors change the requests, feedback, and points that other people see.
 
 ### Student Dashboard
 
@@ -78,20 +66,14 @@ Chair accounts are not shared publicly because one visitor could change the requ
 
 ```mermaid
 flowchart LR
-    frontend["React + Vite frontend"] --> backend["Spring Boot backend"]
-    backend --> database[("MySQL database")]
-
-    docker["Docker Compose"] -.-> frontend
-    docker -.-> backend
-    docker -.-> database
-    docker -.-> mailpit["Mailpit"]
-
-    databaseSetup["Flyway migrations + seed system"] -.-> database
+    person["Student or chair"] --> frontend["React frontend"]
+    frontend --> backend["Spring Boot API"]
+    backend --> database[("MySQL")]
 ```
 
-The React frontend displays the student and chair pages. It sends requests to the Spring Boot backend, which handles authentication, workflow rules, and database access. MySQL stores accounts, courses, requests, feedback, and awarded points.
+React displays the pages. The Spring Boot API handles sign-in, review rules, and requests to the database. MySQL stores accounts, courses, requests, feedback, and points.
 
-Docker Compose starts the local services together. Flyway prepares the database structure, while the seed system adds sample courses, categories, and chair assignments. Mailpit is included in the local Docker setup for email testing, although the current request workflow does not send notification emails.
+Locally, Docker Compose starts these services together. Flyway sets up the database, and CSV seed files add sample courses, categories, and chair assignments. Mailpit is available for email development; the current request workflow does not send notification emails.
 
 ## Technology Stack
 
@@ -99,12 +81,11 @@ Docker Compose starts the local services together. Flyway prepares the database 
 - **Backend:** Java 21, Spring Boot, Spring Security, and Spring Data JPA
 - **Database:** MySQL with Flyway migrations
 - **Local development:** Docker Compose, CSV seed data, and Mailpit
-- **Production frontend:** Nginx configuration for serving the built React application
 - **Testing:** Vitest and React Testing Library on the frontend; JUnit, Spring Boot Test, and Testcontainers on the backend
 
 ## Project Background
 
-CECAS began as a six-student Franklin University capstone project. The application and repository history reflect that shared work. This version is maintained by Derek Finnell and presented as part of his software development portfolio.
+CECAS began as a six-student Franklin University capstone. I maintain this version as a portfolio demo.
 
 ## Run CECAS Locally
 
@@ -204,9 +185,9 @@ make reset-db
 
 ## Testing
 
-### Frontend
+You do not need these commands just to run CECAS with Docker. They are useful when changing the app.
 
-From the `frontend` directory:
+From `frontend/`:
 
 ```bash
 npm ci
@@ -216,62 +197,18 @@ npm test
 npm run build
 ```
 
-These commands install the versions recorded in `package-lock.json`, check formatting, run ESLint, run the frontend test suite, and create a production build.
-
-### Backend
-
-Docker Desktop must be running because the database-backed tests use MySQL Testcontainers.
-
-From the `backend` directory:
+From `backend/`, with Docker Desktop running for the database-backed tests:
 
 ```bash
 ./mvnw spotless:check
 ./mvnw test
 ```
 
-The first command checks Java formatting without changing files. The second runs the backend test suite.
-
-The backend includes reusable test annotations for different levels of database-backed testing:
-
-- `@MySqlDataJpaTest` for repository and entity tests
-- `@MySqlServiceTest` for service tests using Spring and MySQL
-- `@MySqlMockMvcTest` for authentication and web integration tests using Spring, MySQL, and MockMvc
-- `@WebMvcTest` for smaller controller tests that do not require the complete application
-
-### Containers
-
-Docker Desktop must be running. From the repository root:
-
-```bash
-docker compose --env-file .env.example -f docker-compose.yml config --quiet
-
-BACKEND_IMAGE=cecas-backend:ci \
-FRONTEND_IMAGE=cecas-frontend:ci \
-DB_HOST=mysql \
-MYSQL_DATABASE=cecas \
-MYSQL_USER=cecas \
-MYSQL_PASSWORD=ci-placeholder \
-MYSQL_ROOT_PASSWORD=ci-root-placeholder \
-APP_SEED_ENABLED=false \
-SESSION_COOKIE_SECURE=true \
-docker compose -f docker-compose.prod.yml config --quiet
-
-bash -n deploy/remote-deploy.sh
-
-docker run --rm \
-  --volume "$PWD/frontend/Caddyfile:/etc/caddy/Caddyfile:ro" \
-  caddy:2.11.4-alpine \
-  caddy validate \
-    --config /etc/caddy/Caddyfile \
-    --adapter caddyfile
-
-docker build --file backend/Dockerfile --tag cecas-backend:ci ./backend
-docker build --file frontend/Dockerfile.prod --tag cecas-frontend:ci ./frontend
-```
-
-The production values shown here are non-secret placeholders used only to validate variable interpolation. These do not start the production stack or contact AWS.
-
 ## Technical Documentation
 
 - [Request Lifecycle](docs/request-lifecycle.md)
 - [Seed System Overview](docs/seed-system.md)
+
+## License
+
+No open-source license has been added to this repository.

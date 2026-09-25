@@ -1,18 +1,6 @@
 # CECAS Request Lifecycle
 
-This document explains how an extra credit request moves through the system.
-
-It exists because the PRD, baseline requirements, and current code do not all say the same thing yet. This is the version the team should use going forward when building student pages, evidence upload work, and chair review work.
-
-## What This Document Is For
-
-Use this document as the source for:
-- what each request status means
-- which status changes are allowed
-- what should happen when a request is rejected
-- what should happen when a student misses the evidence deadline
-
-This is not a full rewrite of the PRD. It is a simple reference so the team can stop re-deciding the workflow in each ticket.
+This page explains what each request status means and which changes the backend currently supports.
 
 ## The Statuses
 
@@ -32,80 +20,28 @@ The chair has approved the request. This is a finished state.
 The chair reviewed the request and decided not to approve it. This is a finished state.
 
 ### `CLOSED`
-The student did not submit evidence before the deadline after pre-approval. This is a finished state.
+The backend can close a pre-approved request. This is a final state, but CECAS does not currently close requests automatically when a deadline passes.
 
-## Canonical Lifecycle
+## Current Status Changes
 
-This is the lifecycle we should use moving forward.
+| From | Action | To |
+| --- | --- | --- |
+| New request | Student submits a request | `PENDING` |
+| `PENDING` | Chair pre-approves it | `PRE_APPROVED` |
+| `PENDING` | Chair rejects it with feedback | `REJECTED` |
+| `PRE_APPROVED` | Student uploads evidence | `EVIDENCE_SUBMITTED` |
+| `EVIDENCE_SUBMITTED` | Chair approves it | `APPROVED` |
+| `EVIDENCE_SUBMITTED` | Chair rejects it with feedback | `REJECTED` |
 
-| From | Who acts | What happens | To |
-| --- | --- | --- | --- |
-| New request | Student | submits request | `PENDING` |
-| `PENDING` | Chair | pre-approves request | `PRE_APPROVED` |
-| `PENDING` | Chair | rejects request with feedback | `REJECTED` |
-| `PRE_APPROVED` | Student | uploads evidence | `EVIDENCE_SUBMITTED` |
-| `PRE_APPROVED` | System | evidence deadline passes | `CLOSED` |
-| `EVIDENCE_SUBMITTED` | Chair | approves request | `APPROVED` |
-| `EVIDENCE_SUBMITTED` | Chair | rejects request with feedback | `REJECTED` |
+The backend also has a `passDeadlineRequest` method that can move a request from `PRE_APPROVED` to `CLOSED`. No scheduled job or normal request flow currently calls it, so a request does not close just because time passes.
 
-## Important Rules
+## Rules
 
-- If the student misses the evidence deadline, the request becomes `CLOSED`.
-- A rejected request stays rejected.
-- An approved request stays approved.
-- A closed request stays closed.
-- A rejected request is not reopened.
-- If a student wants to try again after a rejection, they create a new request.
+- Evidence can be uploaded only while a request is `PRE_APPROVED`.
+- A chair can approve a request only after evidence is submitted.
+- `APPROVED`, `REJECTED`, and `CLOSED` are final states.
+- After a rejection, a student can try again by creating a new request.
 
-## Why `CLOSED` And `REJECTED` Are Different
+## Why `CLOSED` and `REJECTED` Are Different
 
-These two statuses should not mean the same thing.
-
-- `REJECTED` means a chair reviewed the request and said no.
-- `CLOSED` means the student never finished the process after pre-approval because the evidence deadline passed first.
-
-That difference matters for the UI and for future workflow tickets. A student should be able to tell whether the request was denied by a chair or simply expired before evidence was submitted.
-
-## Rules And Edge Cases
-
-### Can a student upload evidence in any state besides `PRE_APPROVED`?
-No. Evidence upload should only happen while the request is `PRE_APPROVED`.
-
-### Can a chair approve a request before evidence is submitted?
-No. Approval should only happen from `EVIDENCE_SUBMITTED`.
-
-### Can a rejected request move back to `PENDING`?
-No. We are abandoning that rule for simplicity for now.
-
-### Can a closed request be reopened?
-No. `CLOSED` is a finished state.
-
-### Can a student try again after rejection?
-Yes, but by creating a new request, not by reopening the old one.
-
-## What Future Tickets Should Assume
-
-Future tickets should build on these rules:
-
-- evidence upload work should treat `PRE_APPROVED` as the only state where evidence can be submitted
-- chair final review work should treat `EVIDENCE_SUBMITTED` as the only state that can be approved
-- student status/detail pages should show `CLOSED` and `REJECTED` as different outcomes
-- future state-machine updates should follow the transition table in this document
-
-## Outdated Behavior To Ignore
-
-Current code still includes a `REJECTED -> PENDING` resubmit path.
-
-That is old behavior. It does not match the canonical lifecycle in this document.
-
-Going forward, the team should treat `REJECTED` as a finished state and use a brand-new request if the student wants to try again.
-
-## Follow-Up Work
-
-This document sets the rule. The code still needs to be aligned with it.
-
-Follow-up implementation should:
-- update `StateMachineService` to match this lifecycle
-- remove same-request resubmission from `REJECTED`
-- add tests for deadline expiry
-- add tests that confirm `REJECTED` is a finished state
+`REJECTED` records a chair's decision. `CLOSED` is a separate outcome for a request that ends after pre-approval without evidence. Automatic deadline processing is not currently part of the app.

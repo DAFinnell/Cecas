@@ -43,7 +43,7 @@ describe('DemoPage', () => {
     expect(
       screen.getByRole('heading', {
         level: 1,
-        name: 'Explore the CECAS Guided Demo',
+        name: 'CECAS Demo',
       }),
     ).toBeInTheDocument()
 
@@ -53,15 +53,14 @@ describe('DemoPage', () => {
       }),
     ).toHaveLength(1)
 
-    expect(screen.getByText(/presented here as a portfolio project/i)).toBeInTheDocument()
-    expect(screen.getByText(/not a live university service/i)).toBeInTheDocument()
+    expect(screen.getByText(/portfolio demo, not a university service/i)).toBeInTheDocument()
   })
 
   it('offers a live student path with clear demo-data guidance', () => {
     renderDemoPage()
 
     const studentPath = screen.getByRole('article', {
-      name: 'Student: Try the Demo',
+      name: 'Try the student side',
     })
 
     expect(
@@ -70,7 +69,6 @@ describe('DemoPage', () => {
       }),
     ).toHaveAttribute('href', '/register')
 
-    expect(within(studentPath).getByText('Try it yourself')).toBeInTheDocument()
     expect(
       within(studentPath).getByText(/password you do not use anywhere else/i),
     ).toBeInTheDocument()
@@ -82,20 +80,18 @@ describe('DemoPage', () => {
     renderDemoPage()
 
     const chairPath = screen.getByRole('article', {
-      name: 'Program Chair: View the Walkthrough',
+      name: 'See the chair side',
     })
-
-    expect(within(chairPath).getByText('Screenshot walkthrough')).toBeInTheDocument()
 
     expect(
       within(chairPath).getByRole('heading', {
         level: 4,
-        name: 'Why the Chair Demo Uses Screenshots',
+        name: 'Why screenshots?',
       }),
     ).toBeInTheDocument()
 
-    expect(within(chairPath).getByText(/one person to change the requests/i)).toBeInTheDocument()
-    expect(within(chairPath).getByText(/no chair password is published/i)).toBeInTheDocument()
+    expect(within(chairPath).getByText(/shared chair account/i)).toBeInTheDocument()
+    expect(within(chairPath).getByText(/without making a chair login public/i)).toBeInTheDocument()
 
     expect(
       within(chairPath).getByRole('link', {
@@ -120,7 +116,7 @@ describe('DemoPage', () => {
     renderDemoPage()
 
     const workflow = screen.getByRole('region', {
-      name: 'Follow a Request from Start to Finish',
+      name: 'How a request works',
     })
 
     const steps = within(workflow).getAllByRole('listitem')
@@ -145,7 +141,7 @@ describe('DemoPage', () => {
     renderDemoPage()
 
     const studentWalkthrough = screen.getByRole('region', {
-      name: 'Student Walkthrough',
+      name: 'Student screenshots',
     })
 
     expect(within(studentWalkthrough).getAllByRole('article')).toHaveLength(2)
@@ -165,7 +161,7 @@ describe('DemoPage', () => {
     ).toBeInTheDocument()
 
     const chairWalkthrough = screen.getByRole('region', {
-      name: 'Program Chair Walkthrough',
+      name: 'Chair screenshots',
     })
 
     expect(chairWalkthrough).toHaveAttribute('id', 'chair-walkthrough')
@@ -188,54 +184,6 @@ describe('DemoPage', () => {
 
     expect(within(studentWalkthrough).getAllByRole('figure')).toHaveLength(2)
     expect(within(chairWalkthrough).getAllByRole('figure')).toHaveLength(2)
-  })
-
-  it('describes the architecture and supporting system cards', () => {
-    renderDemoPage()
-
-    const architecture = screen.getByRole('region', {
-      name: 'How CECAS Is Built',
-    })
-
-    expect(
-      within(architecture).getByRole('heading', {
-        name: 'React and Vite Frontend',
-      }),
-    ).toBeInTheDocument()
-
-    expect(
-      within(architecture).getByRole('heading', {
-        name: 'Spring Boot Backend',
-      }),
-    ).toBeInTheDocument()
-
-    expect(
-      within(architecture).getByRole('heading', {
-        name: 'MySQL Database',
-      }),
-    ).toBeInTheDocument()
-
-    const primaryFlow = within(architecture).getByRole('list', {
-      name: 'How the parts work together',
-    })
-
-    expect(within(primaryFlow).getAllByRole('listitem')).toHaveLength(3)
-
-    const supportingSystemsList = within(architecture).getByRole('list', {
-      name: 'Local Development Tools',
-    })
-
-    expect(within(supportingSystemsList).getAllByRole('listitem')).toHaveLength(2)
-
-    expect(
-      within(architecture).getByRole('heading', { name: 'Docker Compose' }),
-    ).toBeInTheDocument()
-
-    expect(
-      within(architecture).getByRole('heading', {
-        name: 'Flyway and Seed Data',
-      }),
-    ).toBeInTheDocument()
   })
 
   it('shows four accessible portfolio screenshots with visible captions', () => {
