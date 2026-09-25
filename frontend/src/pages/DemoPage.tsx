@@ -94,50 +94,17 @@ const chairWalkthrough: WalkthroughScreen[] = [
   },
 ]
 
-const architectureLayers = [
-  {
-    label: 'What visitors use',
-    title: 'React and Vite Frontend',
-    description:
-      'React and TypeScript power the pages used by students and program chairs. Vite helps run the project locally and prepares the frontend for deployment.',
-  },
-  {
-    label: 'What runs the process',
-    title: 'Spring Boot Backend',
-    description:
-      'Spring Boot provides the API behind the site. It handles sign-in, checks submitted information, moves requests through each review step, and records decisions.',
-  },
-  {
-    label: 'Where information is saved',
-    title: 'MySQL Database',
-    description: 'MySQL stores account, course, request, feedback, and awarded-point information.',
-  },
-]
-
-const supportingSystems = [
-  {
-    title: 'Docker Compose',
-    description:
-      'Docker Compose starts the frontend, backend, and database together so the project is easy to run locally.',
-  },
-  {
-    title: 'Flyway and Seed Data',
-    description:
-      'Flyway keeps the database structure up to date. Seed data provides sample courses, categories, and chair assignments for local demonstrations.',
-  },
-]
-
 export default function DemoPage() {
   return (
     <section className="space-y-8">
       <header className="rounded-3xl bg-white p-8 shadow-sm ring-1 ring-slate-200 sm:p-10">
         <h1 className="mt-0 text-3xl font-semibold tracking-tight text-slate-950 sm:text-4xl">
-          Explore the CECAS Guided Demo
+          CECAS Demo
         </h1>
 
         <p className="mt-4 max-w-3xl text-lg leading-8 text-slate-600">
-          CECAS was built as a team capstone and is presented here as a portfolio project. It
-          demonstrates a complete extra credit process, but it is not a live university service.
+          Try the student side with sample information, or see the chair side in screenshots. CECAS
+          is a portfolio demo, not a live service.
         </p>
       </header>
 
@@ -150,7 +117,7 @@ export default function DemoPage() {
             id="demo-paths-heading"
             className="text-2xl font-semibold tracking-tight text-slate-950"
           >
-            Choose How to Explore
+            Start here
           </h2>
 
           <p className="mt-3 leading-7 text-slate-600">
@@ -170,14 +137,14 @@ export default function DemoPage() {
 
             <h3
               id="student-path-heading"
-              className="mt-3 text-xl font-semibold tracking-tight text-slate-950"
+              className="text-xl font-semibold tracking-tight text-slate-950"
             >
-              Student: Try the Demo
+              Try the student side
             </h3>
 
             <p className="mt-3 leading-7 text-slate-700">
-              Create a demo student account to submit a request and explore the student dashboard.
-              The walkthrough below shows what happens after a chair reviews the request.
+              Create an account to submit a sample extra credit request and see your dashboard. You
+              can browse the student screenshots below without registering.
             </p>
 
             <div className="mt-6 rounded-xl bg-white p-5 ring-1 ring-sky-200">
@@ -200,10 +167,6 @@ export default function DemoPage() {
               >
                 Register a Demo Student Account
               </Link>
-
-              <p className="mt-3 text-sm leading-6 text-slate-600">
-                You can also view the full student workflow below without creating an account.
-              </p>
             </div>
           </article>
 
@@ -211,28 +174,22 @@ export default function DemoPage() {
             aria-labelledby="chair-path-heading"
             className="flex h-full flex-col rounded-2xl bg-slate-50 p-6 ring-1 ring-slate-200"
           >
-            <p className="text-sm font-semibold uppercase tracking-[0.16em] text-slate-600">
-              Screenshot walkthrough
-            </p>
-
             <h3
               id="chair-path-heading"
-              className="mt-3 text-xl font-semibold tracking-tight text-slate-950"
+              className="text-xl font-semibold tracking-tight text-slate-950"
             >
-              Program Chair: View the Walkthrough
+              See the chair side
             </h3>
 
             <p className="mt-3 leading-7 text-slate-700">
-              See how a program chair reviews requests and makes decisions without signing in to a
-              chair account.
+              See how a program chair reviews requests and evidence in the screenshots below.
             </p>
 
             <div className="mt-6 rounded-xl bg-white p-5 ring-1 ring-slate-200">
-              <h4 className="font-semibold text-slate-950">Why the Chair Demo Uses Screenshots</h4>
+              <h4 className="font-semibold text-slate-950">Why screenshots?</h4>
               <p className="mt-3 text-sm leading-6 text-slate-700">
-                Giving every visitor the same chair account would allow one person to change the
-                requests, feedback, and points that others see. Screenshots keep the example
-                consistent, and no chair password is published.
+                A shared chair account would let visitors change one another’s requests and points.
+                Screenshots show the review process without making a chair login public.
               </p>
             </div>
 
@@ -258,12 +215,12 @@ export default function DemoPage() {
         className="rounded-3xl bg-white p-8 shadow-sm ring-1 ring-slate-200"
       >
         <h2 id="workflow-heading" className="text-2xl font-semibold tracking-tight text-slate-950">
-          Follow a Request from Start to Finish
+          How a request works
         </h2>
 
         <p className="mt-3 max-w-3xl leading-7 text-slate-600">
-          A request moves between the student and program chair until a final decision is made and
-          points are awarded.
+          A student submits an activity. The chair can pre-approve it or reject it. If pre-approved,
+          the student uploads evidence for a final review.
         </p>
 
         <ol role="list" className="mt-6 grid gap-4 md:grid-cols-2 lg:grid-cols-3">
@@ -287,7 +244,7 @@ export default function DemoPage() {
           id="student-walkthrough-heading"
           className="text-2xl font-semibold tracking-tight text-slate-950"
         >
-          Student Walkthrough
+          Student screenshots
         </h2>
 
         <p className="mt-3 max-w-3xl leading-7 text-slate-600">
@@ -344,7 +301,7 @@ export default function DemoPage() {
           id="chair-walkthrough-heading"
           className="text-2xl font-semibold tracking-tight text-slate-950"
         >
-          Program Chair Walkthrough
+          Chair screenshots
         </h2>
 
         <p className="mt-3 max-w-3xl leading-7 text-slate-600">
@@ -396,66 +353,6 @@ export default function DemoPage() {
           pre-approving activities, reviewing evidence, leaving feedback, making final decisions,
           and awarding points.
         </p>
-      </section>
-
-      <section
-        aria-labelledby="architecture-heading"
-        className="rounded-3xl bg-white p-8 shadow-sm ring-1 ring-slate-200"
-      >
-        <h2 id="architecture-heading" className="text-2xl font-semibold text-slate-950">
-          How CECAS Is Built
-        </h2>
-
-        <p className="mt-3 max-w-3xl leading-7 text-slate-600">
-          The frontend, backend, and database each have a clear job.
-        </p>
-
-        <p className="mt-8 text-sm font-semibold uppercase tracking-[0.16em] text-sky-700">
-          How the parts work together
-        </p>
-        <ol
-          aria-label="How the parts work together"
-          role="list"
-          className="mt-4 grid gap-4 md:grid-cols-3"
-        >
-          {architectureLayers.map((layer, index) => (
-            <li key={layer.title}>
-              <article className="h-full rounded-2xl bg-slate-50 p-5 ring-1 ring-slate-200">
-                <p className="text-sm font-semibold text-sky-700">
-                  {index + 1}. {layer.label}
-                </p>
-
-                <h3 className="mt-2 text-lg font-semibold text-slate-950">{layer.title}</h3>
-
-                <p className="mt-2 text-sm leading-6 text-slate-600">{layer.description}</p>
-              </article>
-            </li>
-          ))}
-        </ol>
-
-        <div className="mt-8 border-t border-slate-200 pt-8">
-          <h3 id="supporting-systems-heading" className="text-xl font-semibold text-slate-950">
-            Local Development Tools
-          </h3>
-
-          <p className="mt-2 max-w-3xl leading-7 text-slate-600">
-            These tools make the project easier to run and fill it with useful sample data.
-          </p>
-        </div>
-
-        <ul
-          aria-labelledby="supporting-systems-heading"
-          role="list"
-          className="mt-5 grid gap-4 md:grid-cols-2"
-        >
-          {supportingSystems.map((system) => (
-            <li key={system.title} className="rounded-2xl bg-sky-50 p-5 ring-1 ring-sky-200">
-              <h4 className="font-semibold text-slate-950">{system.title}</h4>
-
-              <p className="mt-2 text-sm leading-6 text-slate-700">{system.description}</p>
-            </li>
-          ))}
-        </ul>
       </section>
     </section>
   )
