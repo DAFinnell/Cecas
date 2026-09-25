@@ -206,3 +206,7 @@ From `backend/`, with Docker Desktop running for the database-backed tests:
 
 - [Request Lifecycle](docs/request-lifecycle.md)
 - [Seed System Overview](docs/seed-system.md)
+
+## License
+
+No open-source license has been added to this repository.

@@ -11,9 +11,10 @@ The seed system is responsible for synchronizing three kinds of reference data:
 
 These values come from CSV files stored in the repository rather than entered directly into the database.
 
-The seed directory is:
+The seed files are in:
+
 ```text
-seed/
+backend/src/main/resources/seed/
 ├── courses.csv
 ├── categories.csv
 └── chairs.csv
@@ -51,7 +52,7 @@ alan.turing@email.franklin.edu,Alan Turing,Computer Science,COMP-210|COMP-230|CO
 ```
 
 ## High Level Flow
-The seed process should work in this order:
+The seed process runs in this order:
 1. Read all seed files.
 2. Parse the CSV rows.
 3. Normalize the values into a consistent format.
@@ -59,7 +60,7 @@ The seed process should work in this order:
 5. Perform cross-file validation.
 6. Synchronize the database in a single transaction.
 
-This means the system should reject all bad seed data before making database changes.
+All files are parsed and validated before database records change. The three importers then run inside one transaction.
 
 ## Convention For Parsing Error Line Numbers
 - HEADER_ROW = 1
@@ -67,7 +68,7 @@ This means the system should reject all bad seed data before making database cha
 - FILE_ERROR_ROW = 0
 
 ## Normalization Rules
-Before the data is saved, the seed process should normalize values so matching is consistent.
+Before saving data, the seed process normalizes values so records match consistently.
 
 ### Courses
 For course rows:
